@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS High Availability & Scalability — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>HA & Scalability</h1>
+    </div>
+
+    <div class="nav-section-label">Concepts</div>
+    <a class="nav-item active" onclick="show('concepts')">
+      <span class="nav-dot" style="background:#58a6ff"></span> HA & Scalability
+    </a>
+
+    <div class="nav-section-label">Load Balancers</div>
+    <a class="nav-item" onclick="show('elb')">
+      <span class="nav-dot" style="background:#39d0a0"></span> ELB Overview
+    </a>
+    <a class="nav-item" onclick="show('alb')">
+      <span class="nav-dot" style="background:#bc8cff"></span> ALB
+    </a>
+    <a class="nav-item" onclick="show('nlb-gwlb')">
+      <span class="nav-dot" style="background:#f0a742"></span> NLB & GWLB
+    </a>
+    <a class="nav-item" onclick="show('elb-features')">
+      <span class="nav-dot" style="background:#ff7b72"></span> ELB Advanced Features
+    </a>
+
+    <div class="nav-section-label">Auto Scaling</div>
+    <a class="nav-item" onclick="show('asg')">
+      <span class="nav-dot" style="background:#56d364"></span> ASG Core
+    </a>
+    <a class="nav-item" onclick="show('asg-policies')">
+      <span class="nav-dot" style="background:#db6eb0"></span> ASG Scaling Policies
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE 1 — HA & SCALABILITY CONCEPTS
+    ══════════════════════════════════════════════════════════ -->
+    <div id="concepts" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Foundations</div>
+        <div class="page-title">High Availability & Scalability</div>
+        <div class="page-desc">The core vocabulary and mental model behind every HA and scaling decision on the exam.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">SCL</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scalability <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Vertical vs horizontal scaling — scale up vs scale out</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Scalability means an application can handle greater load by adapting. There are two fundamentally different strategies, and the exam tests whether you know which one to apply.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Vertical Scaling (Scale Up)</th><th>Horizontal Scaling (Scale Out)</th></tr>
+            <tr><td class="label">What it means</td><td>Increase the size/power of a single instance — more CPU, RAM, storage.</td><td>Add more instances of the same size to distribute load.</td></tr>
+            <tr><td class="label">Example</td><td>Upgrade from t3.medium to t3.2xlarge</td><td>Add 4 more t3.medium instances behind a load balancer</td></tr>
+            <tr><td class="label">Limit</td><td>Hardware limit — instances have a maximum size (e.g. u-24tb1.metal)</td><td>No practical limit — can add thousands of instances</td></tr>
+            <tr><td class="label">Downtime?</td><td>Usually requires stop/start — brief downtime</td><td>None — new instances added to existing pool</td></tr>
+            <tr><td class="label">Best for</td><td>Non-distributed systems (databases, single-server apps)</td><td>Distributed systems, stateless web/app tiers, microservices</td></tr>
+            <tr><td class="label">AWS services</td><td>RDS read replicas (scale vertically for writes), ElastiCache</td><td>EC2 Auto Scaling Groups, ECS, Lambda</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Increase the instance size" = vertical scaling. "Add more instances" = horizontal scaling. The exam almost always prefers horizontal scaling as the architecturally correct answer because it avoids single points of failure and hardware limits.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">HA</div>
+          <div class="concept-meta">
+            <div class="concept-title">High Availability <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Running across multiple AZs so the system survives a single data-centre failure</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>High Availability (HA) means your system can survive the loss of a component — most commonly an entire Availability Zone — without user-visible downtime. HA is achieved by running redundant copies in at least two AZs with automatic failover.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>HA is distinct from scalability. You can be highly available without being scalable, and vice versa. HA is about <strong>surviving failures</strong>; scalability is about <strong>handling more load</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Active-Active HA</strong>: all nodes serve traffic simultaneously. An ELB distributing across instances in multiple AZs is active-active.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Active-Passive HA</strong>: one node is primary (active) and one is standby (passive). RDS Multi-AZ is active-passive — the standby only takes over on failover.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The minimum for HA in AWS: deploy resources in at least <strong>2 Availability Zones</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS ELBs are inherently multi-AZ — they provision load balancer nodes in each enabled AZ automatically.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>If the exam asks "how to make this architecture highly available" → deploy across at least 2 AZs + add a Load Balancer. Active-Active = all nodes live (ELB + ASG). Active-Passive = primary + standby (RDS Multi-AZ). Know which services use which model.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE 2 — ELB OVERVIEW
+    ══════════════════════════════════════════════════════════ -->
+    <div id="elb" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Load Balancers</div>
+        <div class="page-title">Elastic Load Balancing Overview</div>
+        <div class="page-desc">What ELB is, why you use it, the four load balancer types, and the core concepts all types share.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">ELB</div>
+          <div class="concept-meta">
+            <div class="concept-title">ELB Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managed load balancing service — distributes traffic across targets</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Elastic Load Balancing (ELB) is a managed service that automatically distributes incoming traffic across multiple targets (EC2 instances, containers, Lambda functions, IP addresses) across one or more Availability Zones. AWS provisions, maintains, and scales the load balancer infrastructure.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>ELB provides a <strong>single DNS endpoint</strong> for your application — clients never know about individual backend instances. DNS resolves to the ELB, which routes to healthy targets.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Health checks</strong>: ELB continuously probes each registered target (HTTP, HTTPS, TCP, gRPC). Unhealthy targets are removed from rotation automatically. If all targets are unhealthy, requests are routed to all of them (to avoid total blackout).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ELBs are <strong>regional</strong> and span multiple AZs. An ELB node is deployed in each enabled AZ — if an AZ goes down, the ELB routes only to healthy AZs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Security: the ELB Security Group accepts internet traffic (e.g. port 80/443 from 0.0.0.0/0). EC2 Security Groups should only allow traffic <strong>from the ELB's Security Group</strong>, not from the internet directly.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ELBs integrate with: EC2 Auto Scaling Groups, ECS, ACM (SSL certificates), CloudWatch (metrics), Route 53, WAF, Shield, and Cognito.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>ELB Security Group = allow 0.0.0.0/0 on port 80/443. EC2 Security Group = allow only from ELB Security Group (not 0.0.0.0/0). This is the correct layered security pattern — the exam tests it frequently.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">TYP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Load Balancer Types Comparison <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">ALB vs NLB vs GWLB vs CLB — choose the right type</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Type</th><th>OSI Layer</th><th>Protocols</th><th>Targets</th><th>Key differentiator</th></tr>
+            <tr><td class="label">ALB (Application)</td><td>Layer 7</td><td>HTTP, HTTPS, gRPC, WebSocket</td><td>EC2, ECS, Lambda, IP addresses</td><td>Content-based routing (path, host, headers, query string). Best for microservices and HTTP apps.</td></tr>
+            <tr><td class="label">NLB (Network)</td><td>Layer 4</td><td>TCP, UDP, TLS</td><td>EC2, IP addresses, ALB</td><td>Ultra-low latency (~100ms), millions of RPS. Static IP per AZ. Best for real-time and non-HTTP workloads.</td></tr>
+            <tr><td class="label">GWLB (Gateway)</td><td>Layer 3</td><td>IP (GENEVE protocol)</td><td>Virtual appliances (firewalls, IDS/IPS)</td><td>Transparent inline inspection. Route all traffic through third-party network appliances before reaching targets.</td></tr>
+            <tr><td class="label">CLB (Classic)</td><td>Layer 4 + 7</td><td>HTTP, HTTPS, TCP, SSL</td><td>EC2 only</td><td>Legacy — do not use for new architectures. Being retired.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>ALB and NLB are the two you'll see almost exclusively on modern exam questions. CLB is legacy and rarely tested now.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>All ELBs can be <strong>internet-facing</strong> (public IP, routes to public or private targets) or <strong>internal</strong> (private IP only, for internal service-to-service traffic).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"HTTP/HTTPS, path-based routing, microservices" → ALB. "TCP/UDP, extreme performance, static IP, non-HTTP" → NLB. "Inspect traffic through a firewall appliance before it reaches your app" → GWLB. Layer 7 = ALB. Layer 4 = NLB. Layer 3 = GWLB.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">TGT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Target Groups <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Named groups of targets that receive routed traffic</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A Target Group is a logical grouping of targets (EC2 instances, IP addresses, Lambda functions, or another ALB) that a load balancer routes requests to. Health checks are configured per target group.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Target types: <strong>Instance</strong> (EC2 instance ID), <strong>IP</strong> (any IP in a VPC or on-premises via VPN/Direct Connect), <strong>Lambda</strong> (ALB only), <strong>ALB</strong> (NLB can forward to an ALB target group).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>A single load balancer can route to <strong>multiple target groups</strong> using rules — e.g. <code>/api/*</code> → API target group, <code>/static/*</code> → static content target group.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Health check settings (path, interval, healthy/unhealthy threshold) are configured at the target group level, not the listener level.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Targets in a target group can span multiple Availability Zones — the ELB distributes traffic across all healthy targets regardless of AZ (subject to cross-zone load balancing settings).</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE 3 — ALB
+    ══════════════════════════════════════════════════════════ -->
+    <div id="alb" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Application Load Balancer</div>
+        <div class="page-title">ALB — Application Load Balancer</div>
+        <div class="page-desc">Layer 7 HTTP/HTTPS load balancer — content-based routing, microservices, and modern web architectures.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">ALB</div>
+          <div class="concept-meta">
+            <div class="concept-title">ALB Core Capabilities <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Layer 7 routing, supported protocols, and target types</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ALB operates at Layer 7 (HTTP/HTTPS) and can make routing decisions based on the content of the request — not just the IP address or port. It is the go-to load balancer for web applications, microservices, and container-based architectures.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported protocols: <strong>HTTP</strong> (port 80), <strong>HTTPS</strong> (port 443), <strong>WebSocket</strong>, and <strong>HTTP/2</strong>. Also supports <strong>gRPC</strong> for microservice communication.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can route to: EC2 instances, ECS containers (dynamic port mapping), Lambda functions (HTTP invocation), and IP addresses (including on-premises).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The ALB sees the actual HTTP request and can log <strong>request headers, path, query parameters, HTTP method</strong>, and more — visibility that Layer 4 balancers don't have.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ALB has a <strong>fixed hostname</strong> (e.g. <code>xxx.region.elb.amazonaws.com</code>). The ALB's IP changes — never hardcode an ALB's IP address, always use the DNS name.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The application servers see the ALB's private IP as the source IP (not the client IP). The actual client IP is passed in the <strong><code>X-Forwarded-For</code></strong> header. Client port → <code>X-Forwarded-Port</code>. Protocol → <code>X-Forwarded-Proto</code>.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Application needs to know the client's original IP address" → read the <code>X-Forwarded-For</code> header (not the source IP, which is the ALB's IP). ALB IPs are dynamic — always use DNS name. NLB preserves client IP by default; ALB does not.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">RUL</div>
+          <div class="concept-meta">
+            <div class="concept-title">ALB Routing Rules <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Path-based, host-based, header-based, query string, and IP routing</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ALB listener rules evaluate incoming requests and route them to different target groups based on conditions. Rules are evaluated in priority order; the first match wins. A default rule (lowest priority) catches everything else.</p>
+          <table class="compare-table">
+            <tr><th>Rule Type</th><th>Example condition</th><th>Use case</th></tr>
+            <tr><td class="label">Path-based</td><td><code>/api/*</code> → API servers<br><code>/images/*</code> → static server</td><td>Route different URL paths to different microservices or backend pools.</td></tr>
+            <tr><td class="label">Host-based</td><td><code>mobile.example.com</code> → mobile TG<br><code>www.example.com</code> → web TG</td><td>Multiple domains (subdomains) served from a single ALB.</td></tr>
+            <tr><td class="label">HTTP header</td><td><code>User-Agent: Mobile*</code></td><td>Route mobile users to a different version of the app.</td></tr>
+            <tr><td class="label">HTTP method</td><td><code>POST</code> → write TG<br><code>GET</code> → read TG</td><td>Separate read and write traffic to different backend pools.</td></tr>
+            <tr><td class="label">Query string</td><td><code>?version=v2</code> → v2 TG</td><td>Route based on query parameters — A/B testing, feature flags.</td></tr>
+            <tr><td class="label">Source IP (CIDR)</td><td><code>10.0.0.0/24</code> → internal TG</td><td>Route internal corporate traffic differently from external users.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Rule actions: <strong>Forward</strong> (to target group), <strong>Redirect</strong> (HTTP → HTTPS, or URL rewrite), <strong>Fixed Response</strong> (return a static HTTP response, e.g. 403 Forbidden or maintenance page).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Conditions can be combined with AND logic within a single rule. Multiple rules use OR logic — the first matching rule wins.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>ALB routing rules are the primary exam topic for ALB. "Route /api to one group and /web to another" → path-based rules. "Two subdomains on one ALB" → host-based rules. "Redirect HTTP to HTTPS at the load balancer" → ALB redirect rule (no app code needed).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">ECS</div>
+          <div class="concept-meta">
+            <div class="concept-title">ALB with ECS & Microservices <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Dynamic port mapping and one ALB for many services</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ALB is the preferred load balancer for ECS (container) workloads because it supports dynamic port mapping — ECS assigns random host ports to containers, and ALB automatically discovers them via target group registration.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>ECS registers each container task as a target with its <strong>dynamic port</strong> — no need to pre-configure ports. ALB discovers them via the ECS service integration.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>A single ALB can serve <strong>many microservices</strong> using path-based or host-based routing — each service gets its own target group. Eliminates the cost of one NLB/ALB per service.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ALB supports <strong>Lambda function targets</strong> — ALB invokes the Lambda directly on HTTP request. No API Gateway needed for simple HTTP invocations.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Route different URL paths to different ECS microservices" → ALB with path-based rules + separate target groups per service. "Invoke Lambda via HTTP" → ALB with Lambda target group (cheaper than API Gateway for simple use cases).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE 4 — NLB & GWLB
+    ══════════════════════════════════════════════════════════ -->
+    <div id="nlb-gwlb" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — Network & Gateway Load Balancers</div>
+        <div class="page-title">NLB & Gateway Load Balancer</div>
+        <div class="page-desc">NLB for ultra-low latency TCP/UDP traffic; GWLB for transparent inline security appliances.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">NLB</div>
+          <div class="concept-meta">
+            <div class="concept-title">Network Load Balancer (NLB) <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Layer 4 TCP/UDP — static IPs, extreme performance, TLS passthrough</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>NLB operates at Layer 4 (TCP/UDP) and routes connections based purely on IP protocol data — it cannot inspect HTTP content. It is designed for extreme throughput and latency-sensitive workloads: gaming, real-time streaming, financial trading.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can handle <strong>millions of requests per second</strong> with latency around <strong>~100 milliseconds</strong> (vs ~400ms for ALB). No request parsing overhead.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>NLB provides <strong>one static IP address per Availability Zone</strong>. You can also assign an Elastic IP per AZ — critical when clients need to whitelist a fixed IP in their firewall.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>NLB preserves the client's source IP address</strong> natively — the backend sees the actual client IP, not the NLB's IP (unlike ALB, which uses X-Forwarded-For).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports: TCP, UDP, TLS (TCP with TLS termination), and TCP_UDP listeners.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>NLB target groups can contain: EC2 instances, IP addresses, and <strong>ALB</strong> (NLB → ALB chaining — gives you a static IP with Layer 7 routing).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Health checks support TCP, HTTP, and HTTPS — allowing health check even on non-HTTP protocols.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Cross-zone load balancing is <strong>disabled by default</strong> for NLB (unlike ALB where it's enabled by default). When disabled, each AZ's NLB node only routes to targets in its own AZ.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Client needs to whitelist a static IP for the load balancer" → NLB with Elastic IP. "TCP/UDP protocol, not HTTP" → NLB. "Client's source IP must reach the backend" → NLB (preserves source IP). "NLB + content-based routing" → NLB → ALB target group combo.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">GWLB</div>
+          <div class="concept-meta">
+            <div class="concept-title">Gateway Load Balancer (GWLB) <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Layer 3 — transparent traffic inspection through virtual appliances</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>GWLB allows you to deploy, scale, and manage a fleet of third-party virtual network appliances (firewalls, intrusion detection/prevention systems, deep packet inspection) transparently in the traffic path. Traffic goes through the appliance before reaching your application.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Operates at <strong>Layer 3</strong> (Network layer) — forwards entire IP packets, not just TCP connections.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Uses the <strong>GENEVE protocol</strong> on port 6081 to encapsulate and forward traffic to appliances.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Traffic flow: Internet → GWLB → 3rd-party appliance (e.g. Palo Alto firewall) → GWLB → application. The appliance inspects and either allows or drops the traffic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Combines two functions: <strong>transparent network gateway</strong> (single entry/exit point for all traffic) + <strong>load balancer</strong> (distributes traffic across appliances for scale).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Appliances are registered as targets in a GWLB target group. GWLB scales the appliance fleet automatically.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"All traffic must pass through a firewall / IDS / IPS before reaching the application" → GWLB. "Inspect all inbound internet traffic with a third-party security appliance" → GWLB. GWLB is the only ELB type that operates at Layer 3 and uses GENEVE protocol.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE 5 — ELB ADVANCED FEATURES
+    ══════════════════════════════════════════════════════════ -->
+    <div id="elb-features" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — ELB Advanced Features</div>
+        <div class="page-title">ELB Advanced Features</div>
+        <div class="page-desc">Sticky sessions, cross-zone load balancing, SSL/TLS termination, SNI, and connection draining.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">STK</div>
+          <div class="concept-meta">
+            <div class="concept-title">Sticky Sessions (Session Affinity) <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Route a client's requests to the same target for the duration of a session</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Sticky sessions (also called session affinity) ensure that a specific client is always routed to the same backend instance for the duration of their session. Implemented using a cookie that the ELB sets on the client.</p>
+          <table class="compare-table">
+            <tr><th>Cookie type</th><th>Name</th><th>Duration</th><th>Who controls it</th></tr>
+            <tr><td class="label">Application-based cookie</td><td>Custom name set by your app (not <code>AWSALB</code> or <code>AWSALBAPP</code> — those are reserved)</td><td>Set by the application</td><td>Your application generates the cookie. ALB uses it for routing.</td></tr>
+            <tr><td class="label">Duration-based cookie</td><td><code>AWSALB</code> (ALB) / <code>AWSELB</code> (CLB)</td><td>1 second to 7 days</td><td>ELB generates and manages the cookie. Simplest to set up.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported on <strong>ALB and CLB</strong>. NLB uses flow hash routing (same client IP to same target) instead of cookies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Stickiness can cause <strong>imbalanced load</strong> if one target gets many long-lived sessions — some instances may be overloaded while others are idle.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use case: stateful applications that store session data locally (shopping cart, user session). Best practice is to use a shared session store (ElastiCache/DynamoDB) and keep the app stateless instead.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Users lose their shopping cart when redirected to a different server" → enable sticky sessions. But the architecturally correct answer is "move session data to ElastiCache or DynamoDB so all servers can access it." Both may appear as answer options — the exam context determines which is being asked.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CZ</div>
+          <div class="concept-meta">
+            <div class="concept-title">Cross-Zone Load Balancing <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Distribute traffic evenly across all instances in all AZs, not just the local AZ</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Without cross-zone load balancing, each ELB node routes traffic only to targets in its own Availability Zone. With it enabled, each ELB node can send traffic to any target in any AZ — balancing load even when AZs have different numbers of instances.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Scenario: AZ-A has 2 instances, AZ-B has 8 instances. Without cross-zone: each AZ gets 50% of traffic → AZ-A instances each handle 25%, AZ-B instances each handle 6.25% — very uneven. With cross-zone: all 10 instances each handle 10%.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ALB</strong>: cross-zone load balancing is <strong>always enabled</strong> (cannot be disabled). No inter-AZ data transfer charge.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>NLB and GWLB</strong>: cross-zone load balancing is <strong>disabled by default</strong>. Can be enabled — but incurs inter-AZ data transfer charges.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CLB</strong>: disabled by default, no charge when enabled.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>This is a high-frequency exam topic. Remember the defaults: ALB = always on, free. NLB/GWLB = off by default, costs money when enabled. CLB = off by default, free when enabled. The uneven distribution scenario with different instance counts per AZ is a classic exam question.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">SSL</div>
+          <div class="concept-meta">
+            <div class="concept-title">SSL/TLS & SNI <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Terminate HTTPS at the load balancer — ACM integration and SNI for multiple certs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ELBs can terminate SSL/TLS connections — decrypting HTTPS traffic and forwarding plain HTTP to backend instances. This offloads the computational overhead of encryption from your application servers.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>SSL certificates are managed via <strong>AWS Certificate Manager (ACM)</strong>. ACM handles provisioning, renewal, and deployment to the ELB automatically — no manual cert rotation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>HTTPS listener</strong>: configure on port 443. You specify a default SSL certificate. You can optionally add multiple certs for multiple domains.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SNI (Server Name Indication)</strong>: allows a single ALB or NLB to serve <strong>multiple SSL certificates</strong> (one per domain) on the same port 443. The client indicates the desired hostname in the TLS handshake, and the ELB serves the matching cert.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SNI is supported on <strong>ALB and NLB</strong>, but <strong>not CLB</strong> — CLB only supports one certificate per listener.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Security policies control the SSL protocols and ciphers accepted by the ELB. AWS provides predefined policies (e.g. <code>ELBSecurityPolicy-TLS13-1-2-2021-06</code>) — choose the latest TLS-1.3 compatible policy for best security.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Traffic between ELB and backend instances travels on the <strong>private AWS network</strong> — can be plain HTTP (common) or HTTPS (end-to-end encryption). For HTTPS to backends, they need valid certs too.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Multiple SSL certificates for multiple domains on one load balancer" → SNI on ALB or NLB (not CLB). "Automate SSL certificate renewal" → ACM. CLB requires one certificate per listener — to host multiple domains with CLB, you need multiple CLBs. SNI was designed specifically to solve this problem.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">DRN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Connection Draining (Deregistration Delay) <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Allow in-flight requests to complete before removing an instance from the ELB</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>When an instance is deregistered from a target group (due to scale-in, failure, or maintenance), Connection Draining allows existing in-flight requests to complete before the instance is fully removed. No new requests are sent to the draining instance.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Called <strong>Connection Draining</strong> on CLB, and <strong>Deregistration Delay</strong> on ALB and NLB — same concept, different names.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default draining period: <strong>300 seconds (5 minutes)</strong>. Range: <strong>1 to 3,600 seconds</strong>. Can be set to 0 to disable (immediate deregistration).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>During the draining period: existing connections are kept open and served. <strong>No new requests</strong> are routed to the draining instance.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Set a <strong>low value</strong> for short-lived requests (API calls, static assets). Set a <strong>high value</strong> for long-lived operations (file uploads, database migrations, report generation).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Users getting errors when instances are removed during a deployment or scale-in event" → connection draining not configured or set too low. "Long-running operations are being interrupted" → increase deregistration delay. Default is 300 seconds — this number is tested.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE 6 — ASG CORE
+    ══════════════════════════════════════════════════════════ -->
+    <div id="asg" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Auto Scaling</div>
+        <div class="page-title">Auto Scaling Groups — Core</div>
+        <div class="page-desc">Automatically add and remove EC2 instances to match demand — the backbone of elastic AWS architectures.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">ASG</div>
+          <div class="concept-meta">
+            <div class="concept-title">ASG Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Scale EC2 fleets automatically — min, max, and desired capacity</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>An Auto Scaling Group manages a collection of EC2 instances as a logical unit. It automatically launches instances when load increases (scale out) and terminates instances when load decreases (scale in), always maintaining capacity within your defined boundaries.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Three capacity settings: <strong>Minimum</strong> (floor — ASG never goes below this), <strong>Maximum</strong> (ceiling — ASG never exceeds this), <strong>Desired</strong> (target — ASG tries to maintain this exact count).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ASG is <strong>free</strong> — you pay only for the EC2 instances it launches, not for the ASG itself.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ASG replaces <strong>unhealthy instances automatically</strong>. If an EC2 instance fails its health check (from ASG or an attached ELB), ASG terminates it and launches a replacement.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ASG distributes instances <strong>across multiple AZs</strong> evenly. If one AZ loses capacity, ASG launches replacements in other AZs — this is how high availability is maintained.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>When an ASG is attached to an ELB, new instances are <strong>automatically registered</strong> with the target group on launch and deregistered on termination.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>ASG = elastic + highly available. Min/Max/Desired is a must-know. If an ASG is set to min=2 max=10 desired=4 and an instance fails, ASG launches a new one to get back to 4. ASG integrates with ELB health checks — ELB-unhealthy instances get terminated and replaced (more powerful than EC2 status checks alone).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">LT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Launch Templates (vs Launch Configurations) <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Blueprint for instances launched by an ASG</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A Launch Template (or the older Launch Configuration) defines the EC2 instance parameters that the ASG uses when launching new instances: AMI, instance type, key pair, security groups, storage, user data, IAM role, network settings, and more.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Launch Template (recommended)</th><th>Launch Configuration (legacy)</th></tr>
+            <tr><td class="label">Versioning</td><td>Supports versions — you can update a template and specify which version the ASG uses</td><td>Immutable — must create a new one to make changes</td></tr>
+            <tr><td class="label">Spot Instances</td><td>Can mix On-Demand and Spot in the same ASG</td><td>Cannot mix instance types</td></tr>
+            <tr><td class="label">Multiple instance types</td><td>Yes — specify multiple instance types for better Spot availability</td><td>No — single instance type only</td></tr>
+            <tr><td class="label">AWS recommendation</td><td>Use this for all new ASGs</td><td>Legacy — do not use for new deployments</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Launch Templates can also be used independently (without ASG) to launch individual EC2 instances consistently.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Key parameters in a Launch Template: AMI ID, instance type(s), key pair, security groups, IAM instance profile, user data script, EBS volume configurations, placement group, tenancy, and network interfaces.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Always use Launch Templates over Launch Configurations for new setups. Launch Template = versioned, supports mixed instances (On-Demand + Spot + multiple types). Launch Configuration = immutable, one instance type. The exam may specifically mention which one an ASG uses when testing capabilities.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">HLT</div>
+          <div class="concept-meta">
+            <div class="concept-title">ASG Health Checks <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">EC2 status checks vs ELB health checks — and the termination/replacement process</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EC2 health check</strong> (default): checks the EC2 instance system status and instance status checks. Marks unhealthy if the instance itself is failing at the hardware/OS level.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ELB health check</strong>: if the ASG is attached to an ELB, you can optionally use ELB health checks. The ELB health check tests the application layer (HTTP 200 response) — catches app crashes even when the EC2 instance itself is running.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Recommendation</strong>: use ELB health checks with ASG when the ASG is behind an ELB. ELB checks are more accurate — they verify the application is responding, not just that the instance is running.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Termination process: ASG marks instance unhealthy → waits for ELB to drain connections → terminates the instance → launches replacement → registers with ELB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Health check grace period</strong>: a period of time after launch during which ASG ignores health check failures. Default: <strong>300 seconds</strong>. Set this long enough for your application to start up before health checks begin.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"ASG keeps terminating newly launched instances immediately" → health check grace period is too short (app hasn't started up yet before health check fires). Increase the grace period. "EC2 instance is running but app is crashed — ASG should replace it" → enable ELB health checks on the ASG.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">TRM</div>
+          <div class="concept-meta">
+            <div class="concept-title">ASG Termination Policies <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Which instance gets terminated first during scale-in</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>When ASG needs to scale in (remove instances), it follows a termination policy to decide which instance to terminate. The default policy is designed to keep instances balanced across AZs.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">1.</span> <span>Select the AZ with the most instances (to rebalance across AZs).</span></div>
+            <div class="kp"><span class="kp-bullet">2.</span> <span>Within that AZ, terminate the instance using the <strong>oldest launch configuration or launch template</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">3.</span> <span>If tied, terminate the instance <strong>closest to the next billing hour</strong> (to minimize wasted spend).</span></div>
+          </div>
+          <div class="key-points" style="margin-top:12px">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lifecycle hooks</strong>: pause instance termination (or launch) and perform custom actions (drain connections, back up data, run tests) before the ASG proceeds. Integrates with EventBridge, SQS, SNS, or Lambda.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Instance Refresh</strong>: rolling replacement of all instances in the ASG when you update the launch template (new AMI, new config). Controlled by minimum healthy percentage — ensures a percentage of instances remain healthy throughout the refresh.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Default termination = oldest launch config/template first, in the AZ with the most instances. Instance Refresh = rolling AMI update without manual termination. Lifecycle hooks = pause before terminate or after launch to run custom logic (e.g. drain in-flight work from a queue).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAGE 7 — ASG SCALING POLICIES
+    ══════════════════════════════════════════════════════════ -->
+    <div id="asg-policies" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Auto Scaling Policies</div>
+        <div class="page-title">ASG Scaling Policies</div>
+        <div class="page-desc">Dynamic scaling, predictive scaling, scheduled scaling — and how to choose the right one.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">DYN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Dynamic Scaling Policies <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Target tracking, simple/step — react to live CloudWatch metrics</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Dynamic scaling policies automatically adjust ASG capacity based on real-time CloudWatch metrics (CPU, request count, network, custom metrics). There are three types, each with different behavior.</p>
+          <table class="compare-table">
+            <tr><th>Policy Type</th><th>How it works</th><th>Best for</th></tr>
+            <tr><td class="label">Target Tracking Scaling</td><td>Define a target metric value (e.g. "keep average CPU at 40%"). ASG automatically adds/removes instances to maintain that target. Like a thermostat.</td><td>Simplest to set up. Best for metrics with a clear target (CPU, ALB request count per target, SQS queue depth).</td></tr>
+            <tr><td class="label">Simple Scaling</td><td>CloudWatch alarm triggers a single scaling action (e.g. "if CPU > 70%, add 1 instance"). Then waits for a cooldown period before evaluating again.</td><td>Predictable, simple workloads where one action at a time is sufficient. Legacy — step scaling is usually preferred.</td></tr>
+            <tr><td class="label">Step Scaling</td><td>Multiple scaling steps based on alarm breach size (e.g. "CPU 70–80%: add 1 instance; CPU 80–90%: add 2; CPU > 90%: add 4"). Responds proportionally.</td><td>Workloads with variable spikes needing faster, proportional responses. No cooldown between steps.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cooldown period</strong>: after a scaling activity, ASG waits (default <strong>300 seconds</strong>) before responding to additional alarms. Prevents rapid repeated scaling. Target tracking manages its own cooldown — no manual configuration needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common target tracking metrics: <code>ASGAverageCPUUtilization</code>, <code>ALBRequestCountPerTarget</code>, <code>ASGAverageNetworkIn</code>/<code>Out</code>. Custom metrics are also supported.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Target Tracking is the recommended and most common answer. "Keep CPU at 50%" → Target Tracking. "Add instances proportionally to how bad the overload is" → Step Scaling. Simple Scaling is the oldest — one action per alarm breach with a cooldown wait. Step Scaling doesn't wait for cooldown between steps.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">SCH</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scheduled Scaling <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Pre-scale at known times — events, peak hours, business hours</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Scheduled scaling adjusts ASG capacity at specific times — useful when you know in advance when demand will be high (business hours, weekly promotions, sporting events).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Defined using cron expressions or one-time dates. Example: "every Monday at 8 AM, set min/max/desired to 10/50/20".</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Proactively scales <strong>before the demand hits</strong> — unlike reactive scaling which responds after metrics change. Eliminates the warm-up lag of dynamic policies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can be combined with dynamic scaling — schedule a larger minimum during business hours, then let dynamic scaling handle intra-hour fluctuations.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Traffic spikes every Friday at 5 PM for a flash sale" → Scheduled scaling to pre-provision before the event. "Traffic is unpredictable and fluctuates throughout the day" → Target Tracking. Use Scheduled for known patterns, Dynamic for unknown fluctuations.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">PRD</div>
+          <div class="concept-meta">
+            <div class="concept-title">Predictive Scaling <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">ML-powered forecasting — pre-scale based on historical patterns</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Predictive scaling uses machine learning to analyze historical CloudWatch metrics and forecasts future traffic patterns. It proactively adjusts ASG capacity ahead of predicted demand spikes — before they happen.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Analyzes at least <strong>14 days</strong> of historical data to build a forecast model. Generates a capacity schedule for the next 48 hours.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Best for workloads with <strong>cyclical or recurring patterns</strong> (daily business hours, weekly peaks) that repeat consistently.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can be combined with dynamic scaling — predictive handles anticipated load; dynamic handles unexpected spikes on top.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Eliminates the <strong>scale-out lag</strong> — instances are ready before the traffic arrives, not scrambling to catch up after it hits.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Traffic follows a predictable daily/weekly pattern and we want instances ready before the spike" → Predictive Scaling. Requires 14+ days of data. Combines well with Target Tracking for the best of both: predictive for baseline + reactive for unexpected load. Distinct from Scheduled: scheduled is manual cron; predictive is ML-automated.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">SUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">HA & Scalability Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Scenario → service mapping for the whole module</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"HTTP/HTTPS app, path-based routing, microservices"</td><td class="label">ALB</td></tr>
+            <tr><td>"TCP/UDP, low latency, static IP required"</td><td class="label">NLB</td></tr>
+            <tr><td>"Client needs to whitelist a fixed IP for the load balancer"</td><td class="label">NLB + Elastic IP</td></tr>
+            <tr><td>"All traffic must pass through a firewall appliance"</td><td class="label">GWLB</td></tr>
+            <tr><td>"Multiple SSL certs for different domains on one LB"</td><td class="label">ALB or NLB with SNI</td></tr>
+            <tr><td>"Two subdomains served from a single ALB"</td><td class="label">ALB with host-based routing rules</td></tr>
+            <tr><td>"User session keeps breaking because different servers respond"</td><td class="label">ALB sticky sessions</td></tr>
+            <tr><td>"Requests interrupted when instances removed during scale-in"</td><td class="label">Increase connection draining / deregistration delay</td></tr>
+            <tr><td>"ASG instances in AZ-A are overloaded, AZ-B is idle"</td><td class="label">Enable cross-zone load balancing (NLB/GWLB)</td></tr>
+            <tr><td>"App crashed but EC2 instance still shows as healthy"</td><td class="label">Enable ELB health checks on ASG</td></tr>
+            <tr><td>"New ASG instances get terminated immediately on launch"</td><td class="label">Increase health check grace period</td></tr>
+            <tr><td>"Keep CPU utilization at 60% automatically"</td><td class="label">ASG Target Tracking policy</td></tr>
+            <tr><td>"Scale out proportionally during load spikes"</td><td class="label">ASG Step Scaling policy</td></tr>
+            <tr><td>"Traffic always spikes Monday at 9 AM"</td><td class="label">ASG Scheduled Scaling</td></tr>
+            <tr><td>"Recurring daily pattern, pre-scale before traffic arrives"</td><td class="label">ASG Predictive Scaling</td></tr>
+            <tr><td>"Run custom script before an instance is terminated by ASG"</td><td class="label">ASG Lifecycle Hook</td></tr>
+            <tr><td>"Rolling update of all instances in an ASG after new AMI"</td><td class="label">ASG Instance Refresh</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

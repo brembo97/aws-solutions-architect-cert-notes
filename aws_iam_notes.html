@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS IAM — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2330;
+    --border: #30363d;
+    --border-accent: #3d4a5a;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --accent-blue: #58a6ff;
+    --accent-teal: #39d0a0;
+    --accent-amber: #f0a742;
+    --accent-red: #ff7b72;
+    --accent-purple: #bc8cff;
+    --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    padding: 2rem 0 2rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-logo .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent-teal);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-logo h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .nav-section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 0.75rem 1.5rem 0.25rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 1.5rem;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+
+  .nav-item.active {
+    color: var(--accent-blue);
+    border-left-color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.08);
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Main */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    max-width: 900px;
+    padding: 3rem 3.5rem;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-teal);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .page-desc {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  /* Concept cards */
+  .concept {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .concept:hover { border-color: var(--border-accent); }
+
+  .concept-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .concept-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .concept-meta { flex: 1; }
+
+  .concept-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .concept-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .concept-toggle {
+    font-size: 16px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    margin-top: 4px;
+  }
+
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+
+  .concept-body {
+    display: none;
+    padding: 0 1.25rem 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .concept.open .concept-body { display: block; }
+
+  .concept-body p {
+    font-size: 14px;
+    color: #b1bac4;
+    margin-bottom: 12px;
+    line-height: 1.75;
+  }
+
+  .concept-body p:last-child { margin-bottom: 0; }
+
+  /* Key points */
+  .key-points {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .kp {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: #b1bac4;
+    line-height: 1.6;
+  }
+
+  .kp-bullet {
+    color: var(--accent-teal);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Exam callouts */
+  .exam-box {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(240, 167, 66, 0.07);
+    border: 1px solid rgba(240, 167, 66, 0.25);
+    border-radius: 6px;
+    font-size: 13px;
+    color: #c9a96e;
+    line-height: 1.6;
+  }
+
+  .exam-box strong {
+    color: var(--accent-amber);
+    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: block;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .warn-box {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(255, 123, 114, 0.07);
+    border: 1px solid rgba(255, 123, 114, 0.2);
+    border-radius: 6px;
+    font-size: 13px;
+    color: #ff9f97;
+    line-height: 1.6;
+  }
+
+  .warn-box strong {
+    color: var(--accent-red);
+    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: block;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  /* Badge */
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+  }
+
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+
+  /* Code inline */
+  code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--accent-teal);
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 4px;
+    color: var(--text);
+  }
+
+  .flow-arrow { color: var(--muted); }
+
+  .flow-step.deny { border-color: rgba(255,123,114,0.4); color: var(--accent-red); background: rgba(255,123,114,0.07); }
+  .flow-step.allow { border-color: rgba(86,211,100,0.4); color: var(--accent-green); background: rgba(86,211,100,0.07); }
+
+  /* Table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+
+  .compare-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--surface2);
+    color: var(--muted);
+    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .compare-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: #b1bac4;
+    vertical-align: top;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>IAM & Identity</h1>
+    </div>
+
+    <div class="nav-section-label">Foundations</div>
+    <a class="nav-item active" onclick="show('fundamentals')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Users, Groups & Policies
+    </a>
+    <a class="nav-item" onclick="show('security')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Security & MFA
+    </a>
+    <a class="nav-item" onclick="show('cli')">
+      <span class="nav-dot" style="background:#56d364"></span> CLI, SDK & CloudShell
+    </a>
+    <a class="nav-item" onclick="show('roles')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Roles & Services
+    </a>
+
+    <div class="nav-section-label">Advanced</div>
+    <a class="nav-item" onclick="show('advpolicies')">
+      <span class="nav-dot" style="background:#f0a742"></span> Advanced Policies
+    </a>
+    <a class="nav-item" onclick="show('orgs')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Organizations
+    </a>
+
+    <div class="nav-section-label">Enterprise</div>
+    <a class="nav-item" onclick="show('identitycenter')">
+      <span class="nav-dot" style="background:#58a6ff"></span> IAM Identity Center
+    </a>
+    <a class="nav-item" onclick="show('directory')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Directory Services
+    </a>
+    <a class="nav-item" onclick="show('controltower')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Control Tower
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- FUNDAMENTALS -->
+    <div id="fundamentals" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Foundations</div>
+        <div class="page-title">Users, Groups & Policies</div>
+        <div class="page-desc">The core building blocks of AWS access control. Everything in IAM starts here.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">IAM</div>
+          <div class="concept-meta">
+            <div class="concept-title">What is IAM? <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Identity and Access Management — the AWS access control service</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>IAM is a <strong>global</strong> AWS service (not region-specific) that controls authentication (who you are) and authorization (what you can do) across your AWS account. It is completely free to use — you are only charged for the AWS resources accessed through it.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>The <strong>root account</strong> is created automatically when you set up AWS. It has unrestricted access to everything and should never be used for daily operations — protect it with MFA and lock it away.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>IAM operates globally — a user, group, role, or policy created in one region is accessible everywhere.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>IAM applies the <strong>principle of least privilege</strong>: only grant what is explicitly needed, nothing more.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>You will be asked whether IAM is global or regional — it is always global. Also remember: by default, a new IAM user has zero permissions (implicit deny).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">USR</div>
+          <div class="concept-meta">
+            <div class="concept-title">IAM Users <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Individual identities for people or applications</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>An IAM user is an entity that represents a person or service that interacts with AWS. Each user has a unique name within the account, and can have credentials: a password for console access and/or access keys for programmatic access.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Users start with <strong>no permissions</strong> — permissions must be explicitly granted via policies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Users can belong to <strong>multiple groups</strong> and inherit permissions from all of them.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Users can also have <strong>inline policies</strong> attached directly to them (not recommended — use group policies instead).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS recommends creating one IAM user per person, not shared credentials.</span></div>
+          </div>
+          <div class="warn-box"><strong>IMPORTANT</strong>Do not use the root account for day-to-day tasks. Create an admin IAM user instead. The root account should only be used for initial setup and account-level actions (like changing billing settings or closing the account).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">GRP</div>
+          <div class="concept-meta">
+            <div class="concept-title">IAM Groups <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Collections of users that share permissions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Groups let you apply the same set of permissions to multiple users at once. Instead of attaching policies to every user individually, you assign them to a group and add users to it.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Groups <strong>cannot contain other groups</strong> — they can only contain users.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>A user can belong to <strong>multiple groups simultaneously</strong> — their effective permissions are the union of all attached policies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Groups are a best practice for managing permissions at scale. Examples: <code>Developers</code>, <code>Admins</code>, <code>ReadOnlyUsers</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Users don't <em>have</em> to belong to a group, but it's recommended.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>A common exam trap: groups cannot contain other groups. Also, a user not in any group can still have direct (inline) policies attached.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">POL</div>
+          <div class="concept-meta">
+            <div class="concept-title">IAM Policies <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">JSON documents defining permissions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Policies are JSON documents that specify what actions are allowed or denied on which AWS resources. They are attached to users, groups, or roles. AWS also provides hundreds of pre-built <strong>AWS Managed Policies</strong>.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Version</strong>: always <code>"2012-10-17"</code> (the current policy language version).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Statement</strong>: array of permission rules. Each has: <code>Effect</code> (Allow/Deny), <code>Action</code> (e.g. <code>s3:GetObject</code>), <code>Resource</code> (ARN of the target), and optionally <code>Condition</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Managed policies</strong> are created/maintained by AWS or by you (customer managed) and can be reused across multiple identities.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Inline policies</strong> are embedded directly into a single user/group/role and are deleted with it. Avoid for maintainability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Wildcard <code>*</code> means "all" — <code>"Action": "*"</code> with <code>"Resource": "*"</code> is full admin access.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>AWS evaluates all applicable policies and the result is: if any statement says Deny → denied. Otherwise, if any says Allow → allowed. If neither → implicit deny.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SGN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Simultaneous Sign-in <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managing multiple AWS accounts at once</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>You can be logged into multiple AWS accounts at the same time by using different browsers or a private/incognito window for each. This is useful when switching between environments like development and production.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each browser session maintains an independent AWS session — no interference between accounts.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The account ID or alias is visible in the top-right of the AWS console, helping distinguish which account you're in.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div id="security" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Security</div>
+        <div class="page-title">Security & MFA</div>
+        <div class="page-desc">Protecting accounts with multi-factor authentication, auditing tools, and best practices.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">MFA</div>
+          <div class="concept-meta">
+            <div class="concept-title">Multi-Factor Authentication <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Second layer of protection beyond passwords</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>MFA requires a user to present two forms of identity: something they know (password) and something they have (a device). Even if a password is compromised, an attacker cannot access the account without the second factor.</p>
+          <table class="compare-table">
+            <tr><th>MFA Type</th><th>Examples</th><th>Notes</th></tr>
+            <tr><td class="label">Virtual MFA app</td><td>Google Authenticator, Authy, Duo</td><td>Generates time-based one-time codes (TOTP). Software on a smartphone. Supports multiple accounts per device.</td></tr>
+            <tr><td class="label">Universal 2nd Factor (U2F)</td><td>YubiKey</td><td>Physical hardware key plugged into USB. Supports multiple root/IAM users on one key.</td></tr>
+            <tr><td class="label">Hardware OTP token</td><td>Gemalto, SurePassID</td><td>Physical device that generates a numeric code. Used for governments/enterprises requiring dedicated hardware.</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>MFA should always be enabled on the root account. If asked which MFA type works for multiple accounts on one device: Virtual MFA apps. If asked which is a physical key: YubiKey (U2F).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CR</div>
+          <div class="concept-meta">
+            <div class="concept-title">IAM Credentials Report <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Account-level security audit</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The Credentials Report is an account-wide CSV file listing all IAM users and the status of their various credentials. Generated from the IAM console under "Credential Report".</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Shows: password last used, password last changed, MFA active status, access key age, access key last used.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Useful for compliance audits and identifying stale/unused credentials at the account level.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Scope is <strong>account-wide</strong> — covers all users.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">AA</div>
+          <div class="concept-meta">
+            <div class="concept-title">IAM Access Advisor <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Per-user permission usage analysis</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Access Advisor is available within an individual user's IAM page. It shows the list of services the user has permission to access, and when those services were last accessed.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Helps enforce <strong>least privilege</strong> by identifying permissions that are granted but never used.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Scope is <strong>per user</strong> (as opposed to the Credentials Report which is account-wide).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data has a delay of up to 4 hours before reflecting recent activity.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Credentials Report = account-level, all users, credential status. Access Advisor = per user, service access history. Know which tool answers which question.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">BP</div>
+          <div class="concept-meta">
+            <div class="concept-title">IAM Best Practices <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">AWS-recommended security guidelines</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Never use the root account except for initial account setup and billing/account changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Create individual IAM users — do not share credentials between people.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Assign permissions via groups, not directly to users.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Enforce strong password policies and require MFA for all users.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use IAM Roles for applications and AWS services — never embed access keys in code.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Rotate access keys regularly and delete unused ones.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Audit with the Credentials Report and Access Advisor periodically.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Never share access keys — if compromised, deactivate immediately.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLI -->
+    <div id="cli" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Programmatic Access</div>
+        <div class="page-title">CLI, SDK & CloudShell</div>
+        <div class="page-desc">Three ways to interact with AWS beyond the web console.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">KEY</div>
+          <div class="concept-meta">
+            <div class="concept-title">Access Keys <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Credentials for programmatic access</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Access keys are long-term credentials used for programmatic access (CLI and SDK). Each key pair consists of an <strong>Access Key ID</strong> (like a username) and a <strong>Secret Access Key</strong> (like a password).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Generated under a user's IAM page → Security credentials tab.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The Secret Access Key is shown <strong>only once</strong> at creation — if lost, you must create a new key pair.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each user can have a maximum of <strong>2 active access keys</strong> at a time (allows rotation without downtime).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Never embed access keys in code, commit them to git, or share them — use environment variables or the credentials file.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Access keys can be deactivated (not just deleted) — useful when rotating.</span></div>
+          </div>
+          <div class="warn-box"><strong>SECURITY WARNING</strong>Exposed access keys are one of the most common AWS security incidents. Always use IAM Roles for EC2/Lambda instead of embedding keys. If a key is compromised, deactivate it immediately.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">CLI</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS CLI <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Command-line access to AWS APIs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The AWS CLI (Command Line Interface) is an open-source tool that lets you interact with AWS services directly from your terminal. It calls the same underlying APIs as the web console — anything you can do in the console, you can do with the CLI.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Available for Windows, macOS, and Linux. Configured with <code>aws configure</code> (prompts for Access Key, Secret, default region, output format).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Configuration is stored in <code>~/.aws/credentials</code> and <code>~/.aws/config</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports multiple named profiles: <code>aws configure --profile myprofile</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Useful for automation, scripting, and CI/CD pipelines.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">SDK</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS SDK <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Language-specific AWS API libraries</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The SDK (Software Development Kit) lets you call AWS APIs from within application code. AWS provides SDKs for Python (boto3), JavaScript/Node.js, Java, .NET, Ruby, Go, PHP, C++, and more.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Credentials are read from environment variables, the <code>~/.aws/credentials</code> file, or an IAM Role attached to the compute resource — in that order of precedence.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The most popular SDK is <strong>boto3</strong> (Python). The AWS CLI itself is built on boto3.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Never hardcode credentials in application code — use environment variables or IAM Roles.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>If asked the best way for an EC2 instance to access S3 — use an IAM Role attached to the EC2 instance, not access keys. Roles provide temporary, automatically rotating credentials.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CS</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS CloudShell <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Browser-based, pre-authenticated terminal</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudShell is a browser-based shell available directly in the AWS console. It automatically uses the credentials of the currently logged-in IAM user — no configuration needed.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Comes with AWS CLI, Python, Node.js, and other tools pre-installed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Provides <strong>1 GB of persistent storage</strong> per region — files you create are saved between sessions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Not available in all AWS regions</strong> — check the region availability page before relying on it.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>No SSH keys or credentials needed — great for quick testing or learning.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROLES -->
+    <div id="roles" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — Delegation</div>
+        <div class="page-title">IAM Roles for AWS Services</div>
+        <div class="page-desc">Granting permissions to AWS services so they can act on your behalf.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">ROL</div>
+          <div class="concept-meta">
+            <div class="concept-title">What are IAM Roles? <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Temporary identities for services and cross-account access</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>An IAM Role is an identity with permission policies, but it is not tied to a specific person. Instead, it is assumed by trusted entities — AWS services, other AWS accounts, or identity providers (federated users).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Roles provide <strong>temporary security credentials</strong> (via AWS STS), not long-term access keys.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common use cases: EC2 Instance Role (app on EC2 accesses S3), Lambda Execution Role, ECS Task Role, CloudFormation Role.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>A role has two parts: a <strong>trust policy</strong> (who can assume it) and a <strong>permissions policy</strong> (what they can do once they assume it).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>When you assume a role, you temporarily give up your original permissions and gain only the role's permissions.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>The exam often asks: how should an EC2 instance access S3 securely? Answer: attach an IAM Role to the EC2 instance. Never use access keys embedded in the instance.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVANCED POLICIES -->
+    <div id="advpolicies" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Advanced IAM</div>
+        <div class="page-title">Advanced Policies & Evaluation Logic</div>
+        <div class="page-desc">Deep dive into how AWS evaluates permissions across multiple policy types.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">EV</div>
+          <div class="concept-meta">
+            <div class="concept-title">Policy Evaluation Logic <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">How AWS decides Allow or Deny</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>When a principal (user, role, service) makes an API call, AWS evaluates all applicable policies in a specific order. The result is always either Allow or Deny.</p>
+          <div class="flow">
+            <div class="flow-step deny">Explicit Deny?</div>
+            <div class="flow-arrow">→ yes →</div>
+            <div class="flow-step deny">DENY</div>
+            <div class="flow-arrow">→ no →</div>
+            <div class="flow-step">SCPs allow?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">Resource policy allow?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">Permissions boundary?</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">Identity policy allow?</div>
+            <div class="flow-arrow">→ yes →</div>
+            <div class="flow-step allow">ALLOW</div>
+          </div>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">1.</span> <span><strong>Explicit Deny</strong> always wins — overrides any Allow from any policy.</span></div>
+            <div class="kp"><span class="kp-bullet">2.</span> <span><strong>Organizations SCPs</strong> — if the account is in an Org and an SCP restricts an action, it is denied even if IAM allows it. Management account is never affected by SCPs.</span></div>
+            <div class="kp"><span class="kp-bullet">3.</span> <span><strong>Resource-based policies</strong> — e.g. S3 bucket policy. If a resource policy explicitly allows a principal, access may be granted even without an identity-based allow (cross-account).</span></div>
+            <div class="kp"><span class="kp-bullet">4.</span> <span><strong>Permissions boundaries</strong> — set the maximum permissions a user/role can have, even if identity policies grant more.</span></div>
+            <div class="kp"><span class="kp-bullet">5.</span> <span><strong>Session policies</strong> — applied when using STS <code>AssumeRole</code>. Further limit the role's permissions for that session.</span></div>
+            <div class="kp"><span class="kp-bullet">6.</span> <span><strong>Identity-based policies</strong> — the standard policies attached to users, groups, roles. Default is implicit deny if no allow found anywhere.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Explicit Deny ALWAYS wins. If no explicit Allow is found anywhere in the chain, the result is implicit Deny. These are two different denies — explicit (a policy says Deny) vs implicit (silence = deny).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">RB</div>
+          <div class="concept-meta">
+            <div class="concept-title">Resource-based Policies vs IAM Roles <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Two ways to grant cross-account access</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>There are two patterns for allowing a principal in Account A to access a resource in Account B.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Resource-based Policy</th><th>IAM Role</th></tr>
+            <tr><td class="label">Attached to</td><td>The resource itself (S3, SQS, Lambda, etc.)</td><td>A role in the target account</td></tr>
+            <tr><td class="label">Principal retains own permissions?</td><td>Yes — they keep their original permissions</td><td>No — they give up their own and assume the role's</td></tr>
+            <tr><td class="label">Supported services</td><td>S3, SQS, SNS, Lambda, KMS, ECR, Secrets Manager, etc.</td><td>Any AWS service that supports AssumeRole</td></tr>
+            <tr><td class="label">Use case</td><td>Direct access without switching context</td><td>Full identity switch for cross-account access</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Key difference: with a resource-based policy you keep your original permissions. With a role assumption, you temporarily trade your permissions for the role's. This matters for actions that require permissions from both accounts simultaneously (e.g., replication across accounts).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">AP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Advanced Policy Conditions <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Fine-grained control using context keys</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Policy conditions add extra requirements for an Allow or Deny to take effect. They use condition operators and context keys from the request context.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><code>aws:RequestedRegion</code> — restrict which regions a user can operate in.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><code>aws:PrincipalOrgID</code> — allow access only to principals within your Organization.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><code>aws:MultiFactorAuthPresent</code> — require MFA to be active for sensitive actions (e.g., deleting S3 buckets).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><code>aws:SourceIp</code> / <code>aws:VpcSourceIp</code> — restrict access to specific IP ranges or VPC endpoints.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><code>aws:CalledVia</code> — allow only when the call is made through a specific AWS service (e.g., CloudFormation).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Permissions Boundary</strong>: a managed policy attached to a user/role that sets the maximum permissions. Even if identity policies grant more, the effective permissions are the intersection.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Permissions boundary = ceiling on permissions. If a user has AdministratorAccess policy but a permissions boundary allowing only S3, the effective permissions are only S3.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORGANIZATIONS -->
+    <div id="orgs" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Multi-Account</div>
+        <div class="page-title">AWS Organizations</div>
+        <div class="page-desc">Centrally manage, govern, and bill multiple AWS accounts.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">ORG</div>
+          <div class="concept-meta">
+            <div class="concept-title">Organizations Overview <span class="badge badge-ent">enterprise</span></div>
+            <div class="concept-subtitle">Account hierarchy and consolidated billing</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Organizations lets you group multiple AWS accounts into a managed hierarchy. You get centralized billing, volume discounts, and tools to enforce policies across all accounts.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Management account</strong> (formerly master): the root account that creates the org. Has full control. Is never affected by SCPs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Member accounts</strong>: all other accounts in the org. Can be organized into Organizational Units (OUs).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>OUs</strong> are containers for accounts. SCPs applied to an OU cascade to all accounts and nested OUs within it.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Consolidated billing</strong>: one payment method for all accounts. Volume discounts (EC2, S3) are shared across the org.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Reserved Instance and Savings Plan benefits are shared across accounts in the org.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Offers two feature sets: Consolidated Billing only, or All Features (includes SCPs).</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SCP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Service Control Policies (SCPs) <span class="badge badge-ent">enterprise</span></div>
+            <div class="concept-subtitle">Permission guardrails across accounts</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>SCPs are a type of Organizations policy applied at the root, OU, or account level. They define the maximum permissions available to any principal in an account — they act as guardrails, not grants.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>SCPs <strong>do not grant permissions</strong> — they only restrict. A principal must still have an IAM policy that allows the action AND the SCP must not deny it.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SCPs apply to all principals in the account <strong>including the account's own root user</strong> (but not the Organization's management account).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>An SCP of <code>Deny ec2:*</code> at the OU level prevents all EC2 actions in all accounts in that OU, regardless of their IAM policies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SCPs are evaluated before IAM policies in the permission evaluation chain.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Management account is NEVER restricted by SCPs. SCPs are guardrails — they narrow the permission space but don't grant access on their own. Both SCP + IAM policy must allow an action for it to succeed.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">TAG</div>
+          <div class="concept-meta">
+            <div class="concept-title">Tag Policies <span class="badge badge-ent">enterprise</span></div>
+            <div class="concept-subtitle">Enforce consistent tagging across the organization</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Tag Policies are a type of Organizations policy that standardize the tags applied to resources across all accounts in the org. They define which tags are required, their allowed values, and which resource types they apply to.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Enforce consistent naming conventions (e.g. <code>Environment</code> must be one of <code>prod</code>, <code>dev</code>, <code>staging</code>).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Help with cost allocation reporting, compliance, and resource management.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Non-compliant resources are flagged — tag policies report violations, they do not prevent resource creation by default.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IDENTITY CENTER -->
+    <div id="identitycenter" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Enterprise Identity</div>
+        <div class="page-title">AWS IAM Identity Center</div>
+        <div class="page-desc">Single Sign-On (SSO) for all AWS accounts and business applications.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">SSO</div>
+          <div class="concept-meta">
+            <div class="concept-title">IAM Identity Center <span class="badge badge-ent">enterprise</span></div>
+            <div class="concept-subtitle">Formerly AWS SSO — one login for everything</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>IAM Identity Center (successor to AWS SSO) provides a single point of login to access all AWS accounts in an Organization, as well as SAML 2.0-integrated business applications like Salesforce, Microsoft 365, Slack, and more.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Built-in identity store</strong>: Identity Center has its own directory — you can create users and groups directly. No external IdP required.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>External IdP integration</strong>: Connect to Active Directory (via AWS Directory Service), Okta, Azure AD, or any SAML 2.0 / SCIM provider. Users authenticate with their corporate credentials.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Permission sets</strong>: IAM policies bundled together and assigned to users/groups for specific AWS accounts. One permission set can be deployed across multiple accounts.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Users get a personalized portal showing all their assigned accounts and applications. One click to switch between them.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Integrated with AWS Organizations — must be enabled at the management account level.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>When asked about centralizing access to multiple AWS accounts or integrating with an external identity provider (Okta, Azure AD), the answer is IAM Identity Center. Permission sets = the mechanism for assigning permissions per account.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTORY SERVICES -->
+    <div id="directory" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 8 — Directory Integration</div>
+        <div class="page-title">AWS Directory Services</div>
+        <div class="page-desc">Connecting Windows/Active Directory workloads with AWS.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">AD</div>
+          <div class="concept-meta">
+            <div class="concept-title">Three Directory Service Flavors <span class="badge badge-ent">enterprise</span></div>
+            <div class="concept-subtitle">AWS Managed AD vs AD Connector vs Simple AD</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Service</th><th>Description</th><th>On-premises AD needed?</th></tr>
+            <tr>
+              <td class="label">AWS Managed Microsoft AD</td>
+              <td>Full Microsoft Active Directory hosted by AWS in the cloud. Can establish a trust relationship with your on-premises AD. Supports MFA. Users and groups exist both on-prem and in the cloud independently.</td>
+              <td>Optional (trust relationship)</td>
+            </tr>
+            <tr>
+              <td class="label">AD Connector</td>
+              <td>A directory gateway — a proxy that redirects authentication requests to your existing on-premises AD. No data is cached in AWS. All auth goes through the on-prem AD.</td>
+              <td>Yes (required)</td>
+            </tr>
+            <tr>
+              <td class="label">Simple AD</td>
+              <td>Lightweight, low-cost, Samba-based directory compatible with basic Microsoft AD features. Standalone — does not connect to on-premises AD. Good for small environments.</td>
+              <td>No</td>
+            </tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Key differentiators: AD Connector = just a proxy, on-prem AD required, no caching. AWS Managed AD = real AD in cloud, works independently, can trust on-prem. Simple AD = basic, standalone, no on-prem support, no trust relationships.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROL TOWER -->
+    <div id="controltower" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 9 — Governance Automation</div>
+        <div class="page-title">AWS Control Tower</div>
+        <div class="page-desc">Automated setup and governance of a secure, multi-account AWS environment.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">CT</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Control Tower <span class="badge badge-ent">enterprise</span></div>
+            <div class="concept-subtitle">Landing Zone — automated multi-account setup</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Control Tower automates the setup of a secure, well-architected multi-account AWS environment called a <strong>Landing Zone</strong>. It sits on top of AWS Organizations and automates the baseline configuration that would otherwise take days to set up manually.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Landing Zone</strong>: the pre-configured multi-account environment. Includes a management account, a log archive account, and an audit account out of the box.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Guardrails</strong>: automated rules applied across the org. Two types:
+              <br>• <strong>Preventive guardrails</strong> — implemented as SCPs. They prevent non-compliant actions (e.g., prevent disabling CloudTrail).
+              <br>• <strong>Detective guardrails</strong> — implemented as AWS Config rules. They detect and alert on non-compliant configurations (e.g., detect if S3 buckets are public).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Account Factory</strong>: a self-service portal (or automated pipeline) for provisioning new AWS accounts that are pre-configured to meet organizational standards.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Built on top of: AWS Organizations (account structure), AWS Service Catalog (Account Factory), AWS Config (detective guardrails), SCPs (preventive guardrails), CloudTrail (centralized logging).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Provides a dashboard showing compliance status of all accounts and guardrails.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Control Tower = automated Landing Zone setup. Preventive guardrails = SCPs. Detective guardrails = AWS Config rules. Account Factory = automated account provisioning. It orchestrates Organizations, Config, and Service Catalog together.</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function toggle(header) {
+  const concept = header.parentElement;
+  concept.classList.toggle('open');
+}
+</script>
+</body>
+</html>

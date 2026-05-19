@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Route 53 & DNS — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Route 53 & DNS</h1>
+    </div>
+
+    <div class="nav-section-label">Foundations</div>
+    <a class="nav-item active" onclick="show('dns')">
+      <span class="nav-dot" style="background:#58a6ff"></span> DNS Fundamentals
+    </a>
+    <a class="nav-item" onclick="show('r53')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Route 53 Overview
+    </a>
+    <a class="nav-item" onclick="show('records')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Records, TTL & Alias
+    </a>
+
+    <div class="nav-section-label">Routing Policies</div>
+    <a class="nav-item" onclick="show('simple')">
+      <span class="nav-dot" style="background:#f0a742"></span> Simple & Weighted
+    </a>
+    <a class="nav-item" onclick="show('latency')">
+      <span class="nav-dot" style="background:#56d364"></span> Latency & Geolocation
+    </a>
+    <a class="nav-item" onclick="show('failover')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Failover & Health Checks
+    </a>
+    <a class="nav-item" onclick="show('advanced-routing')">
+      <span class="nav-dot" style="background:#db6eb0"></span> Geoproximity, IP & Multi-Value
+    </a>
+
+    <div class="nav-section-label">Integration</div>
+    <a class="nav-item" onclick="show('hybrid')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Hybrid DNS & Resolvers
+    </a>
+    <a class="nav-item" onclick="show('cheatsheet')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Cheat Sheet
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ DNS FUNDAMENTALS ══════════════ -->
+    <div id="dns" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Foundations</div>
+        <div class="page-title">DNS Fundamentals</div>
+        <div class="page-desc">How DNS works, the hierarchy of servers, and the vocabulary the exam assumes you know cold.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">DNS</div>
+          <div class="concept-meta">
+            <div class="concept-title">What is DNS? <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The internet's phone book — translates domain names to IP addresses</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>DNS (Domain Name System) translates human-readable domain names (e.g. <code>www.example.com</code>) into machine-routable IP addresses (e.g. <code>1.2.3.4</code>). Without DNS, every application would need to hardcode IP addresses.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Domain hierarchy</strong> (right to left): Root (<code>.</code>) → TLD (<code>.com</code>, <code>.org</code>, <code>.io</code>) → Second-level domain (<code>example</code>) → Subdomain (<code>www</code>). Full domain: <code>www.example.com.</code> (trailing dot = root).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DNS resolution flow</strong>: browser → Local DNS Resolver (ISP/company) → Root Name Server → TLD Name Server → Authoritative Name Server → IP returned → cached at each level by TTL.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Root Name Servers</strong>: 13 sets of root servers managed by ICANN. They know which name servers are authoritative for each TLD.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>TLD Name Servers</strong>: managed by registries (e.g. Verisign for <code>.com</code>). They know which name servers are authoritative for each second-level domain.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Authoritative Name Server</strong>: the definitive source for a domain's DNS records. Route 53 is AWS's authoritative DNS service.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Local DNS Resolver</strong> (Recursive Resolver): caches responses for the TTL duration and handles the recursive lookup on behalf of the client. Run by ISPs or companies (e.g. Google's <code>8.8.8.8</code>).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Know the resolution order: client → recursive resolver → root NS → TLD NS → authoritative NS. Route 53 is the authoritative name server for domains you register or host in it. The recursive resolver does the heavy lifting and caches results.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">REC</div>
+          <div class="concept-meta">
+            <div class="concept-title">DNS Record Types <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">A, AAAA, CNAME, NS, MX, TXT, SOA — what each record does</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Record</th><th>Maps</th><th>Notes</th></tr>
+            <tr><td class="label">A</td><td>Hostname → IPv4 address</td><td>Most common. <code>www.example.com → 1.2.3.4</code></td></tr>
+            <tr><td class="label">AAAA</td><td>Hostname → IPv6 address</td><td>Same as A but for IPv6 (128-bit addresses)</td></tr>
+            <tr><td class="label">CNAME</td><td>Hostname → another hostname</td><td>Creates an alias. Target must be an A or AAAA record. <strong>Cannot be used for zone apex (root domain)</strong> — e.g. cannot CNAME <code>example.com</code>, only subdomains like <code>www.example.com</code>.</td></tr>
+            <tr><td class="label">NS</td><td>Zone → name server hostnames</td><td>Identifies which DNS servers are authoritative for the hosted zone. Delegated by the TLD registry.</td></tr>
+            <tr><td class="label">MX</td><td>Domain → mail server</td><td>Specifies email servers for the domain. Priority value determines order.</td></tr>
+            <tr><td class="label">TXT</td><td>Domain → arbitrary text</td><td>Used for domain verification (ACM, Google, SPF, DKIM), policy records. No hostname resolution.</td></tr>
+            <tr><td class="label">SOA</td><td>Zone metadata</td><td>Start of Authority — administrative info about the zone (primary NS, admin email, serial number, refresh/retry/expire TTLs). One per zone.</td></tr>
+            <tr><td class="label">Alias</td><td>Hostname → AWS resource DNS name</td><td>Route 53-specific extension of A/AAAA. Can point to zone apex. Free. Auto-updates when resource IP changes. (See next section.)</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>CNAME cannot be used at the zone apex (root domain like <code>example.com</code>) — this is the single most-tested DNS fact. Use an Alias record instead for the zone apex pointing to an AWS resource (ALB, CloudFront, S3 website, etc.).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ROUTE 53 OVERVIEW ══════════════ -->
+    <div id="r53" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Route 53</div>
+        <div class="page-title">Route 53 Overview</div>
+        <div class="page-desc">AWS's managed DNS service — authoritative DNS, domain registration, health checks, and routing policies.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">R53</div>
+          <div class="concept-meta">
+            <div class="concept-title">Route 53 Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Highly available, globally distributed authoritative DNS + domain registrar</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Route 53 is AWS's managed DNS service. It provides authoritative DNS, domain registration, health checking of endpoints, and intelligent routing policies. The name comes from port 53, the standard DNS port.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Route 53 is <strong>100% availability SLA</strong> — the only AWS service with a full 100% uptime guarantee.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Route 53 serves three functions: <strong>Domain Registrar</strong> (buy/manage domain names), <strong>DNS Service</strong> (host authoritative DNS records), and <strong>Health Checker</strong> (monitor endpoints and route away from unhealthy ones).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DNS records are organized into <strong>Hosted Zones</strong> — a container for records belonging to a domain.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Public Hosted Zone</strong>: answers queries from the internet. Used for publicly accessible resources (websites, APIs).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Private Hosted Zone</strong>: answers queries only from within associated VPCs. Used for internal services and split-horizon DNS (same domain name resolves differently inside vs outside the VPC).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Cost: <strong>$0.50/month per hosted zone</strong>. No charge for DNS queries to Alias records pointing to AWS resources. Standard DNS query charges apply otherwise.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Route 53 = 100% SLA (unique in AWS). Public hosted zone = internet-facing. Private hosted zone = VPC-internal only. You can use Route 53 as just a DNS service even if you registered the domain with GoDaddy — update the NS records at the registrar to point to Route 53's name servers.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">3RD</div>
+          <div class="concept-meta">
+            <div class="concept-title">3rd-Party Domains & Route 53 <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Use Route 53 as DNS for a domain registered elsewhere</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Route 53 can host the DNS records for a domain registered with any third-party registrar (GoDaddy, Namecheap, Google Domains, etc.). You don't need to transfer the domain — just update the NS records.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Process</strong>: create a Public Hosted Zone in Route 53 for your domain → Route 53 assigns 4 NS (name server) records → log in to your registrar → update the domain's name servers to Route 53's NS values.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DNS resolution now flows through Route 53, even though the domain is registered elsewhere.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Alternatively, you can <strong>transfer domain registration</strong> to Route 53 — this moves both registration and DNS to AWS.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Domain registered with GoDaddy, wants to use Route 53 for DNS" → create hosted zone in Route 53 → update NS records at GoDaddy. You do NOT need to transfer the domain to use Route 53 for DNS.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ RECORDS, TTL & ALIAS ══════════════ -->
+    <div id="records" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Records</div>
+        <div class="page-title">Records, TTL & Alias</div>
+        <div class="page-desc">How Route 53 records work, TTL caching behavior, and the critical CNAME vs Alias distinction.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">TTL</div>
+          <div class="concept-meta">
+            <div class="concept-title">TTL — Time To Live <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">How long DNS resolvers cache a record before re-querying</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>TTL is the number of seconds a DNS resolver will cache a record before discarding it and making a fresh query. It is set on each individual DNS record by the zone owner.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>High TTL</strong> (e.g. 86,400 seconds = 24 hours): fewer DNS queries → lower Route 53 costs → but changes propagate slowly. Use for stable records that rarely change.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Low TTL</strong> (e.g. 60 seconds): changes propagate quickly → higher Route 53 query costs → more load on DNS infrastructure. Use when you expect to change a record soon (e.g. before a migration).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Migration strategy</strong>: before changing a record's IP, lower the TTL to 60 seconds → wait for the old high TTL to expire → make the DNS change → all clients will pick up the change within 60 seconds.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Clients (browsers, OS) respect TTL and will not re-query until it expires — you cannot force a client to re-query before the TTL expires (except by flushing local DNS cache).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Alias records</strong> managed by Route 53 have a TTL set by AWS — you cannot configure the TTL on Alias records.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Why are users still seeing the old IP after I updated DNS?" → TTL hasn't expired yet — clients are using the cached value. "How to minimize downtime during a DNS migration?" → lower TTL well in advance, then make the change.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">ALI</div>
+          <div class="concept-meta">
+            <div class="concept-title">CNAME vs Alias <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The most tested Route 53 distinction — know when to use each</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Both CNAME and Alias records map a hostname to another hostname. But Alias is a Route 53 extension of A/AAAA records with important advantages over standard CNAME.</p>
+          <table class="compare-table">
+            <tr><th></th><th>CNAME</th><th>Alias</th></tr>
+            <tr><td class="label">Can use at zone apex?</td><td><strong>No</strong> — cannot use <code>example.com</code> (root domain)</td><td><strong>Yes</strong> — can use at the root domain</td></tr>
+            <tr><td class="label">Target</td><td>Any hostname (AWS or non-AWS)</td><td>AWS resources only: ALB, NLB, CloudFront, S3 Website, API Gateway, Elastic Beanstalk, VPC Interface Endpoints, Global Accelerator, another Route 53 record in the same zone</td></tr>
+            <tr><td class="label">DNS query charges</td><td>Standard query charges apply</td><td><strong>Free</strong> — no Route 53 query charges for Alias records</td></tr>
+            <tr><td class="label">IP auto-updates?</td><td>No — you must update the CNAME target manually</td><td>Yes — automatically follows the target's IP changes (e.g. ALB IP change)</td></tr>
+            <div class="kp"></div>
+            <tr><td class="label">TTL configurable?</td><td>Yes</td><td>No — set by AWS automatically</td></tr>
+            <tr><td class="label">Record type</td><td>CNAME type</td><td>A or AAAA type (with Alias flag)</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>You <strong>cannot create an Alias record pointing to an EC2 DNS name</strong> — EC2 instances are not in the supported Alias targets list. Use an A record with the EC2's IP, or put an ALB/NLB in front.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Point root domain (example.com) to an ALB" → Alias A record (CNAME cannot be used at zone apex). "Point root domain to CloudFront/S3 website" → Alias. "Alias cannot target EC2 directly" → always put a load balancer in front if you want Alias records. Alias = free + auto-IP-update + zone apex support.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SIMPLE & WEIGHTED ══════════════ -->
+    <div id="simple" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — Routing Policies</div>
+        <div class="page-title">Simple & Weighted Routing</div>
+        <div class="page-desc">The two most basic routing policies — single target and proportional traffic distribution.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Simple Routing Policy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">One record → one or more IPs, no health checks, random selection</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The default routing policy. Routes traffic to a single resource. If you specify multiple values in one record, Route 53 returns all values to the client and the client picks one at random.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can specify <strong>multiple IP addresses in a single record</strong> — Route 53 returns all of them, and the client's resolver picks one (client-side load balancing).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cannot be associated with health checks</strong> when multiple values are specified in one record.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>If using Alias records with Simple routing, you can only specify <strong>one AWS resource</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use when: you have a single resource handling a domain and don't need health checks or intelligent routing.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Simple routing = no health checks, no failover, no weighted traffic split. If the question involves health checks or any intelligent routing → it's not Simple routing. Random client-side selection when multiple IPs are returned.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">WGT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Weighted Routing Policy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Control what % of traffic goes to each resource — A/B testing, blue/green</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Weighted routing lets you assign a relative weight to multiple records with the same name. Traffic is distributed proportionally to the weights. Each record points to a different resource.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Weights are relative — a weight of 10 and 90 means 10% and 90% of traffic respectively. Weights don't have to add up to 100.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>If <strong>all records are set to weight 0</strong>, Route 53 returns all records equally (traffic split evenly).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>If <strong>one record has weight 0</strong> and others have non-zero weights, the zero-weight record receives no traffic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can be <strong>associated with health checks</strong> — if a resource is unhealthy, its weight is excluded from the calculation and all traffic goes to healthy records.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: A/B testing, blue/green deployments (gradually shift 100% of traffic from old to new version), canary releases, gradual load shifting during migrations.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Send 10% of traffic to a new version for testing" → Weighted routing (weight 10 on new, 90 on old). "Gradually migrate traffic from one region to another" → Weighted routing. Setting all records to weight 0 distributes traffic equally — this is a common trick question.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ LATENCY & GEOLOCATION ══════════════ -->
+    <div id="latency" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Routing Policies</div>
+        <div class="page-title">Latency & Geolocation Routing</div>
+        <div class="page-desc">Route users to the fastest region or to a specific region based on their physical location.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">LAT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Latency Routing Policy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Route users to the AWS region with the lowest network latency from their location</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Latency routing directs each user to the record with the lowest measured latency from their location to the target AWS region. Route 53 measures latency between thousands of locations and maintains an internal latency database.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each latency record specifies an <strong>AWS region</strong> as its target. Route 53 picks the region with the lowest latency from the user's measured location.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Latency is measured between the user and the <strong>AWS region endpoint</strong>, not the individual EC2 instance. Different users near the same city may get different results.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can be <strong>combined with health checks</strong> — if the lowest-latency region is unhealthy, traffic fails over to the next best region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Latency ≠ geographic proximity. A user in Brazil might be routed to <code>us-east-1</code> if that has lower latency than <code>sa-east-1</code> at that moment.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Route users to the fastest AWS region" → Latency routing. Latency routing is based on measured network performance, NOT physical distance. Do not confuse with Geolocation (location-based) or Geoproximity (distance-based with bias). Latency = performance-optimized.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">GEO</div>
+          <div class="concept-meta">
+            <div class="concept-title">Geolocation Routing Policy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Route based on where the user IS — continent, country, or US state</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Geolocation routing routes traffic based on the geographic location of the DNS query's origin — i.e. where the user is physically located. Unlike Latency routing, it is purely location-based, not performance-based.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Granularity levels: <strong>Continent</strong> (e.g. Europe), <strong>Country</strong> (e.g. Germany), <strong>US State</strong> (most specific). More specific records take precedence.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>A <strong>Default record</strong> is required — it catches traffic from locations not covered by any specific geolocation record. Without a default, unmatched locations get a "no answer" response.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can be combined with health checks — if the target for a location is unhealthy, traffic falls back to the default (not to the best latency option).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: <strong>content localization</strong> (different languages per region), <strong>regulatory compliance</strong> (GDPR — keep EU user data in EU), restricting content to specific countries (geo-blocking).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Geolocation ≠ Latency. Geolocation = "where is the user from" (compliance, content localization). Latency = "which region is fastest for this user" (performance). "EU users must be served from EU data centers for GDPR" → Geolocation. Always create a Default record or unmatched users get no response.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ FAILOVER & HEALTH CHECKS ══════════════ -->
+    <div id="failover" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Routing Policies</div>
+        <div class="page-title">Failover Routing & Health Checks</div>
+        <div class="page-desc">Active-passive DNS failover and how Route 53 health checks power intelligent routing.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">HC</div>
+          <div class="concept-meta">
+            <div class="concept-title">Route 53 Health Checks <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Monitor endpoints and trigger routing changes when they fail</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Route 53 health checks continuously monitor the health of your endpoints. Unhealthy endpoints are automatically removed from DNS responses, preventing traffic from being routed to failed resources.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Endpoint health checks</strong>: probe a public IP/hostname directly (HTTP, HTTPS, TCP). Threshold: healthy if <strong>≥ 18 of 15 global health checkers</strong> report healthy (>18% by default). Interval: 30 seconds (Standard) or 10 seconds (Fast — higher cost).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Calculated health checks</strong>: combine the results of multiple individual health checks using Boolean logic (AND, OR, NOT). Mark parent as healthy only if N of M children are healthy.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudWatch Alarm health checks</strong>: monitor a CloudWatch alarm state (OK vs ALARM). Allows health checking of <strong>private resources</strong> (inside a VPC) — Route 53 health checkers cannot reach private IPs directly.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Health checkers come from AWS global IP ranges — ensure your firewall/security groups allow inbound traffic from <strong>Route 53 health checker IP ranges</strong> on the monitored port.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Health checks can monitor a string in the first <strong>5,120 bytes</strong> of the HTTP response body — useful for application-level health verification.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Health check a private EC2 instance" → create a CloudWatch metric/alarm for it → Route 53 CloudWatch Alarm health check. Route 53 health checkers are all public — they cannot reach private IPs. Calculated health checks let you define complex health logic (e.g. "healthy if 2 of 3 regions are up").</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">FOV</div>
+          <div class="concept-meta">
+            <div class="concept-title">Failover Routing Policy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Active-passive — automatically switch to a secondary when primary fails</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Failover routing implements active-passive DNS failover. Route 53 always routes to the primary record unless it fails its health check, at which point traffic is automatically redirected to the secondary (passive) record.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Two records with the same name: one marked <strong>Primary</strong>, one marked <strong>Secondary</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The primary record <strong>must</strong> have an associated health check. Secondary does not require one (but can have one).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>When primary becomes unhealthy: Route 53 stops returning the primary record and returns the secondary. When primary recovers: Route 53 resumes routing to it.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common pattern: <strong>primary</strong> = production EC2/ALB in primary region, <strong>secondary</strong> = S3 static error page or standby in another region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Failover is <strong>DNS-based</strong> — it only takes effect when the cached DNS record expires (subject to TTL). Not instant like an ELB health check.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Failover routing = active-passive DNS DR. Primary must have a health check. Secondary is the fallback. "Show a maintenance page if the app goes down" → Failover routing with S3 static page as secondary. Note: DNS failover is not instant — TTL determines how quickly clients switch.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ADVANCED ROUTING ══════════════ -->
+    <div id="advanced-routing" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Routing Policies</div>
+        <div class="page-title">Geoproximity, IP-Based & Multi-Value</div>
+        <div class="page-desc">Advanced routing policies for traffic bias control, IP-based segmentation, and lightweight multi-target routing.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">GPX</div>
+          <div class="concept-meta">
+            <div class="concept-title">Geoproximity Routing <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Route based on geographic distance — with optional bias to expand/shrink regions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Geoproximity routing routes traffic based on the geographic distance between users and your resources. The key differentiator from Geolocation is the <strong>bias</strong> — you can expand (+) or shrink (-) the effective "pull radius" of a resource to deliberately route more or less traffic to it.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Resources can be <strong>AWS resources</strong> (specify AWS region) or <strong>non-AWS resources</strong> (specify latitude/longitude).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Bias values</strong>: range from -99 to +99. Positive bias → expands the effective region (more users routed here). Negative bias → shrinks the effective region (fewer users routed here).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Requires <strong>Traffic Flow</strong> — Route 53's visual traffic policy editor (not available through standard console record creation).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: gradually shift traffic from one region to another by increasing the target region's bias, balancing load across regions with different capacities.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Geoproximity vs Geolocation: Geoproximity = distance-based with bias control (Traffic Flow required). Geolocation = exact location-based (country/continent), no bias. "Shift traffic from us-east-1 to eu-west-1 gradually using geographic routing" → Geoproximity with increasing bias on eu-west-1.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">IP</div>
+          <div class="concept-meta">
+            <div class="concept-title">IP-Based Routing <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Route based on the client's IP CIDR block</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>IP-based routing (also called CIDR-based routing) allows you to define routing rules based on the client's IP address — specifically, CIDR blocks mapped to specific endpoints.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>You provide a list of CIDR blocks (IP ranges) → each CIDR maps to a specific Route 53 record/endpoint.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: route traffic from your ISP's IP range to a specific endpoint for cost optimization, route corporate office IP ranges to internal resources, route known customer IP ranges to dedicated servers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>When you know your users' IPs (e.g. corporate offices, ISPs), IP-based routing provides deterministic routing based on that knowledge — more precise than geolocation.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Route users from a specific ISP to a specific endpoint" or "route corporate VPN IP range to internal servers" → IP-based routing. More precise than Geolocation when you know exact IP ranges. Geolocation uses AWS's IP-to-geography mapping; IP-based uses your own CIDR definitions.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">MV</div>
+          <div class="concept-meta">
+            <div class="concept-title">Multi-Value Routing Policy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Return multiple healthy IPs — client-side load balancing with health checks</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Multi-Value routing returns multiple values (up to 8) in response to DNS queries. Unlike Simple routing with multiple IPs, Multi-Value routing can associate each record with a health check — only healthy records are returned.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can return <strong>up to 8 healthy records</strong> per query. The client picks one randomly (client-side load balancing).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each record in a Multi-Value group can have its own health check — only healthy records are included in responses. If a resource fails, its record is excluded.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Not a substitute for a load balancer</strong> — it is DNS-based and doesn't have ALB's layer 7 capabilities. But it does provide basic availability at the DNS level.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Difference from Simple: Simple returns all values with no health filtering. Multi-Value filters out unhealthy records before returning results.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Return multiple IPs but only healthy ones — no load balancer involved" → Multi-Value routing. Multi-Value ≠ replacement for ELB. ELB distributes connections across targets with health awareness and persistence. Multi-Value just returns up to 8 healthy IPs for client-side selection.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ HYBRID DNS & RESOLVERS ══════════════ -->
+    <div id="hybrid" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 8 — Integration</div>
+        <div class="page-title">Hybrid DNS & Route 53 Resolvers</div>
+        <div class="page-desc">DNS resolution between on-premises networks and AWS VPCs — inbound and outbound resolver endpoints.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">RES</div>
+          <div class="concept-meta">
+            <div class="concept-title">Route 53 Resolver <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Bidirectional DNS resolution between VPCs and on-premises networks</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>By default, DNS queries from within a VPC are handled by the VPC's built-in resolver (at the <code>+2</code> IP address of the VPC CIDR, e.g. <code>10.0.0.2</code>). For hybrid environments, Route 53 Resolver Endpoints allow DNS queries to flow between on-premises networks and AWS VPCs.</p>
+          <table class="compare-table">
+            <tr><th>Endpoint type</th><th>Direction</th><th>What it does</th><th>Use case</th></tr>
+            <tr><td class="label">Inbound Endpoint</td><td>On-prem → AWS</td><td>On-premises DNS servers can forward queries to AWS. Route 53 resolves Private Hosted Zone names and returns answers to on-prem clients.</td><td>On-prem servers need to resolve <code>app.internal.example.com</code> which is in a Route 53 Private Hosted Zone.</td></tr>
+            <tr><td class="label">Outbound Endpoint</td><td>AWS → On-prem</td><td>EC2 instances can forward specific DNS queries to on-premises DNS servers via Resolver Rules.</td><td>EC2 instances need to resolve on-prem hostnames like <code>server.corp.internal</code> that are managed by the on-prem DNS server.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Resolver Endpoints are <strong>deployed in a VPC across multiple AZs</strong> for high availability. Each endpoint gets ENIs with private IP addresses.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Outbound endpoints use <strong>Resolver Rules</strong> to define which domain names should be forwarded to which on-premises DNS server IP. Rules can be shared across VPCs via AWS RAM (Resource Access Manager).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Requires connectivity between the VPC and on-premises network — either <strong>Site-to-Site VPN</strong> or <strong>Direct Connect</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DNS Firewall</strong>: Route 53 Resolver DNS Firewall lets you block DNS queries to known malicious domains and allow only approved domains — works at the VPC resolver level.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"On-prem servers need to resolve AWS Private Hosted Zone records" → Inbound Endpoint. "EC2 instances need to resolve on-prem hostnames" → Outbound Endpoint + Resolver Rule. Both require VPN or Direct Connect connectivity. Share Resolver Rules across multiple VPCs using RAM.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CHEAT SHEET ══════════════ -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Route 53 Cheat Sheet</div>
+        <div class="page-desc">Scenario → routing policy mapping and key numbers to memorize for the exam.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">POL</div>
+          <div class="concept-meta">
+            <div class="concept-title">Routing Policy Decision Guide <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Match any exam scenario to the correct routing policy</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Policy</th><th>Key reason</th></tr>
+            <tr><td>"Single resource, no health checks needed"</td><td class="label">Simple</td><td>Default, one target, no intelligence</td></tr>
+            <tr><td>"Send 10% traffic to new version"</td><td class="label">Weighted</td><td>Proportional traffic split, A/B testing</td></tr>
+            <tr><td>"Route users to fastest AWS region"</td><td class="label">Latency</td><td>Performance-based, measured network latency</td></tr>
+            <tr><td>"EU users must stay in EU (GDPR)"</td><td class="label">Geolocation</td><td>Location-based compliance, content localization</td></tr>
+            <tr><td>"Primary site down → serve maintenance page"</td><td class="label">Failover</td><td>Active-passive DR, requires health check on primary</td></tr>
+            <tr><td>"Gradually shift traffic between regions"</td><td class="label">Geoproximity with bias</td><td>Distance + tunable bias (requires Traffic Flow)</td></tr>
+            <tr><td>"Route ISP's IP range to specific endpoint"</td><td class="label">IP-based</td><td>CIDR block → endpoint mapping</td></tr>
+            <tr><td>"Multiple IPs, only return healthy ones"</td><td class="label">Multi-Value</td><td>Up to 8 healthy records, client picks one</td></tr>
+            <tr><td>"Point example.com (zone apex) to ALB"</td><td class="label">Alias A record</td><td>CNAME can't be used at zone apex</td></tr>
+            <tr><td>"Auto-follow ALB IP changes"</td><td class="label">Alias</td><td>Alias auto-updates; CNAME requires manual update</td></tr>
+            <tr><td>"On-prem needs to resolve Private Hosted Zone"</td><td class="label">Inbound Resolver Endpoint</td><td>On-prem → AWS DNS forwarding</td></tr>
+            <tr><td>"EC2 needs to resolve on-prem hostname"</td><td class="label">Outbound Resolver Endpoint</td><td>AWS → on-prem DNS forwarding via Resolver Rule</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">NUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Numbers & Facts <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The facts and figures that appear in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Route 53 SLA: <strong>100% availability</strong> — the only AWS service with a 100% uptime guarantee.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Hosted zone cost: <strong>$0.50/month</strong>. Alias record queries to AWS resources: <strong>free</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Health check standard interval: <strong>30 seconds</strong>. Fast interval: <strong>10 seconds</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Health check threshold: healthy when <strong>≥ 18%</strong> of Route 53 health checkers report healthy (about 3 of 15).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Health check response body inspection: first <strong>5,120 bytes</strong> only.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multi-Value routing: returns up to <strong>8 healthy records</strong> per query.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Geoproximity bias range: <strong>-99 to +99</strong>. Positive = expand region, Negative = shrink region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DNS port: <strong>53</strong> (TCP and UDP) — this is literally why the service is called Route 53.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CNAME: <strong>cannot be used at zone apex</strong> (root domain). Use Alias instead.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Alias cannot target: <strong>EC2 instance DNS names</strong> — must use an A record or put ALB/NLB in front.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Weighted routing: if all weights = 0, traffic is distributed <strong>equally</strong> across all records.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Geolocation: always create a <strong>Default record</strong> — without it, unmatched locations get no answer.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Geoproximity requires <strong>Traffic Flow</strong> — not available via standard record creation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Private Hosted Zone health checks: use <strong>CloudWatch Alarm health checks</strong> (Route 53 checkers can't reach private IPs).</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

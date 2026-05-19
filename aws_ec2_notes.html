@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EC2 — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2330;
+    --border: #30363d;
+    --border-accent: #3d4a5a;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --accent-blue: #58a6ff;
+    --accent-teal: #39d0a0;
+    --accent-amber: #f0a742;
+    --accent-red: #ff7b72;
+    --accent-purple: #bc8cff;
+    --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; display: flex; flex-direction: column; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88, 166, 255, 0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240, 167, 66, 0.07); border: 1px solid rgba(240, 167, 66, 0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255, 123, 114, 0.07); border: 1px solid rgba(255, 123, 114, 0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>EC2 & Instance Storage</h1>
+    </div>
+
+    <div class="nav-section-label">EC2 Fundamentals</div>
+    <a class="nav-item active" onclick="show('basics')">
+      <span class="nav-dot" style="background:#58a6ff"></span> EC2 Basics
+    </a>
+    <a class="nav-item" onclick="show('types')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Instance Types
+    </a>
+    <a class="nav-item" onclick="show('security')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Security Groups & Access
+    </a>
+    <a class="nav-item" onclick="show('networking')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Networking & IPs
+    </a>
+
+    <div class="nav-section-label">Pricing & Placement</div>
+    <a class="nav-item" onclick="show('pricing')">
+      <span class="nav-dot" style="background:#f0a742"></span> Purchasing Options
+    </a>
+    <a class="nav-item" onclick="show('placement')">
+      <span class="nav-dot" style="background:#56d364"></span> Placement & ENI
+    </a>
+    <a class="nav-item" onclick="show('advanced')">
+      <span class="nav-dot" style="background:#db6eb0"></span> Advanced Features
+    </a>
+
+    <div class="nav-section-label">Instance Storage</div>
+    <a class="nav-item" onclick="show('ebs')">
+      <span class="nav-dot" style="background:#58a6ff"></span> EBS Volumes
+    </a>
+    <a class="nav-item" onclick="show('ebsfeatures')">
+      <span class="nav-dot" style="background:#39d0a0"></span> EBS Features
+    </a>
+    <a class="nav-item" onclick="show('ami')">
+      <span class="nav-dot" style="background:#bc8cff"></span> AMI
+    </a>
+    <a class="nav-item" onclick="show('filestorage')">
+      <span class="nav-dot" style="background:#f0a742"></span> EFS & Comparisons
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: EC2 BASICS -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="basics" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">EC2 Fundamentals — Module 1</div>
+        <div class="page-title">EC2 Basics</div>
+        <div class="page-desc">What EC2 is, how it works, and the key configuration choices you make when launching an instance.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">EC2</div>
+          <div class="concept-meta">
+            <div class="concept-title">What is EC2? <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Elastic Compute Cloud — virtual servers in the cloud</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>EC2 (Elastic Compute Cloud) is AWS's core IaaS offering — it lets you rent virtual machines (instances) running on AWS infrastructure. You choose the OS, CPU, RAM, storage, and networking. EC2 is the foundation of most AWS architectures.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EC2 = Infrastructure as a Service (IaaS)</strong> — you manage the OS and everything above it; AWS manages the physical hardware.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Key choices at launch: AMI (OS image), Instance Type (CPU/RAM), Storage (EBS/instance store), Security Groups, Key Pair, and VPC/Subnet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>User Data</strong>: a bootstrap script (shell script or cloud-init) that runs once on first boot as root. Used to install software, configure settings, etc. Max size is 16 KB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Instance Metadata</strong>: accessible from within the instance at <code>http://169.254.169.254/latest/meta-data/</code> — returns instance ID, public IP, IAM role credentials, and more. No auth required.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EC2 instances can be stopped (persisted), started, rebooted, terminated (deleted), or hibernated.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>User Data runs only on the first boot, not on every restart. The metadata URL <code>169.254.169.254</code> is a link-local address — memorize it. If the exam asks where an EC2 instance retrieves its IAM role credentials, the answer is the instance metadata endpoint.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CON</div>
+          <div class="concept-meta">
+            <div class="concept-title">EC2 Instance Connect <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Browser-based SSH — no key pair needed on your machine</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>EC2 Instance Connect is a browser-based terminal for connecting to EC2 Linux instances directly from the AWS Console. AWS temporarily pushes a one-time SSH key to the instance, so you don't need your own key pair file on your local machine.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works only with Amazon Linux 2, Amazon Linux 2023, Ubuntu 20.04+, and some other supported AMIs — not Windows.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Requires the instance's Security Group to allow inbound SSH (port 22) from AWS IP ranges used by Instance Connect.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>IAM permissions required: <code>ec2-instance-connect:SendSSHPublicKey</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The temporary key is valid for 60 seconds — just long enough to establish the connection.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>EC2 Instance Connect is the preferred answer when a question asks how to connect to an instance without distributing a private key file, or when a user lost their PEM key. It still requires port 22 open in the Security Group.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">SSH</div>
+          <div class="concept-meta">
+            <div class="concept-title">SSH Access <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Connecting to Linux instances via key pair</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>SSH (Secure Shell) is the standard way to connect to Linux EC2 instances. You authenticate using a key pair: AWS holds the public key (installed on the instance), and you hold the private key (.pem file).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Linux/Mac: <code>ssh -i "key.pem" ec2-user@&lt;public-ip&gt;</code>. Default usernames: <code>ec2-user</code> (Amazon Linux), <code>ubuntu</code> (Ubuntu), <code>admin</code> (Debian).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Windows (older): use PuTTY + convert .pem to .ppk via PuTTYgen. Windows 10+: native OpenSSH supports .pem directly.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The .pem file must have restrictive permissions: <code>chmod 0400 key.pem</code> on Linux/Mac — SSH will refuse to connect if permissions are too open (error: "Unprotected private key file").</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Port 22 must be allowed in the instance's Security Group from your IP (or 0.0.0.0/0 for testing — not recommended for production).</span></div>
+          </div>
+          <div class="warn-box"><strong>SECURITY WARNING</strong>Never open port 22 to 0.0.0.0/0 in production. Restrict SSH access to known IP ranges or use Systems Manager Session Manager to eliminate the need for port 22 entirely.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: INSTANCE TYPES -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="types" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">EC2 Fundamentals — Module 2</div>
+        <div class="page-title">Instance Types</div>
+        <div class="page-desc">EC2 instance families, naming conventions, and which type to choose for a given workload.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">NME</div>
+          <div class="concept-meta">
+            <div class="concept-title">Instance Naming Convention <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">How to decode an instance type like m5.2xlarge</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Every EC2 instance type follows the format: <strong>Family + Generation + Attributes . Size</strong>. Understanding the naming lets you decode any instance type at a glance.</p>
+          <div class="flow">
+            <div class="flow-step">m</div><div class="flow-arrow">family</div>
+            <div class="flow-step">5</div><div class="flow-arrow">generation</div>
+            <div class="flow-step">n</div><div class="flow-arrow">attribute</div>
+            <div class="flow-step">.</div>
+            <div class="flow-step">2xlarge</div><div class="flow-arrow">size</div>
+          </div>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Family letter</strong>: m = general purpose, c = compute, r = memory, i = storage, g = GPU, t = burstable, p = ML/GPU, etc.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Generation number</strong>: higher = newer hardware, better price/performance. Always prefer latest generation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Attribute letters</strong> (optional): <code>a</code> = AMD processor, <code>g</code> = Graviton (AWS ARM), <code>i</code> = Intel, <code>n</code> = high network, <code>d</code> = NVMe storage, <code>e</code> = extra storage/RAM, <code>z</code> = high frequency.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Sizes</strong>: nano, micro, small, medium, large, xlarge, 2xlarge … 112xlarge. Each step up roughly doubles CPU and RAM.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">FAM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Instance Families & Use Cases <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Which family to pick for which workload</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Family</th><th>Examples</th><th>Optimized for</th><th>Exam trigger words</th></tr>
+            <tr><td class="label">General Purpose</td><td>t3, t4g, m5, m6i</td><td>Balanced CPU/RAM/network. Web servers, dev environments.</td><td>"balanced", "web server", "code repo"</td></tr>
+            <tr><td class="label">Compute Optimized</td><td>c5, c6g, c7g</td><td>High CPU-to-RAM ratio. Batch processing, HPC, gaming, media encoding, web servers needing high CPU.</td><td>"CPU intensive", "batch", "HPC", "gaming"</td></tr>
+            <tr><td class="label">Memory Optimized</td><td>r5, r6g, x1e, z1d</td><td>Large in-memory datasets. In-memory DBs (Redis, SAP HANA), real-time analytics, big data.</td><td>"in-memory", "real-time analytics", "high RAM"</td></tr>
+            <tr><td class="label">Storage Optimized</td><td>i3, i4i, d3, h1</td><td>High sequential read/write, NVMe SSD. Data warehouses, distributed file systems, OLTP.</td><td>"high IOPS", "sequential", "NVMe", "data warehouse"</td></tr>
+            <tr><td class="label">Accelerated Computing</td><td>p4, g5, inf2, trn1</td><td>GPU/FPGA. ML training (p/trn), ML inference (inf), graphics (g).</td><td>"GPU", "machine learning", "graphics", "FPGA"</td></tr>
+            <tr><td class="label">Burstable (T family)</td><td>t2, t3, t3a, t4g</td><td>CPU credits system — baseline CPU + ability to burst. Cost-effective for low average, spiky workloads.</td><td>"variable CPU", "bursty", "dev/test", "low cost"</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>The most-tested distinction: Compute Optimized (c family) vs Memory Optimized (r family). Compute = high CPU-to-RAM, Memory = high RAM. When the question says "in-memory database" → r family. "Batch processing" or "high-performance computing" → c family.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: SECURITY GROUPS & ACCESS -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="security" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">EC2 Fundamentals — Module 3</div>
+        <div class="page-title">Security Groups & Classic Ports</div>
+        <div class="page-desc">The EC2 firewall layer — controlling what traffic is allowed in and out of your instances.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SG</div>
+          <div class="concept-meta">
+            <div class="concept-title">Security Groups <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Virtual firewall controlling EC2 traffic — stateful, allow-only</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Security Groups act as a virtual firewall for EC2 instances. They operate at the instance level (not the subnet level) and control inbound and outbound traffic. Security Groups are <strong>stateful</strong> — if inbound traffic is allowed, the response is automatically allowed regardless of outbound rules.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Security Groups contain only <strong>Allow rules</strong> — there are no Deny rules. Traffic not explicitly allowed is implicitly denied.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Rules specify: Type, Protocol, Port Range, and Source/Destination (IP CIDR or another Security Group ID).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>One instance can have <strong>up to 5 Security Groups</strong> attached simultaneously. Rules from all attached SGs are combined.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Security Groups are <strong>regional</strong> — they exist within a VPC and cannot be used across VPCs or regions without re-creation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You can reference another Security Group as a source/destination — this is more flexible than IP ranges and is the recommended approach for inter-service communication.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>By default: all inbound traffic is blocked, all outbound traffic is allowed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Changes to Security Group rules take effect immediately — no reboot needed.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Security Groups are stateful; NACLs are stateless — this is the #1 SG vs NACL exam question. SGs = allow only, instance level, stateful. NACLs = allow + deny, subnet level, stateless. "Connection timeout" usually means a SG rule is blocking. "Connection refused" means the instance is rejecting it (app or OS level, not SG).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">PRT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Classic Ports to Know <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Port numbers that appear on every AWS exam</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Port</th><th>Protocol</th><th>Use</th></tr>
+            <tr><td class="label">22</td><td>SSH / SFTP</td><td>Secure shell access to Linux instances; secure file transfer</td></tr>
+            <tr><td class="label">21</td><td>FTP</td><td>File Transfer Protocol (unencrypted — avoid)</td></tr>
+            <tr><td class="label">80</td><td>HTTP</td><td>Unencrypted web traffic</td></tr>
+            <tr><td class="label">443</td><td>HTTPS</td><td>Encrypted web traffic (TLS/SSL)</td></tr>
+            <tr><td class="label">3389</td><td>RDP</td><td>Remote Desktop Protocol — Windows instance access</td></tr>
+            <tr><td class="label">3306</td><td>MySQL / Aurora</td><td>MySQL-compatible databases</td></tr>
+            <tr><td class="label">5432</td><td>PostgreSQL</td><td>PostgreSQL databases</td></tr>
+            <tr><td class="label">1433</td><td>MSSQL</td><td>Microsoft SQL Server</td></tr>
+            <tr><td class="label">6379</td><td>Redis</td><td>ElastiCache for Redis</td></tr>
+            <tr><td class="label">2049</td><td>NFS</td><td>EFS (Network File System)</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Windows instances use RDP on port 3389, not SSH. If an exam question mentions connecting to a Windows server, the Security Group must allow port 3389, not 22.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: NETWORKING & IPs -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="networking" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">EC2 Fundamentals — Module 4</div>
+        <div class="page-title">Networking & IP Addresses</div>
+        <div class="page-desc">Private, public, and Elastic IPs — what they are, how they behave, and when to use each.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">IP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Private vs Public vs Elastic IP <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Three types of IP addresses for EC2 instances</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Type</th><th>Behavior</th><th>Cost</th><th>Use case</th></tr>
+            <tr><td class="label">Private IP</td><td>Assigned at launch. Stays the same for the life of the instance. Used for internal VPC communication.</td><td>Free</td><td>Internal service-to-service communication within the VPC</td></tr>
+            <tr><td class="label">Public IP</td><td>Assigned at launch if enabled. <strong>Changes every time the instance is stopped and started.</strong> Not assigned if instance is in a private subnet.</td><td>Free (while in use)</td><td>Temporary internet access; dev/test environments</td></tr>
+            <tr><td class="label">Elastic IP (EIP)</td><td>Static public IPv4 address you own. Remains fixed regardless of stop/start. You attach/detach it to instances.</td><td><strong>Free only when attached to a running instance. Billed when unattached or attached to stopped instance.</strong></td><td>Production services needing a stable public IP; DNS A records</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Elastic IPs are limited to <strong>5 per AWS account per region</strong> by default (can be increased via support ticket).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS now charges for all public IPv4 addresses (including EIPs attached to running instances) — $0.005/hour as of February 2024.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Best practice: avoid Elastic IPs when possible. Use DNS names (which can be updated) or a Load Balancer instead.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>A common exam scenario: "an EC2 instance's IP address changed after a stop/start — why?" Answer: public IPs are dynamic and change on stop/start. The fix is an Elastic IP for a static address, or a Load Balancer with a stable DNS name.</div>
+          <div class="warn-box"><strong>COST WARNING</strong>Elastic IPs that are allocated but not attached to a running instance are billed. Always release EIPs you're not using to avoid unexpected charges.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">ENI</div>
+          <div class="concept-meta">
+            <div class="concept-title">Elastic Network Interfaces (ENI) <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Virtual network cards that can be attached/detached from instances</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>An ENI is a virtual network interface that can be attached to an EC2 instance within a VPC. Every instance has a primary ENI (eth0) created at launch. Additional ENIs can be created and attached independently.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each ENI has: a private IPv4, optionally a public IP, one or more Elastic IPs, one or more Security Groups, and a MAC address.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ENIs are <strong>AZ-specific</strong> — you can only attach an ENI to an instance in the same Availability Zone.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You can move ENIs between instances in the same AZ — useful for network failover (move the ENI with its private IP from a failed instance to a healthy one).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ENIs are independent of instances — you can create them, configure SGs on them, and attach/detach them without terminating instances.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>ENI failover scenario: if an EC2 instance fails and you need to preserve the private IP address for an internal DNS entry, detach the ENI from the failed instance and attach it to a replacement. The private IP moves with the ENI.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: PURCHASING OPTIONS -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="pricing" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Pricing & Placement — Module 5</div>
+        <div class="page-title">EC2 Purchasing Options</div>
+        <div class="page-desc">Six ways to pay for EC2 — each with a different trade-off between cost, commitment, and flexibility.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">OPT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Purchasing Options Comparison <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">On-Demand, Reserved, Savings Plans, Spot, Dedicated, Capacity</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Option</th><th>Discount vs On-Demand</th><th>Commitment</th><th>Best for</th></tr>
+            <tr><td class="label">On-Demand</td><td>Baseline (no discount)</td><td>None — pay per second</td><td>Short-term, unpredictable workloads; first-time testing</td></tr>
+            <tr><td class="label">Reserved Instances (RI)</td><td>Up to 72%</td><td>1 or 3 years</td><td>Steady-state workloads (databases, app servers running 24/7)</td></tr>
+            <tr><td class="label">Savings Plans</td><td>Up to 72%</td><td>1 or 3 years, $/hr commitment</td><td>Flexible alternative to RIs — applies to EC2, Lambda, Fargate</td></tr>
+            <tr><td class="label">Spot Instances</td><td>Up to 90%</td><td>None — can be interrupted with 2-min notice</td><td>Batch jobs, data analysis, fault-tolerant distributed workloads</td></tr>
+            <tr><td class="label">Dedicated Hosts</td><td>Most expensive</td><td>On-Demand or 1/3 year</td><td>Compliance requirements; BYOL (Bring Your Own License)</td></tr>
+            <tr><td class="label">Dedicated Instances</td><td>~10% premium over On-Demand</td><td>None</td><td>Hardware isolation without full host control</td></tr>
+            <tr><td class="label">Capacity Reservations</td><td>None (On-Demand price)</td><td>None (cancel anytime)</td><td>Guarantee capacity in a specific AZ for critical workloads</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Scenario questions are common here. Map them: "most cost-effective for 3 years steady-state" → Reserved or Savings Plan. "Cheapest for batch processing that can be interrupted" → Spot. "Compliance requires dedicated hardware, need license control" → Dedicated Hosts (not Instances). "Need capacity guarantee in specific AZ" → Capacity Reservation.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">RI</div>
+          <div class="concept-meta">
+            <div class="concept-title">Reserved Instances — Deep Dive <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Types, payment options, and the Convertible vs Standard distinction</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Standard RIs</strong>: up to 72% discount. Locked to specific instance family, OS, tenancy, and region. Can be sold on the RI Marketplace if unused.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Convertible RIs</strong>: up to 66% discount. Can change instance family, OS, tenancy during the term. Cannot be sold on the Marketplace.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Payment options</strong>: All Upfront (best discount), Partial Upfront, No Upfront (smallest discount). 3-year terms give larger discounts than 1-year.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RIs apply automatically to matching running instances — they are a billing concept, not a configuration on the instance itself.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Zonal vs Regional RIs</strong>: Regional RIs apply flexibility across instance sizes in the family; Zonal RIs reserve capacity in a specific AZ.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Standard RI = cheaper, inflexible, can sell. Convertible RI = slightly less discount, flexible, cannot sell. If the question mentions changing instance type during the term → Convertible RI.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">SPT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Spot Instances & Spot Fleet <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Up to 90% cheaper — but interruptible with 2-minute warning</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Spot Instances use spare EC2 capacity. You set a maximum price; if the Spot price exceeds it (or AWS needs the capacity back), your instance is interrupted with a 2-minute warning. Despite interruption risk, they are the cheapest EC2 option.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Two interruption behaviors: <strong>Terminate</strong> (default), <strong>Stop</strong>, or <strong>Hibernate</strong> — configured at request time.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Spot Block</strong> (deprecated): reserved spot capacity for 1–6 hours with no interruption. No longer available for new customers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Spot Fleet</strong>: a collection of Spot Instances (and optionally On-Demand instances) that together meet a target capacity. Fleet automatically replaces interrupted instances and can span multiple instance types/AZs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Spot Fleet allocation strategies: <code>lowestPrice</code> (cheapest pool), <code>diversified</code> (spread across pools for availability), <code>capacityOptimized</code> (pools with most available capacity — best for avoiding interruptions), <code>priceCapacityOptimized</code> (best balance, recommended).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Good for: big data, image rendering, batch jobs, CI/CD, containerized workloads. <strong>Not for</strong>: databases, critical stateful apps, anything that can't tolerate sudden termination.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Which strategy reduces Spot interruptions?" → capacityOptimized or priceCapacityOptimized. "Which strategy minimizes cost?" → lowestPrice. The exam loves Spot Fleet strategy questions — know all four.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: PLACEMENT & ENI -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="placement" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Pricing & Placement — Module 6</div>
+        <div class="page-title">Placement Groups</div>
+        <div class="page-desc">Control over where EC2 instances are physically placed in the AWS infrastructure.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">PG</div>
+          <div class="concept-meta">
+            <div class="concept-title">Placement Groups <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Three strategies for controlling physical instance placement</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Placement Groups let you influence how EC2 instances are physically placed on the underlying hardware. There are three strategies, each optimizing for a different goal: performance, fault tolerance, or both.</p>
+          <table class="compare-table">
+            <tr><th>Strategy</th><th>How it works</th><th>Max instances</th><th>Best for</th><th>Risk</th></tr>
+            <tr><td class="label">Cluster</td><td>All instances in the same rack (same AZ). Lowest latency, highest network throughput (up to 10 Gbps).</td><td>No defined limit (hardware limits apply)</td><td>HPC, big data jobs, tightly-coupled apps, low-latency distributed systems</td><td>If the rack fails, all instances fail. Single point of failure.</td></tr>
+            <tr><td class="label">Spread</td><td>Each instance on a different physical rack (different hardware). Up to 7 instances per AZ.</td><td><strong>7 instances per AZ per group</strong></td><td>Critical apps needing maximum fault isolation; small number of instances</td><td>Hard limit of 7 per AZ — not for large fleets</td></tr>
+            <tr><td class="label">Partition</td><td>Instances divided into partitions (logical groups), each partition on separate racks. Up to 7 partitions per AZ, hundreds of instances per partition.</td><td>Hundreds of instances</td><td>HDFS, HBase, Cassandra, Kafka — large distributed systems that are partition-aware</td><td>Instances within the same partition share rack risk</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>The exam gives a scenario and asks which placement group to choose. Cluster = lowest latency, max performance, but one AZ and one failure domain. Spread = max isolation, hard limit of 7/AZ. Partition = large distributed systems (Hadoop, Kafka) — instances know which partition they're in and can replicate across partitions.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: ADVANCED FEATURES -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="advanced" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">EC2 Fundamentals — Module 7</div>
+        <div class="page-title">Advanced EC2 Features</div>
+        <div class="page-desc">Hibernate, and key operational features that appear in exam scenarios.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">HIB</div>
+          <div class="concept-meta">
+            <div class="concept-title">EC2 Hibernate <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Pause an instance and resume exactly where you left off</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Hibernate saves the in-memory (RAM) state of an EC2 instance to the root EBS volume, then stops the instance. When started again, the RAM is restored, and the instance resumes exactly where it left off — running processes continue, no cold boot needed.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>The root EBS volume <strong>must be encrypted</strong> to use Hibernate — the RAM contents are sensitive.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RAM size must be <strong>less than 150 GB</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The root EBS volume must be large enough to hold the RAM dump — ensure sufficient space.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported on: On-Demand, Reserved, and Spot instances. <strong>Not supported on bare metal instances.</strong></span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Maximum hibernate duration: <strong>60 days</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The instance <strong>keeps its private IPv4 address and Elastic IP</strong> during hibernate, but loses its public IP (if not EIP).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Difference from Stop: Stop = RAM is lost, OS boots fresh on start. Hibernate = RAM is preserved, OS resumes instantly.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"An application takes a long time to warm up and should resume instantly" → Hibernate. "Hibernate requires encrypted root EBS" is a common exam fact. Max RAM = 150 GB, max duration = 60 days — both have been tested.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: EBS VOLUMES -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="ebs" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Instance Storage — Module 8</div>
+        <div class="page-title">EBS Volumes</div>
+        <div class="page-desc">Elastic Block Store — the primary persistent storage for EC2 instances.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">EBS</div>
+          <div class="concept-meta">
+            <div class="concept-title">EBS Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Network-attached block storage that persists independently of instances</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>EBS (Elastic Block Store) volumes are network-attached block storage devices for EC2 instances. They persist independently of instance lifecycle — data survives instance termination (unless "Delete on Termination" is enabled). Think of EBS as a USB drive that attaches over the network.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>EBS volumes are <strong>AZ-locked</strong> — a volume in us-east-1a cannot be attached to an instance in us-east-1b. Use snapshots to move data across AZs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>By default, root EBS volumes have <strong>"Delete on Termination" enabled</strong>; additional volumes do not. This can be changed at launch or via CLI.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EBS volumes can be attached to one instance at a time (except <strong>Multi-Attach</strong> — io1/io2 only).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You can increase size and change volume type on the fly (without detaching) — this is called <strong>Elastic Volumes</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Maximum volume size: <strong>64 TiB</strong> (for io2 Block Express); gp2/gp3/io1 up to 16 TiB.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>EBS is AZ-specific — this is the most-tested EBS constraint. To move a volume to another AZ or region: take a snapshot → copy snapshot to target region → create volume from snapshot.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">TYP</div>
+          <div class="concept-meta">
+            <div class="concept-title">EBS Volume Types <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">SSD vs HDD — when to use gp3, io2, st1, or sc1</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Type</th><th>Category</th><th>Max IOPS</th><th>Max Throughput</th><th>Boot volume?</th><th>Use case</th></tr>
+            <tr><td class="label">gp3</td><td>SSD (General Purpose)</td><td>16,000</td><td>1,000 MB/s</td><td>Yes</td><td>Default for most workloads. IOPS and throughput independent of size. Replace gp2 with gp3.</td></tr>
+            <tr><td class="label">gp2</td><td>SSD (General Purpose)</td><td>16,000 (3 IOPS/GB, max 16K)</td><td>250 MB/s</td><td>Yes</td><td>Legacy — prefer gp3. IOPS tied to size.</td></tr>
+            <tr><td class="label">io1 / io2</td><td>SSD (Provisioned IOPS)</td><td>io1: 64,000 / io2: 256,000</td><td>io2 Block Express: 4,000 MB/s</td><td>Yes</td><td>Mission-critical databases (MSSQL, Oracle) needing >16K IOPS. io2 supports Multi-Attach.</td></tr>
+            <tr><td class="label">st1</td><td>HDD (Throughput Optimized)</td><td>500 (not IOPS-focused)</td><td>500 MB/s</td><td>No</td><td>Big data, data warehouses, log processing — high throughput sequential reads.</td></tr>
+            <tr><td class="label">sc1</td><td>HDD (Cold)</td><td>250</td><td>250 MB/s</td><td>No</td><td>Lowest cost HDD. Infrequently accessed data, archival storage.</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>HDD types (st1, sc1) cannot be boot volumes — always SSD for boot. "Highest IOPS" → io2 Block Express (256K IOPS). "Cost-effective general purpose" → gp3. "High sequential throughput for big data" → st1. "Cheapest storage" → sc1. gp3 vs gp2: gp3 lets you set IOPS independently; gp2 IOPS scale with volume size.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">IST</div>
+          <div class="concept-meta">
+            <div class="concept-title">EC2 Instance Store <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Physically attached NVMe storage — fast but ephemeral</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Instance Store is physically attached storage on the host server — unlike EBS which is network-attached. This gives much higher I/O performance but the data is lost when the instance stops, terminates, or the underlying hardware fails.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Ephemeral</strong>: data is lost on stop, termination, or hardware failure. Data survives reboots only.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Provides the highest possible disk throughput and IOPS — millions of IOPS on some instance types (NVMe SSD).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Cannot be detached and reattached. Cannot be resized. Fixed to the instance type.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Good for: buffers, caches, scratch data, temporary content, distributed processing where data is replicated elsewhere (e.g., Hadoop nodes).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Instance types with instance store: i3, i4i, d2, d3, h1, and some others. Not all instance types have it.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Highest I/O performance" → Instance Store. "Ephemeral storage" = Instance Store. If the question asks for persistent storage with high performance → io2 EBS (not instance store, because instance store is lost on stop). The key differentiator: Instance Store = maximum speed, zero persistence.</div>
+          <div class="warn-box"><strong>DATA LOSS RISK</strong>Instance store data is lost on stop or termination. Never store data you can't afford to lose without replicating it elsewhere (S3, EBS, database). It is not a substitute for persistent storage.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: EBS FEATURES -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="ebsfeatures" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Instance Storage — Module 9</div>
+        <div class="page-title">EBS Features</div>
+        <div class="page-desc">Snapshots, encryption, Multi-Attach — the deeper EBS capabilities tested on the exam.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">SNP</div>
+          <div class="concept-meta">
+            <div class="concept-title">EBS Snapshots <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Point-in-time backups stored in S3 — used to copy volumes across AZs and regions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Snapshots are incremental point-in-time backups of EBS volumes stored in S3 (managed by AWS). They are the primary mechanism for moving EBS data across Availability Zones and regions.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Snapshots are <strong>incremental</strong> — only changed blocks since the last snapshot are stored. First snapshot is a full copy.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You don't need to detach a volume to snapshot it, but it is recommended for data consistency.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>To move a volume to another AZ: snapshot → create volume from snapshot in the target AZ.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>To move a volume to another region: snapshot → copy snapshot to target region → create volume.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EBS Snapshot Archive</strong>: move snapshots to a cheaper archive tier (75% cheaper). Restoring from archive takes 24–72 hours.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Recycle Bin</strong>: optionally retain deleted snapshots for 1 day to 1 year, allowing recovery from accidental deletion.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Fast Snapshot Restore (FSR)</strong>: eliminates I/O latency on first use of a restored volume. Costs extra — billed per AZ per snapshot enabled.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"How do you migrate an EBS volume from one AZ to another?" → Snapshot + create from snapshot in new AZ. "How do you move to a different region?" → Snapshot + copy snapshot to region + create volume. The snapshot is in S3 and is region-scoped; copying to another region makes a separate copy there.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">ENC</div>
+          <div class="concept-meta">
+            <div class="concept-title">EBS Encryption <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">AES-256 encryption at rest and in transit — powered by KMS</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>EBS encryption encrypts data at rest on the volume, data in flight between the instance and the volume, snapshots, and volumes created from those snapshots — all transparently with no performance impact (hardware encryption on Nitro-based instances).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Encryption uses <strong>AWS KMS keys</strong> (either the default aws/ebs key or a customer-managed CMK).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Encryption is <strong>not enabled by default</strong> — you must opt in per volume or enable "Encryption by default" at the account/region level.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>An <strong>unencrypted volume cannot be directly encrypted in place</strong>. Workaround: create snapshot → copy snapshot with encryption enabled → create new volume from encrypted snapshot.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Snapshots of encrypted volumes are automatically encrypted. Volumes created from encrypted snapshots are automatically encrypted.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You can share encrypted snapshots, but the recipient must have access to the KMS key used for encryption.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"How do you encrypt an existing unencrypted EBS volume?" → Snapshot → copy with encryption → create encrypted volume. You cannot encrypt a volume in-place. Encrypted snapshots → encrypted volumes; unencrypted snapshots → can create encrypted volumes by specifying encryption at volume creation.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">MA</div>
+          <div class="concept-meta">
+            <div class="concept-title">EBS Multi-Attach <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Attach one io1/io2 volume to multiple instances simultaneously</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Multi-Attach allows a single EBS io1 or io2 volume to be attached to multiple EC2 instances in the same Availability Zone simultaneously. Each instance has full read/write access.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported only on <strong>io1 and io2 volume types</strong> — not available on gp2, gp3, st1, or sc1.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Instances must be in the <strong>same AZ</strong> as the volume.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Maximum of <strong>16 instances</strong> attached simultaneously.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The application must handle concurrent writes — use a cluster-aware file system (e.g., GFS2, OCFS2) or application-level locking. Standard Linux ext4/xfs are not cluster-aware.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: clustered databases (Oracle RAC), high-availability applications that manage concurrent write operations.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Multi-Attach = io1/io2 only, same AZ, up to 16 instances, application must handle concurrent writes. Don't confuse with EFS (which is a managed shared file system for many instances across AZs — much simpler to use for shared storage).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: AMI -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="ami" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Instance Storage — Module 10</div>
+        <div class="page-title">AMI — Amazon Machine Images</div>
+        <div class="page-desc">Pre-configured OS images used to launch EC2 instances — the blueprint for your servers.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">AMI</div>
+          <div class="concept-meta">
+            <div class="concept-title">AMI Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">What AMIs are, how they work, and how to create custom ones</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>An AMI (Amazon Machine Image) is a template that contains the software configuration (OS, application server, applications) required to launch an EC2 instance. AMIs are regional — an AMI in us-east-1 must be copied to use in eu-west-1.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>AMIs contain: a root volume snapshot, launch permissions (who can use it), and block device mapping (which volumes to attach at launch).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Three sources of AMIs: <strong>AWS-provided</strong> (Amazon Linux, Windows, Ubuntu, etc.), <strong>AWS Marketplace</strong> (third-party commercial), and <strong>Custom/Community</strong> (your own or public community AMIs).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Custom AMI creation</strong>: start an instance → customize (install software, configure) → stop the instance → create AMI. AWS takes a snapshot of the root volume automatically.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Custom AMIs enable faster EC2 Auto Scaling — pre-baking software means instances launch ready without running user data scripts on every boot.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AMIs are <strong>region-specific</strong>. To use in another region, copy the AMI (this copies the underlying snapshots).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AMI permissions: private by default. Can be made public, or shared with specific AWS account IDs.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"How to launch pre-configured instances quickly at scale?" → Custom AMI. "AMIs are region-specific" is frequently tested — must be copied to use in another region. Do not confuse AMI (launch template) with a Snapshot (volume backup).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE: EFS & COMPARISONS -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="filestorage" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Instance Storage — Module 11</div>
+        <div class="page-title">EFS & Storage Comparisons</div>
+        <div class="page-desc">Elastic File System — shared NFS storage — and the definitive EBS vs EFS vs Instance Store comparison.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">EFS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon EFS <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managed NFS file system — shared across many instances and AZs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>EFS (Elastic File System) is a managed NFS (Network File System) that can be mounted simultaneously on hundreds of EC2 instances across multiple Availability Zones. Unlike EBS, it automatically scales — you pay only for what you use.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Uses <strong>NFSv4.1 protocol</strong>. Mounts via a mount target in each AZ. Security Groups control access to the mount target.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Scales automatically — no provisioning needed. Capacity grows and shrinks as you add/remove files. Can reach petabyte scale.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multi-AZ by default</strong> (Standard storage class) — data is replicated across multiple AZs. One Availability Zone storage class is cheaper (single AZ, dev/test).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Compatible with <strong>Linux-based AMIs only</strong> — not Windows.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Approximately <strong>3x more expensive than EBS gp2</strong> per GB but you pay only for what you use (no pre-provisioning).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Performance modes</strong>: General Purpose (default, low latency) and Max I/O (higher throughput, higher latency — for highly parallel workloads).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Throughput modes</strong>: Bursting (throughput scales with storage size), Provisioned (set throughput independently), Elastic (auto-scales — recommended for spiky workloads).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EFS Lifecycle Management</strong>: automatically moves files not accessed for N days to EFS-IA (Infrequent Access) storage class — up to 92% cheaper.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>EFS = shared file system, multi-AZ, Linux only, auto-scaling, more expensive per GB. The exam often asks "how to share a file system between multiple EC2 instances across AZs?" → EFS. Do not use EFS for Windows instances — use FSx for Windows File Server instead.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">EFS vs EBS vs Instance Store <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The definitive storage comparison for the exam</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Feature</th><th>EBS</th><th>EFS</th><th>Instance Store</th></tr>
+            <tr><td class="label">Type</td><td>Block storage</td><td>File storage (NFS)</td><td>Block storage (local NVMe)</td></tr>
+            <tr><td class="label">Persistence</td><td>Persistent (survives stop/terminate)</td><td>Persistent</td><td><strong>Ephemeral</strong> — lost on stop/terminate</td></tr>
+            <tr><td class="label">Attachment</td><td>1 instance (except Multi-Attach io1/io2)</td><td>Hundreds of instances simultaneously</td><td>Fixed to the instance (physical)</td></tr>
+            <tr><td class="label">Scope</td><td>AZ-specific</td><td>Multi-AZ (Standard)</td><td>AZ-specific (physical host)</td></tr>
+            <tr><td class="label">Performance</td><td>Good (up to 256K IOPS with io2)</td><td>Good throughput at scale</td><td><strong>Highest</strong> (millions of IOPS, NVMe)</td></tr>
+            <tr><td class="label">Cost</td><td>Pay per provisioned GB</td><td>Pay per GB used (~3x EBS)</td><td>Included in instance price</td></tr>
+            <tr><td class="label">OS support</td><td>Linux + Windows</td><td>Linux only (NFSv4)</td><td>Linux + Windows</td></tr>
+            <tr><td class="label">Scaling</td><td>Manual (resize volume)</td><td>Automatic</td><td>Fixed — determined by instance type</td></tr>
+            <tr><td class="label">Best for</td><td>Root volumes, databases, single-instance storage</td><td>Shared content, web servers, CMS, ML training data</td><td>Caches, buffers, temp data, Hadoop scratch</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>The three decisive questions: (1) "Need to share across multiple instances?" → EFS. (2) "Need maximum raw I/O speed, don't care about persistence?" → Instance Store. (3) "Need persistent single-instance block storage?" → EBS. Also: "Windows shared storage?" → FSx for Windows (not EFS — EFS doesn't support Windows).</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

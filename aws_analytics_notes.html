@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Data Analytics — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Data Analytics</h1>
+    </div>
+
+    <div class="nav-section-label">Query & Warehouse</div>
+    <a class="nav-item active" onclick="show('athena')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Athena
+    </a>
+    <a class="nav-item" onclick="show('redshift')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Redshift
+    </a>
+
+    <div class="nav-section-label">Search & Processing</div>
+    <a class="nav-item" onclick="show('opensearch')">
+      <span class="nav-dot" style="background:#bc8cff"></span> OpenSearch
+    </a>
+    <a class="nav-item" onclick="show('emr')">
+      <span class="nav-dot" style="background:#f0a742"></span> EMR
+    </a>
+
+    <div class="nav-section-label">BI & ETL</div>
+    <a class="nav-item" onclick="show('quicksight')">
+      <span class="nav-dot" style="background:#ff7b72"></span> QuickSight
+    </a>
+    <a class="nav-item" onclick="show('glue')">
+      <span class="nav-dot" style="background:#56d364"></span> Glue
+    </a>
+
+    <div class="nav-section-label">Governance & Streaming</div>
+    <a class="nav-item" onclick="show('lakeformation')">
+      <span class="nav-dot" style="background:#db6eb0"></span> Lake Formation
+    </a>
+    <a class="nav-item" onclick="show('streaming')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Flink & MSK
+    </a>
+
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('pipeline')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Big Data Pipeline
+    </a>
+    <a class="nav-item" onclick="show('cheatsheet')">
+      <span class="nav-dot" style="background:#f0a742"></span> Cheat Sheet
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ ATHENA ══════════════ -->
+    <div id="athena" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Query</div>
+        <div class="page-title">Amazon Athena</div>
+        <div class="page-desc">Serverless SQL on S3 — query data in place without loading it into a database.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">ATH</div>
+          <div class="concept-meta">
+            <div class="concept-title">Athena Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Serverless interactive SQL query service for data in Amazon S3</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Athena lets you run standard SQL queries directly against data stored in S3 — with no servers to manage, no databases to load data into, and no infrastructure to provision. You query the data in place and pay only for the data scanned.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Serverless</strong>: no infrastructure to manage. Query runs on demand and you pay <strong>$5 per TB of data scanned</strong>. Queries that scan less data cost less.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Supported formats</strong>: CSV, JSON, Parquet, ORC, Avro, and columnar formats. Parquet and ORC are strongly recommended — they are columnar (only scan required columns) and splittable, reducing cost by up to 90% vs CSV.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Compression</strong>: compress data (GZIP, Snappy, LZ4) to reduce the amount scanned — directly reduces cost. Snappy is preferred for Parquet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Partitioning</strong>: organize data in S3 by partition keys (e.g. <code>s3://bucket/year=2024/month=01/</code>). Athena skips partitions that don't match the WHERE clause — dramatically reduces data scanned on large datasets.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Uses <strong>Apache Presto</strong> under the hood. Supports standard ANSI SQL including JOINs, subqueries, window functions, and DDL.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue Data Catalog</strong>: Athena uses the Glue Data Catalog for table metadata (schema, location, partition information) — the central metadata store shared with Glue, Redshift Spectrum, and EMR.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Federated Query</strong>: query data sources beyond S3 — RDS, DynamoDB, Redshift, CloudWatch, DynamoDB, HBase, DocumentDB — using data source connectors (Lambda functions). Results can be stored back to S3.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Analyze S3 data with SQL, no infrastructure" → Athena. "Reduce Athena costs" → use columnar formats (Parquet/ORC), compress data, partition by date/region. "$5/TB scanned" means unused columns in CSV still get scanned — Parquet only scans the columns your query references. "Query data across multiple sources including S3 and RDS in one query" → Athena Federated Query.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">USE</div>
+          <div class="concept-meta">
+            <div class="concept-title">Athena Use Cases & Integrations <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">When to choose Athena and how it fits into data pipelines</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Ad-hoc analysis</strong>: one-time or infrequent queries on large datasets. No need to spin up a Redshift cluster for a query you'll run once a month.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Log analysis</strong>: query CloudTrail logs, ELB access logs, CloudFront logs, VPC Flow Logs, S3 access logs — all stored in S3 — directly with SQL.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Athena + QuickSight</strong>: connect QuickSight directly to Athena for BI dashboards on S3 data. No ETL into a warehouse needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Data lake query layer</strong>: Athena is often the query interface on top of a data lake built in S3 — data lands in S3 via Firehose/Glue, Glue catalogues it, Athena queries it.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Analyze VPC Flow Logs stored in S3 using SQL" → Athena. "Query CloudTrail audit logs" → Athena. Athena is the default answer for "SQL queries on S3 data" — it's serverless and requires zero setup compared to loading data into Redshift.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ REDSHIFT ══════════════ -->
+    <div id="redshift" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Data Warehouse</div>
+        <div class="page-title">Amazon Redshift</div>
+        <div class="page-desc">Petabyte-scale columnar data warehouse — OLAP analytics at massive scale with sub-second query performance.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">RS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Redshift Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Columnar OLAP warehouse — based on PostgreSQL, optimized for analytics not transactions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Redshift is a fully managed, petabyte-scale data warehouse service. It is based on PostgreSQL but is optimized for OLAP (Online Analytical Processing) — complex analytical queries over large datasets — not OLTP (row-level transactions like RDS).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Columnar storage</strong>: data is stored by column rather than by row. Analytical queries that aggregate only a few columns don't read the entire row — dramatically faster for analytics. Enables high compression ratios per column.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Massively Parallel Processing (MPP)</strong>: queries are automatically distributed across all nodes in the cluster. Each node processes a slice of the data in parallel — linear scale-out as you add nodes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cluster architecture</strong>: one <strong>Leader Node</strong> (receives queries, coordinates execution, aggregates results — no charge) + multiple <strong>Compute Nodes</strong> (execute query slices, store data — you pay for these). 1–128 compute nodes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Node types</strong>: <strong>RA3</strong> — separate compute and storage (pay for compute + managed storage in S3 behind the scenes, scale each independently). <strong>DC2</strong> — compute-optimized with local NVMe SSD (fixed compute+storage, fast for hot data). Use RA3 for most new workloads.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Not Multi-AZ by default</strong>: standard Redshift runs in one AZ. For RA3, Multi-AZ is available. Snapshots (automated and manual) are stored in S3 and can be restored in any region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Redshift Spectrum</strong>: extend Redshift queries to exabytes of data in S3 without loading it into Redshift. Uses the same SQL, same cluster, reads Parquet/ORC/CSV from S3. Like Athena but from within Redshift. Query local Redshift tables and S3 data in the same query.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Redshift Serverless</strong>: automatically provisions and scales warehouse capacity — pay per RPU (Redshift Processing Unit) per second. Ideal for variable, unpredictable workloads or development environments.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Redshift = OLAP, analytics, data warehouse. RDS = OLTP, transactions, operational database. "Query petabytes of data with complex joins and aggregations" → Redshift. "Query S3 data directly from Redshift without ETL" → Redshift Spectrum. Redshift is NOT Multi-AZ by default — this is a frequent exam trap. Use snapshots for DR.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">LOAD</div>
+          <div class="concept-meta">
+            <div class="concept-title">Loading Data into Redshift <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">COPY command, Firehose, and the right ingestion path</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>COPY command</strong>: the most efficient way to load data into Redshift. Reads from S3, DynamoDB, EMR, or SSH in parallel across all compute nodes simultaneously. Much faster than INSERT statements for bulk loads.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Kinesis Data Firehose → Redshift</strong>: Firehose writes to S3 first, then issues a COPY command to Redshift automatically. Best for streaming data ingestion into Redshift.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Enhanced VPC Routing</strong>: forces all COPY and UNLOAD traffic between Redshift and S3 to go through your VPC instead of the public internet — required for compliance/security in some environments.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Fastest way to bulk load data into Redshift" → COPY command from S3 (parallel across all nodes). "Stream data into Redshift in near-real-time" → Firehose → S3 → COPY. Never INSERT row-by-row at scale — always COPY for bulk loads.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ OPENSEARCH ══════════════ -->
+    <div id="opensearch" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Search & Analytics</div>
+        <div class="page-title">Amazon OpenSearch Service</div>
+        <div class="page-desc">Managed Elasticsearch/OpenSearch — full-text search, log analytics, and real-time application monitoring.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">OS</div>
+          <div class="concept-meta">
+            <div class="concept-title">OpenSearch Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Successor to Amazon Elasticsearch Service — managed distributed search and analytics engine</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon OpenSearch Service is a managed service for deploying, operating, and scaling OpenSearch (and legacy Elasticsearch) clusters. OpenSearch enables full-text search, real-time log analytics, and any use case requiring fast arbitrary field queries and fuzzy/partial matching that SQL databases struggle with.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Formerly called <strong>Amazon Elasticsearch Service</strong>. OpenSearch is the open-source fork of Elasticsearch. All existing Elasticsearch applications are compatible.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Unlike SQL databases (query on indexed columns only), OpenSearch can <strong>search on any field</strong> — including partial text, fuzzy matches, relevance scoring, and nested objects.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data is stored in <strong>indices</strong> (similar to tables) which are split into <strong>shards</strong> across nodes. Each shard can have replicas for high availability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common ingestion patterns: <strong>DynamoDB Streams → Lambda → OpenSearch</strong> (index DynamoDB data for search), <strong>CloudWatch Logs → Subscription Filter → Lambda → OpenSearch</strong> (log analytics), <strong>Kinesis Data Streams / Firehose → OpenSearch</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>OpenSearch Dashboards</strong>: built-in visualization layer (formerly Kibana) — build dashboards, visualize log data, create metric charts. Accessed via browser.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Deployment modes: <strong>managed clusters</strong> (provision master and data nodes) or <strong>OpenSearch Serverless</strong> (fully managed, no cluster management, auto-scales, pay per OCU).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Security: VPC support, IAM-based access policies, Cognito integration for Dashboards authentication, encryption at rest (KMS) and in transit (TLS).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>OpenSearch vs Athena: OpenSearch = real-time search on indexed documents, arbitrary field queries, log analysis, fuzzy matching. Athena = SQL on S3 files, batch/ad-hoc analytics. "Search product catalog with partial text match" → OpenSearch. "Analyze S3 log files with SQL" → Athena. OpenSearch is the DynamoDB complement — DynamoDB for primary data, OpenSearch for search.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ EMR ══════════════ -->
+    <div id="emr" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — Big Data Processing</div>
+        <div class="page-title">Amazon EMR</div>
+        <div class="page-desc">Managed Hadoop ecosystem — process petabytes of data using Spark, Hive, Presto, and other open-source tools.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">EMR</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon EMR Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Elastic MapReduce — managed Hadoop/Spark clusters for big data processing</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon EMR (Elastic MapReduce) provisions and manages clusters of EC2 instances running open-source big data frameworks. EMR handles the undifferentiated work of installing, configuring, and tuning Hadoop, Spark, HBase, Presto, Hive, and others — you write the data processing code.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported frameworks: <strong>Apache Spark</strong> (most popular, in-memory processing), <strong>Hive</strong> (SQL on Hadoop), <strong>Presto</strong> (fast ad-hoc SQL), <strong>HBase</strong> (NoSQL on HDFS), <strong>Flink</strong>, <strong>Hudi</strong>, <strong>Iceberg</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cluster nodes</strong>: <strong>Master node</strong> (coordinates the cluster, manages resources — one per cluster), <strong>Core nodes</strong> (run tasks + store data in HDFS — cannot be removed without data loss), <strong>Task nodes</strong> (run tasks only, no HDFS — can be Spot instances, safe to remove).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Long-running vs transient clusters</strong>: long-running clusters stay up for ongoing workloads; transient clusters spin up, process a job (data from S3), save results to S3, then terminate. Transient clusters using Spot instances are very cost-effective for batch jobs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EMR on EKS</strong>: run EMR workloads on an existing EKS cluster — submit Spark jobs without managing EC2 instances.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EMR Serverless</strong>: run Spark/Hive jobs without provisioning or managing clusters. AWS auto-provisions workers per job. Pay only for resources used.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: large-scale ETL, log processing, clickstream analysis, genomics, machine learning preprocessing, data transformation before loading into Redshift.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Process petabytes of data with Spark/Hadoop" → EMR. "Cost-effective batch processing" → EMR transient cluster with Spot instances for Task nodes. Core nodes should NOT be Spot (risk of HDFS data loss). Task nodes = safe for Spot (no data stored). EMR is the answer for "managed Hadoop/Spark" — if you see those keywords, think EMR.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ QUICKSIGHT ══════════════ -->
+    <div id="quicksight" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Business Intelligence</div>
+        <div class="page-title">Amazon QuickSight</div>
+        <div class="page-desc">Serverless BI and data visualization — interactive dashboards for everyone in your organization.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">QS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon QuickSight Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Serverless BI — create and share dashboards from any AWS data source</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon QuickSight is a fully managed, serverless business intelligence service for creating interactive visualizations and dashboards. It connects to AWS data sources and external databases, requiring no servers and no BI software licensing.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Data sources</strong>: Athena, Redshift, S3, RDS/Aurora, OpenSearch, Timestream, Salesforce, on-premises SQL databases (via VPC or public endpoint), Jira, and more.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SPICE</strong> (Super-fast, Parallel, In-memory Calculation Engine): QuickSight's in-memory cache. Import data into SPICE for sub-second query response times, independent of the source database. SPICE is allocated per user and region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Enterprise edition</strong>: supports column-level security, row-level security (users see only rows they're allowed to), Active Directory integration, and cross-account data source access.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Embedded analytics</strong>: embed QuickSight dashboards into your own applications using the Embedding SDK. Users see dashboards within your app without going to the QuickSight console.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ML Insights</strong>: built-in ML features — anomaly detection (automatically surfaces unusual spikes or drops), forecasting (project future values), and narrative explanations (natural language summaries of chart data).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Pricing: <strong>per-session</strong> (pay per 30-minute session) for readers, per-user/month for authors. No per-query charges unlike Athena.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Create dashboards on AWS data for business users" → QuickSight. "Visualize Athena/Redshift query results" → QuickSight. SPICE = in-memory cache that makes dashboards fast without hitting the source. QuickSight is the BI layer — it visualizes data, it doesn't process it. "Ad-hoc SQL analysis" → Athena. "Visualize the Athena results" → QuickSight.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ GLUE ══════════════ -->
+    <div id="glue" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — ETL</div>
+        <div class="page-title">AWS Glue</div>
+        <div class="page-desc">Serverless ETL and data catalog — discover, prepare, and integrate data for analytics.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">GLU</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Glue Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Serverless ETL + central metadata catalog — the glue between your data stores</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Glue is a fully managed, serverless ETL (Extract, Transform, Load) service. It has two main components that work together: the <strong>Glue Data Catalog</strong> (centralized metadata repository) and <strong>Glue ETL Jobs</strong> (serverless Spark/Python data transformation).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue Data Catalog</strong>: central metadata store for all your data assets — tables, schemas, locations, partition information. Shared and used by Athena, Redshift Spectrum, and EMR. One catalog per region per account. Acts as a persistent Hive metastore.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue Crawlers</strong>: automatically discover data in S3, RDS, Redshift, DynamoDB — infer schema, detect partitions, and populate the Glue Data Catalog. Schedule crawlers to run on a cadence to keep the catalog up to date.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue ETL Jobs</strong>: serverless Apache Spark or Python Shell jobs. Write transformations in Python or Scala. Glue provisions Spark workers, runs the job, and terminates — pay only for DPU-seconds (Data Processing Units) consumed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue Studio</strong>: visual drag-and-drop interface for building Glue ETL jobs without writing code — connect source → transform → target nodes on a canvas.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue DataBrew</strong>: visual data preparation tool for analysts — clean and normalize data using 250+ pre-built transformations without writing code. Outputs go to S3 or back into the Glue catalog.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue Elastic Views</strong>: replicate and combine data across multiple data stores into a materialized view without custom ETL code.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common Glue workflow: S3 raw data → Glue Crawler (catalog) → Glue ETL Job (transform CSV to Parquet) → S3 processed data → Athena/Redshift queries the catalogued data.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Convert CSV files to Parquet in S3" → Glue ETL Job. "Automatically discover schema of S3 data" → Glue Crawler. "Central metadata for Athena, Redshift, and EMR" → Glue Data Catalog. Glue is serverless ETL — no cluster to manage. EMR is for heavy custom big data processing where you need full control of the Spark cluster.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ LAKE FORMATION ══════════════ -->
+    <div id="lakeformation" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Data Governance</div>
+        <div class="page-title">AWS Lake Formation</div>
+        <div class="page-desc">Build, secure, and manage a data lake in days — fine-grained access control on top of S3 and the Glue Catalog.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">LF</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lake Formation Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Data lake governance — centralized permissions for S3 data accessed via Athena, Redshift, and EMR</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Lake Formation is a service that makes it easy to set up, secure, and manage a secure data lake. It builds on S3 and the Glue Data Catalog by adding centralized, fine-grained access control — column-level, row-level, and cell-level security — enforced across Athena, Redshift Spectrum, and EMR regardless of the underlying S3 bucket permissions.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Data lake setup</strong>: Lake Formation orchestrates data ingestion, cataloguing, cleaning, and transformation into S3 — replacing manual Glue Crawler + ETL workflows with a more streamlined experience.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Centralized access control</strong>: grant and revoke permissions on databases, tables, and columns in the Glue catalog from one place. These permissions are enforced across all Lake Formation-integrated services — no need to manage separate S3 bucket policies per user/service.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Fine-grained security</strong>: <strong>column-level security</strong> (user A can see name column but not SSN column in the same table), <strong>row-level security</strong> (user sees only rows for their region), and <strong>cell-level masking</strong> (return masked/null value for specific cells).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Permissions are applied at query time — even if S3 allows access, Lake Formation can deny it. The Lake Formation permission model <strong>overrides</strong> IAM and S3 bucket policies for registered data sources.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cross-account data sharing</strong>: share data lake tables with other AWS accounts without copying data — the recipient queries via Athena/Redshift and Lake Formation enforces access policies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Built on the Glue Data Catalog — Lake Formation extends Glue's catalog with a permission layer on top.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Column-level or row-level security on S3/Athena data" → Lake Formation. "Centralize data lake access control across multiple teams/accounts" → Lake Formation. "Share a data catalog table with another AWS account without copying data" → Lake Formation cross-account sharing. Lake Formation = governance layer on top of Glue + S3.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ FLINK & MSK ══════════════ -->
+    <div id="streaming" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 8 — Real-Time Streaming</div>
+        <div class="page-title">Apache Flink & MSK</div>
+        <div class="page-desc">Managed Apache Flink for stream processing, and Managed Streaming for Apache Kafka for event streaming.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">FLK</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Managed Service for Apache Flink <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Serverless Apache Flink — real-time stream processing without cluster management</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Managed Service for Apache Flink (formerly Kinesis Data Analytics) lets you run Apache Flink applications on AWS without managing servers or clusters. Flink is a stream processing framework — it processes data in real-time as it flows through, performing stateful computations, aggregations, and transformations.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Write Flink applications in <strong>Java, Scala, or Python</strong>. Deploy without managing clusters — AWS handles provisioning, scaling, and availability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Sources</strong>: Kinesis Data Streams, MSK (Kafka), S3, custom sources via Flink connectors.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Sinks</strong>: S3, Kinesis Data Streams, Kinesis Firehose, OpenSearch, custom sinks.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: real-time fraud detection, anomaly detection on streaming metrics, real-time ETL (filter/enrich/transform events as they arrive), streaming analytics dashboards.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Flink vs Kinesis Data Streams</strong>: KDS is the transport layer (stores and delivers events). Flink is the processing layer (transforms, aggregates, analyzes events as they flow). They are complementary: KDS → Flink → results to S3/OpenSearch.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Process streaming data in real-time with complex stateful aggregations" → Managed Apache Flink. "Detect fraud in real-time as transactions stream in" → Flink. Flink processes streams; KDS stores/delivers streams. They are often used together: MSK/KDS (transport) → Flink (processing) → S3/OpenSearch (destination).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">MSK</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon MSK — Managed Streaming for Apache Kafka <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Fully managed Kafka — migrate existing Kafka workloads to AWS</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon MSK (Managed Streaming for Apache Kafka) is a fully managed service that runs Apache Kafka on AWS. AWS handles Kafka broker provisioning, configuration, patching, and ZooKeeper/KRaft management — you focus on producing and consuming messages.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Fully compatible with Apache Kafka — existing Kafka producers, consumers, and Kafka Streams applications work with MSK without code changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data is stored on EBS volumes attached to broker nodes. Configurable retention period (unlike KDS which maxes at 365 days, Kafka retention can be much longer or unlimited).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Runs inside your VPC — brokers are private by default. Clients connect via private endpoints.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>MSK Serverless</strong>: fully managed Kafka without managing brokers or capacity — auto-scales, pay per partition-hour.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>MSK Connect</strong>: run Kafka Connect connectors (source/sink connectors for databases, S3, OpenSearch, etc.) as a managed service.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Consumers using Lambda via <strong>MSK Event Source Mapping</strong> — Lambda can poll MSK topics and process batches of Kafka messages.</span></div>
+          </div>
+
+          <table class="compare-table" style="margin-top:14px">
+            <tr><th></th><th>MSK (Kafka)</th><th>Kinesis Data Streams</th></tr>
+            <tr><td class="label">Protocol</td><td>Apache Kafka protocol (open standard)</td><td>AWS proprietary (Kinesis API)</td></tr>
+            <tr><td class="label">Migration</td><td>Lift-and-shift for existing Kafka apps</td><td>AWS-native only</td></tr>
+            <tr><td class="label">Message size</td><td>Default 1 MB, configurable up to 10 MB</td><td>Max 1 MB</td></tr>
+            <tr><td class="label">Retention</td><td>Configurable, can be very long or unlimited</td><td>1–365 days</td></tr>
+            <tr><td class="label">Scaling</td><td>Add brokers manually (or use Serverless)</td><td>Add/remove shards, or On-Demand</td></tr>
+            <tr><td class="label">Best for</td><td>Existing Kafka workloads, Kafka ecosystem tools</td><td>New AWS-native streaming apps</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Migrate existing Apache Kafka cluster to AWS" → MSK. "New cloud-native streaming app on AWS" → Kinesis Data Streams. "Kafka message size > 1 MB" → MSK (configurable up to 10 MB vs KDS's hard 1 MB limit). MSK = Kafka protocol compatibility. KDS = AWS-native simplicity.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ BIG DATA PIPELINE ══════════════ -->
+    <div id="pipeline" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference Architecture</div>
+        <div class="page-title">Big Data Ingestion Pipeline</div>
+        <div class="page-desc">How all the data analytics services connect — the canonical end-to-end pipeline architecture.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">ARC</div>
+          <div class="concept-meta">
+            <div class="concept-title">End-to-End Data Lake Pipeline <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">From real-time ingestion to BI dashboards — the full pipeline every architect should know</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The canonical AWS big data pipeline combines streaming ingestion, batch ETL, a queryable data lake, and BI visualization. Understanding how each service plugs into the others is the key to answering architecture questions.</p>
+
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">1.</span> <span><strong>Ingestion</strong>: IoT devices / apps / servers → <strong>Kinesis Data Streams</strong> (real-time stream) or <strong>MSK</strong> (Kafka protocol). For batch: files dropped directly to S3.</span></div>
+            <div class="kp"><span class="kp-bullet">2.</span> <span><strong>Real-time processing</strong>: KDS/MSK → <strong>Managed Apache Flink</strong> (stateful stream processing, anomaly detection, enrichment) → results to S3 or OpenSearch.</span></div>
+            <div class="kp"><span class="kp-bullet">3.</span> <span><strong>Near-real-time delivery</strong>: KDS → <strong>Kinesis Data Firehose</strong> (buffer, compress, transform via Lambda) → S3 raw data bucket (the data lake landing zone).</span></div>
+            <div class="kp"><span class="kp-bullet">4.</span> <span><strong>Cataloguing</strong>: <strong>Glue Crawlers</strong> scan S3 → populate <strong>Glue Data Catalog</strong> with schemas and partitions.</span></div>
+            <div class="kp"><span class="kp-bullet">5.</span> <span><strong>ETL transformation</strong>: <strong>Glue ETL Jobs</strong> (or EMR for heavy workloads) → convert CSV/JSON to Parquet, clean data, join datasets → write to S3 processed zone.</span></div>
+            <div class="kp"><span class="kp-bullet">6.</span> <span><strong>Governance</strong>: <strong>Lake Formation</strong> enforces column/row-level access policies on the Glue Catalog tables.</span></div>
+            <div class="kp"><span class="kp-bullet">7.</span> <span><strong>Ad-hoc query</strong>: <strong>Athena</strong> queries the Glue-catalogued S3 Parquet data with SQL. Results written to S3.</span></div>
+            <div class="kp"><span class="kp-bullet">8.</span> <span><strong>Warehouse</strong>: structured/aggregated data → <strong>Redshift</strong> (COPY from S3) for complex multi-table analytics needing sub-second performance at petabyte scale.</span></div>
+            <div class="kp"><span class="kp-bullet">9.</span> <span><strong>Visualization</strong>: <strong>QuickSight</strong> connects to Athena or Redshift → dashboards for business users.</span></div>
+            <div class="kp"><span class="kp-bullet">10.</span> <span><strong>Search</strong>: <strong>OpenSearch</strong> receives a copy of events (via Lambda/Firehose) → powers full-text search and real-time log analytics dashboards.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>The exam often presents a scenario describing parts of this pipeline and asks which services to use for which role. Map each function to its service: real-time transport = KDS/MSK, real-time processing = Flink, delivery to S3 = Firehose, catalog = Glue, ETL = Glue/EMR, governance = Lake Formation, SQL on S3 = Athena, warehouse = Redshift, BI = QuickSight, search = OpenSearch.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CHEAT SHEET ══════════════ -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Data Analytics Cheat Sheet</div>
+        <div class="page-desc">One-line summaries, scenario mappings, and the most common exam distractors.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Service Summary Table <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">One-liner + role in the data ecosystem</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Service</th><th>One-line summary</th><th>Role</th></tr>
+            <tr><td class="label">Athena</td><td>Serverless SQL on S3 — $5/TB scanned</td><td>Query layer on data lake</td></tr>
+            <tr><td class="label">Redshift</td><td>Columnar MPP data warehouse — OLAP at petabyte scale</td><td>Warehouse for BI workloads</td></tr>
+            <tr><td class="label">OpenSearch</td><td>Managed Elasticsearch — full-text search and log analytics</td><td>Search and real-time log dashboards</td></tr>
+            <tr><td class="label">EMR</td><td>Managed Hadoop/Spark clusters — big data processing at scale</td><td>Heavy ETL and data processing</td></tr>
+            <tr><td class="label">QuickSight</td><td>Serverless BI dashboards — connect to any AWS data source</td><td>Visualization and reporting layer</td></tr>
+            <tr><td class="label">Glue</td><td>Serverless ETL + central metadata catalog</td><td>Data discovery, cataloguing, transformation</td></tr>
+            <tr><td class="label">Lake Formation</td><td>Data lake governance — column/row/cell-level access on S3/Glue data</td><td>Security and access control layer</td></tr>
+            <tr><td class="label">Managed Flink</td><td>Serverless Apache Flink — stateful real-time stream processing</td><td>Real-time stream processing</td></tr>
+            <tr><td class="label">MSK</td><td>Managed Apache Kafka — lift-and-shift Kafka workloads</td><td>Event streaming (Kafka protocol)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Pick the right service for any exam scenario</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"SQL query on S3 data, no infrastructure"</td><td class="label">Athena</td></tr>
+            <tr><td>"Analyze VPC Flow Logs / CloudTrail with SQL"</td><td class="label">Athena</td></tr>
+            <tr><td>"Reduce Athena costs on large S3 datasets"</td><td class="label">Partition data + convert to Parquet/ORC + compress</td></tr>
+            <tr><td>"Query S3 data from within Redshift"</td><td class="label">Redshift Spectrum</td></tr>
+            <tr><td>"Petabyte-scale analytics on structured data warehouse"</td><td class="label">Redshift</td></tr>
+            <tr><td>"Fast bulk load data into Redshift"</td><td class="label">COPY command from S3</td></tr>
+            <tr><td>"Full-text search on product catalog"</td><td class="label">OpenSearch</td></tr>
+            <tr><td>"Real-time log dashboards from application logs"</td><td class="label">OpenSearch + OpenSearch Dashboards</td></tr>
+            <tr><td>"Process petabytes with Spark/Hadoop"</td><td class="label">EMR</td></tr>
+            <tr><td>"Cost-effective batch Spark processing"</td><td class="label">EMR transient cluster with Spot Task nodes</td></tr>
+            <tr><td>"BI dashboards for business users on AWS data"</td><td class="label">QuickSight</td></tr>
+            <tr><td>"Discover and catalog S3 data schema automatically"</td><td class="label">Glue Crawler → Glue Data Catalog</td></tr>
+            <tr><td>"Convert S3 CSV files to Parquet (ETL)"</td><td class="label">Glue ETL Job</td></tr>
+            <tr><td>"Column-level or row-level security on data lake"</td><td class="label">Lake Formation</td></tr>
+            <tr><td>"Share data lake tables across AWS accounts"</td><td class="label">Lake Formation cross-account sharing</td></tr>
+            <tr><td>"Real-time fraud detection on streaming transactions"</td><td class="label">Managed Apache Flink (consuming from KDS/MSK)</td></tr>
+            <tr><td>"Migrate existing Apache Kafka cluster to AWS"</td><td class="label">Amazon MSK</td></tr>
+            <tr><td>"New AWS-native event streaming, no Kafka dependency"</td><td class="label">Kinesis Data Streams</td></tr>
+            <tr><td>"Kafka message size > 1 MB"</td><td class="label">MSK (configurable up to 10 MB)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">TRAP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Common Exam Traps <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The confusing pairs and gotchas most likely to appear</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Athena vs Redshift</strong>: Athena = serverless SQL on raw S3 files, ad-hoc, pay per scan. Redshift = managed data warehouse, structured data, complex multi-table BI at scale. Athena for one-off analysis; Redshift for ongoing BI workloads with high query frequency.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue vs EMR</strong>: Glue = serverless ETL, no cluster management, lower control. EMR = managed clusters with full control over Spark/Hadoop configuration, better for complex workloads. Glue for simple ETL; EMR for heavy custom processing.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Athena vs OpenSearch</strong>: Athena = SQL batch queries on files. OpenSearch = real-time arbitrary field search on indexed documents. They complement each other — use both in the same architecture.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>MSK vs Kinesis Data Streams</strong>: MSK = Kafka protocol (migration from on-prem). KDS = AWS-native, simpler, tighter integration. Both are streaming transports — choose based on whether Kafka compatibility is needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Redshift is NOT Multi-AZ by default</strong>: standard Redshift runs in one AZ. This is a trap — RDS Multi-AZ is common, but Redshift RA3 Multi-AZ is a separate feature. DR = automated snapshots to S3 + restore in another AZ/region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lake Formation vs IAM + S3 bucket policies</strong>: for data lake security, Lake Formation permissions override and simplify IAM + S3 policies. One place to manage access for all services (Athena, Redshift Spectrum, EMR) instead of per-service IAM policies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glue Data Catalog is shared</strong>: Athena, Redshift Spectrum, and EMR all read from the SAME Glue Data Catalog in the region. Define the table once, query it from any of the three.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

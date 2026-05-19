@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Machine Learning Services — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Machine Learning</h1>
+    </div>
+
+    <div class="nav-section-label">Vision & Speech</div>
+    <a class="nav-item active" onclick="show('vision')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Rekognition & Transcribe
+    </a>
+    <a class="nav-item" onclick="show('speech')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Polly, Translate & Lex
+    </a>
+
+    <div class="nav-section-label">Language & Documents</div>
+    <a class="nav-item" onclick="show('nlp')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Comprehend & Textract
+    </a>
+
+    <div class="nav-section-label">Platform & Search</div>
+    <a class="nav-item" onclick="show('platform')">
+      <span class="nav-dot" style="background:#f0a742"></span> SageMaker & Kendra
+    </a>
+    <a class="nav-item" onclick="show('personalize')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Personalize & Connect
+    </a>
+
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('cheatsheet')">
+      <span class="nav-dot" style="background:#56d364"></span> Service Cheat Sheet
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ VISION & RECOGNITION ══════════════ -->
+    <div id="vision" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Vision & Speech</div>
+        <div class="page-title">Rekognition & Transcribe</div>
+        <div class="page-desc">Computer vision for images and video, plus speech-to-text transcription.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">REK</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Rekognition <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Computer vision API — analyze images and videos without ML expertise</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Rekognition is a fully managed computer vision service that analyzes images and videos for objects, scenes, faces, text, and activities using deep learning — no ML knowledge required. You send an image or video to the API and receive structured JSON results.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Object and scene detection</strong>: identify thousands of objects (cars, trees, food, animals), scenes (beach, city, stadium), and activities (running, dancing). Each detection comes with a confidence score.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Facial analysis</strong>: detect faces and return attributes — age range, gender, emotions (happy, sad, angry, surprised, etc.), glasses, beard, smile. Also detects face poses and quality metrics.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Facial comparison</strong>: compare two faces to determine if they belong to the same person. Returns a similarity score. Used for identity verification.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Facial search / Celebrity recognition</strong>: index a collection of faces and search for matching faces in images or video streams. Also recognizes thousands of public celebrities by name.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Content moderation</strong>: detect explicit, suggestive, or violent content in images and video. Returns confidence scores — use a threshold to automatically flag or block content. Essential for user-generated content platforms.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Text in images (OCR)</strong>: detect and extract printed and handwritten text from images (different from Textract — Rekognition OCR is simpler, Textract handles structured documents).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Video analysis</strong>: Rekognition Video processes video asynchronously (stored in S3) or in real-time (via Kinesis Video Streams) — detects activities, tracks people across frames, identifies scenes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Custom Labels</strong>: train a custom model on your own labeled images to detect domain-specific objects that Rekognition doesn't detect out-of-the-box (e.g. specific product defects, proprietary logos).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Automatically moderate user-uploaded photos" → Rekognition content moderation. "Verify a user's identity by comparing their selfie to their ID photo" → Rekognition facial comparison. "Detect what's in an image" → Rekognition. Rekognition OCR = simple text in images; Textract = structured documents with forms and tables.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">TRN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Transcribe <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Automatic speech recognition — audio/video to accurate text transcripts</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Transcribe converts speech in audio and video files (or live streams) to text using automatic speech recognition (ASR). It is fully managed and serverless — submit audio, receive a transcript.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports <strong>batch transcription</strong> (audio/video stored in S3) and <strong>real-time streaming transcription</strong> (live audio via WebSocket or HTTP/2).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Speaker identification (diarization)</strong>: distinguish and label multiple speakers in a recording — "Speaker 1: ...", "Speaker 2: ...". Useful for call center transcripts, interviews, meetings.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Custom vocabulary</strong>: improve accuracy for domain-specific terms (medical jargon, product names, acronyms) by providing a custom vocabulary list.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>PII redaction</strong>: automatically identify and redact Personally Identifiable Information (names, addresses, credit card numbers, phone numbers) from transcripts. Critical for compliance.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Language identification</strong>: automatically detect the language spoken (from a list you specify) without knowing in advance.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports <strong>multiple languages</strong> including English, Spanish, French, German, Japanese, Korean, Portuguese, and many more.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Convert call center audio recordings to text" → Transcribe. "Transcribe with multiple speakers identified" → Transcribe with speaker diarization. "Remove PII from call transcripts automatically" → Transcribe PII redaction. Transcribe = speech → text. Polly = text → speech (opposite direction).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SPEECH, TRANSLATION & CONVERSATIONAL AI ══════════════ -->
+    <div id="speech" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Speech & Language</div>
+        <div class="page-title">Polly, Translate & Lex</div>
+        <div class="page-desc">Text-to-speech synthesis, language translation, and conversational AI chatbots.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">POL</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Polly <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Text-to-speech — lifelike voices in dozens of languages</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Polly converts text into lifelike spoken audio using deep learning. It is the opposite of Transcribe: Transcribe = speech → text, Polly = text → speech.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Standard voices</strong>: high-quality speech synthesis using traditional concatenative TTS. <strong>Neural voices</strong> (NTTS): more natural, expressive speech using neural networks. Neural voices sound significantly more human-like but cost more.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Newscaster style</strong>: a Neural Text-to-Speech style that simulates a professional news anchor voice. Available for select English voices.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SSML (Speech Synthesis Markup Language)</strong>: XML-based markup to control pronunciation, speaking rate, pitch, volume, pauses, emphasis, and even whisper effects.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lexicons</strong>: customized pronunciation rules for words and phrases — e.g. define how "AWS" should be pronounced as "Amazon Web Services" or how a brand name should sound.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Output formats: MP3, OGG, PCM. Can stream audio in real-time or store to S3.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: accessibility (read articles aloud), e-learning (narrated courses), IVR systems (phone menu prompts), dynamic notifications (read news/reports), multilingual apps.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Polly = text → speech (Transcribe is the inverse). "Build a screen reader for visually impaired users" → Polly. "Dynamically generate audio notifications" → Polly. Neural voices = more natural, more expensive. SSML = fine-grained pronunciation and style control.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">TRL</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Translate <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Neural machine translation — accurate, fluent translation between 75+ languages</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Translate is a neural machine translation service that delivers fast, high-quality, and customizable language translation. It can translate text in real-time or in batch at scale.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports <strong>75+ languages</strong>. Translate between any supported language pair — not just to/from English.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Custom terminology</strong>: define domain-specific terms that must be translated in a specific way (brand names, technical terms, product names) — overrides the default translation for those terms.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Active Custom Translation (ACT)</strong>: fine-tune the translation model on parallel texts (source + reference translations) specific to your domain for higher quality.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: localize websites/apps for international markets, translate user-generated content (reviews, support tickets), real-time chat translation, multilingual document processing.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Translate user reviews into English from multiple languages" → Amazon Translate. "Translate website content dynamically for international users" → Amazon Translate. One-liner: Translate = language conversion at scale. Don't confuse with Comprehend (which detects language and analyzes sentiment, but doesn't translate).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">LEX</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Lex + Connect <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Conversational AI chatbot engine — the technology behind Alexa, integrated with Amazon Connect</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Lex is a fully managed service for building conversational interfaces using voice and text. It uses the same ASR and NLU technology that powers Amazon Alexa. Amazon Connect is AWS's cloud-based contact center service built on top of Lex.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lex capabilities</strong>: ASR (convert speech to text input), NLU (understand intent from text), manages multi-turn conversations (remembers context across turns), slots (gather specific pieces of information from users).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Intents</strong>: what the user wants to do (e.g. "BookFlight", "CheckBalance"). <strong>Slots</strong>: pieces of information needed to fulfill the intent (departure city, date, seat class). Lex prompts for missing slots.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lambda integration</strong>: Lex triggers a Lambda function to fulfill the intent (look up data, make a booking, call an API). Lambda handles the business logic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Amazon Connect</strong>: cloud contact center service. Handles inbound/outbound calls with IVR flows powered by Lex. Can route calls to agents, play prompts, gather customer input via voice — all serverless. No per-seat licensing.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Typical flow: Customer calls → Connect IVR → Lex understands intent → Lambda fulfills → response played back via Polly (TTS).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Build a chatbot that understands natural language" → Amazon Lex. "Build a call center IVR with AI understanding" → Amazon Connect + Lex. "The technology behind Alexa" = Lex. Lex handles conversation management; Lambda handles business logic. Connect = the contact center layer on top of Lex.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ NLP & DOCUMENTS ══════════════ -->
+    <div id="nlp" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Language & Documents</div>
+        <div class="page-title">Comprehend & Textract</div>
+        <div class="page-desc">Natural language processing for text analysis, and intelligent document extraction from PDFs and scanned forms.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">COM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Comprehend <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">NLP — extract meaning, sentiment, entities, and topics from text</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Comprehend is a fully managed NLP (Natural Language Processing) service that extracts insights from unstructured text — customer reviews, social media posts, emails, support tickets, documents — without requiring ML expertise.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Sentiment analysis</strong>: determine if text is Positive, Negative, Neutral, or Mixed. Returns confidence scores for each. Use for analyzing product reviews, social media, support tickets, or surveys.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Entity recognition (NER)</strong>: identify and classify named entities in text — People, Organizations, Locations, Dates, Quantities, Events, Products, Titles. Returns the entity text and its type.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Key phrase extraction</strong>: identify the most important phrases in a document that describe the main topics (without needing full entity classification).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Language detection</strong>: automatically identify which language a piece of text is written in from 100+ supported languages. Returns confidence score per detected language.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>PII detection and redaction</strong>: detect and optionally redact Personally Identifiable Information in text — names, addresses, SSNs, credit card numbers, phone numbers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Topic modeling</strong>: discover latent topics across a collection of documents using Latent Dirichlet Allocation (LDA). Groups documents by theme without predefined categories.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Custom Classification and Custom Entity Recognition</strong>: train custom NLP models on your own labeled data for domain-specific categories (e.g. classify support tickets into your own categories, or recognize proprietary entity types).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Analyze sentiment of customer reviews" → Comprehend. "Extract named entities from news articles" → Comprehend. "Detect the language of incoming messages" → Comprehend. "Classify support tickets into custom categories" → Comprehend Custom Classification. Comprehend = analyze/understand text. Translate = convert text to another language. Transcribe = audio to text.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">MED</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Comprehend Medical <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Clinical NLP — extract medical entities from unstructured clinical text</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Comprehend Medical is a specialized version of Comprehend trained on medical and clinical language. It extracts medical information from unstructured clinical text — doctor's notes, discharge summaries, lab reports, prescriptions.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Medical entity extraction</strong>: identifies medical entities — Medications (drug name, dosage, route, frequency), Medical Conditions (diagnoses, signs, symptoms), Anatomy (body parts, systems), Test/Treatment/Procedure (lab tests, imaging, treatments), Time expressions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Protected Health Information (PHI) detection</strong>: identify and locate PHI in clinical text for HIPAA compliance — patient names, dates, addresses, identifiers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ICD-10-CM and RxNorm ontology linking</strong>: map detected conditions to ICD-10-CM codes (standard diagnosis codes) and medications to RxNorm concepts (standard drug database).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: clinical decision support, pharmacovigilance (adverse event detection), patient timeline extraction, clinical trial matching, revenue cycle automation.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Extract medical information from clinical notes" → Comprehend Medical. "Detect PHI in patient records for HIPAA compliance" → Comprehend Medical. "Map diagnoses to ICD-10 codes" → Comprehend Medical. It is Comprehend specialized for clinical/medical language — not general-purpose NLP.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">TXT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Textract <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Intelligent document extraction — beyond OCR, understands forms and tables</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Textract extracts text and structured data from scanned documents, PDFs, and images. Unlike basic OCR tools, Textract understands document structure — it can extract form fields (key-value pairs), table data (rows and columns), and preserve the semantic layout of the document.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Text extraction</strong>: detects and extracts all printed and handwritten text from documents, preserving spatial positioning.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Form extraction</strong>: identifies key-value pairs in forms — e.g. "Name: John Smith", "Date of Birth: 01/01/1990". Understands that a label and its adjacent value belong together.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Table extraction</strong>: detects tables in documents and extracts cell content with row/column coordinates — preserving the structure of financial statements, invoices, and data tables.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Queries API</strong>: ask specific questions about a document (e.g. "What is the patient's date of birth?" or "What is the invoice total?") and Textract returns the answer — without processing the entire document structure.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Specialty document analysis</strong>: pre-built models for Expense documents (invoices, receipts), ID documents (passports, driver's licenses), Lending documents (W-2, 1099, mortgage applications).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Handles both synchronous (real-time, single page) and asynchronous (multi-page PDFs stored in S3) processing.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: automating invoice processing, digitizing medical forms, extracting data from tax documents, processing insurance claims, onboarding document verification.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Textract vs Rekognition OCR: Rekognition OCR = detect text in images (simple). Textract = extract structured data from documents (forms, tables, key-value pairs). "Extract form fields from scanned PDFs" → Textract. "Process invoices and receipts automatically" → Textract Expense Analysis. Textract understands document layout and structure; Rekognition just detects text characters.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SAGEMAKER & KENDRA ══════════════ -->
+    <div id="platform" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — Platform & Search</div>
+        <div class="page-title">SageMaker AI & Kendra</div>
+        <div class="page-desc">Build, train and deploy custom ML models with SageMaker; add intelligent enterprise search with Kendra.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SGM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon SageMaker AI <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">End-to-end ML platform — build, train, tune, and deploy custom models at scale</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon SageMaker is a fully managed platform for the complete machine learning lifecycle — from data preparation and model training to deployment and monitoring. Unlike the other AWS ML services (which are pre-built APIs), SageMaker is for building your own custom models when the pre-built services don't fit your use case.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SageMaker Studio</strong>: web-based integrated development environment (IDE) for ML — notebooks, training jobs, experiments, model registry, and deployment all in one UI.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SageMaker Notebooks</strong>: fully managed Jupyter notebooks with on-demand compute. No server setup — spin up a GPU-backed notebook in seconds.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Training Jobs</strong>: run training on managed infrastructure. SageMaker provisions the compute (any instance type), runs your training script, saves the model artifact to S3, then terminates the instance. Pay only for training time.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Automatic Model Tuning (HPO)</strong>: automatically find the best hyperparameters for your model using Bayesian optimization — runs many training jobs in parallel and tracks which parameters produce the best results.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SageMaker Endpoints</strong>: deploy trained models as real-time HTTPS inference endpoints. Fully managed — auto-scaling, A/B testing between model versions, multi-model endpoints (host multiple models on one endpoint to reduce costs).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Batch Transform</strong>: run inference on large datasets stored in S3 without a live endpoint. Cost-effective for bulk predictions that don't need real-time latency.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SageMaker Pipelines</strong>: CI/CD for ML — build repeatable, automated ML workflows (data processing → training → evaluation → deployment) triggered by code commits or schedules.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>SageMaker is the answer when existing AI services (Rekognition, Comprehend, etc.) don't solve the problem and a custom model is needed. "Train a custom ML model" → SageMaker. "Deploy a trained model as an API endpoint" → SageMaker Endpoint. For the exam, SageMaker is often the answer to "none of the pre-built AI services fit this specific use case."</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">KEN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Kendra <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Intelligent enterprise search — natural language search across internal documents</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Kendra is a fully managed intelligent search service powered by machine learning. It enables natural language search across your organization's internal documents and data sources — returning direct answers, not just links to documents.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Unlike traditional keyword search, Kendra understands natural language queries — "What is the vacation policy?" returns the specific paragraph, not a list of documents containing those words.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Data source connectors</strong>: index content from S3, SharePoint, Confluence, Salesforce, ServiceNow, RDS, OneDrive, Slack, GitHub, Jira, and many more — without building custom ingestion pipelines.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports document formats: PDF, Word, HTML, PowerPoint, and plain text.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Incremental learning</strong>: learns from user interactions (which results users click) to continuously improve search relevance over time.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: internal knowledge base search, HR policy queries, IT helpdesk automation, customer support knowledge search, regulatory document search.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Employees search internal company documents using natural language questions" → Amazon Kendra. Kendra = intelligent enterprise search (understands intent, returns direct answers). Contrast with OpenSearch (Elasticsearch-compatible, keyword/full-text search, analytics). Kendra is ML-powered; OpenSearch is traditional search.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ PERSONALIZE & CONNECT ══════════════ -->
+    <div id="personalize" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Personalization</div>
+        <div class="page-title">Personalize & Connect</div>
+        <div class="page-desc">Real-time ML-powered recommendations for every user, and the full Amazon Connect contact center picture.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">PER</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Personalize <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Real-time personalized recommendations — same ML technology as Amazon.com</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Personalize is a fully managed ML service for building real-time personalized recommendations — product recommendations, content suggestions, search ranking, and user segmentation. It uses the same recommendation technology AWS built for Amazon.com.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Takes in three types of data: <strong>User data</strong> (demographics, attributes), <strong>Item data</strong> (product catalog, content metadata), and <strong>Interaction data</strong> (clicks, purchases, views, ratings — the most important signal).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Automatically selects, trains, and tunes the right ML algorithm based on your data and use case — no ML expertise needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Use cases</strong>: "Customers who bought this also bought…", "Recommended for you", trending items, similar items, personalized search ranking, re-engagement campaigns (which items to promote to a specific user via email/push).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Real-time recommendations</strong>: deployed as an API — call the endpoint with a user ID and get back ranked recommendations in milliseconds. Also supports batch recommendations for offline use (email campaigns).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data stays entirely in your AWS account — Personalize trains private models on your data, not shared models. Results are specific to your business.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Add product recommendations to an e-commerce site" → Amazon Personalize. "Personalize content for each user on a media streaming platform" → Amazon Personalize. The key differentiator: Personalize trains ML models on YOUR interaction data. SageMaker can also build recommendation systems but requires ML expertise to build from scratch.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CON</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Connect — Full Picture <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Cloud contact center — omnichannel, AI-powered, no hardware required</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Connect is AWS's cloud-native contact center service — an omnichannel platform for handling customer calls, chat, and tasks. It integrates with Lex (conversational AI), Polly (TTS), Lambda (business logic), and other AWS services to create intelligent, serverless contact center flows.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>No hardware or telephony infrastructure required — provision a contact center in minutes. Pay per minute of call + per message for chat. No agent seat licenses.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Contact flows</strong>: visual drag-and-drop builder for IVR flows — play prompts (Polly), gather DTMF/speech input (Lex), route to agents or queues, trigger Lambda for lookups, set attributes based on conditions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Full architecture for an AI-powered call center: Caller dials → Connect receives → Lex handles NLU → Lambda does CRM lookup → Polly reads back response → route to human agent if needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Integrates with CRMs (Salesforce, Zendesk), WFM tools, and AWS analytics (Kinesis → QuickSight dashboards for real-time contact center metrics).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Build an AI-powered call center with no servers" → Amazon Connect + Lex + Polly + Lambda. Amazon Connect is the exam's standard answer for "contact center" or "IVR" scenarios. Often appears combined with Lex (NLU), Polly (TTS), and Lambda (business logic) in a single architecture question.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CHEAT SHEET ══════════════ -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">ML Service Cheat Sheet</div>
+        <div class="page-desc">One-line summaries and scenario mappings for every AWS ML service in this module.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">SUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">One-Line Service Summaries <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">What each service does in one sentence — the format the exam uses</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Service</th><th>One-line summary</th><th>Key trigger words</th></tr>
+            <tr><td class="label">Rekognition</td><td>Computer vision — detect objects, faces, text, and explicit content in images and video</td><td>"images", "faces", "video", "content moderation", "facial recognition"</td></tr>
+            <tr><td class="label">Transcribe</td><td>Speech-to-text — convert audio/video to transcripts with speaker labels and PII redaction</td><td>"audio to text", "call transcripts", "speech recognition", "diarization"</td></tr>
+            <tr><td class="label">Polly</td><td>Text-to-speech — convert text to lifelike spoken audio in dozens of languages</td><td>"text to audio", "read aloud", "voice", "TTS", "screen reader"</td></tr>
+            <tr><td class="label">Translate</td><td>Neural machine translation — translate text between 75+ languages at scale</td><td>"translate", "multilingual", "language conversion", "localize"</td></tr>
+            <tr><td class="label">Lex</td><td>Conversational AI — build voice and text chatbots using Alexa's NLU and ASR technology</td><td>"chatbot", "intent", "NLU", "conversational", "Alexa technology"</td></tr>
+            <tr><td class="label">Connect</td><td>Cloud contact center — omnichannel IVR powered by Lex and Polly, no hardware required</td><td>"contact center", "call center", "IVR", "customer service calls"</td></tr>
+            <tr><td class="label">Comprehend</td><td>NLP — extract sentiment, entities, key phrases, language, topics, and PII from text</td><td>"sentiment", "entities", "NLP", "text analysis", "reviews", "classify documents"</td></tr>
+            <tr><td class="label">Comprehend Medical</td><td>Clinical NLP — extract medications, diagnoses, PHI, and medical entities from clinical text</td><td>"clinical notes", "medical records", "PHI", "HIPAA", "ICD-10", "medications"</td></tr>
+            <tr><td class="label">SageMaker</td><td>End-to-end ML platform — build, train, tune, and deploy custom ML models at scale</td><td>"custom model", "train ML model", "ML pipeline", "model endpoint", "no pre-built service fits"</td></tr>
+            <tr><td class="label">Kendra</td><td>Intelligent enterprise search — natural language Q&A across internal documents and data sources</td><td>"search documents", "enterprise search", "knowledge base", "natural language search"</td></tr>
+            <tr><td class="label">Personalize</td><td>Real-time ML recommendations — personalized product/content suggestions using your own data</td><td>"recommendations", "personalized", "e-commerce", "what to watch next"</td></tr>
+            <tr><td class="label">Textract</td><td>Intelligent document extraction — extract text, forms (key-value), and tables from PDFs and scanned images</td><td>"extract from PDF", "forms", "invoices", "tables from documents", "structured extraction"</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Easy-to-Confuse Pairs <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The most common exam distractors — know exactly how these services differ</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Pair</th><th>How to tell them apart</th></tr>
+            <tr><td class="label">Transcribe vs Polly</td><td>Transcribe = speech → text. Polly = text → speech. Exact opposites. "Transcribe converts audio to text; Polly converts text to audio."</td></tr>
+            <tr><td class="label">Rekognition OCR vs Textract</td><td>Rekognition OCR = detect text characters in an image (simple). Textract = extract structured data from documents — forms, tables, key-value pairs (intelligent). Use Textract for PDFs/documents; Rekognition for "what text appears in this photo."</td></tr>
+            <tr><td class="label">Comprehend vs Translate</td><td>Comprehend = analyze text (sentiment, entities, language detection, topic modeling). Translate = convert text to another language. Comprehend understands; Translate converts.</td></tr>
+            <tr><td class="label">Kendra vs OpenSearch</td><td>Kendra = ML-powered natural language enterprise search (asks a question, gets a direct answer). OpenSearch = Elasticsearch-based full-text search (keyword matching, log analytics). Kendra understands intent; OpenSearch matches keywords.</td></tr>
+            <tr><td class="label">Personalize vs Rekognition</td><td>Personalize = recommend items/content to users based on behavior. Rekognition = analyze what's in images/video. Completely different domains.</td></tr>
+            <tr><td class="label">Comprehend vs Comprehend Medical</td><td>Comprehend = general-purpose NLP on any text. Comprehend Medical = specialized for clinical/medical language (trained on medical text, maps to ICD-10/RxNorm, detects PHI for HIPAA).</td></tr>
+            <tr><td class="label">SageMaker vs pre-built AI services</td><td>Pre-built services (Rekognition, Comprehend, etc.) = ready-to-use APIs, no ML expertise needed. SageMaker = build and train your own custom model when pre-built services don't solve your specific problem.</td></tr>
+            <tr><td class="label">Lex vs Connect</td><td>Lex = the NLU/chatbot engine (understands intent from voice/text). Connect = the contact center platform that uses Lex as its AI brain. Connect routes calls; Lex understands them.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

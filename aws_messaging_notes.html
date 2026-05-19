@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Messaging & Event Streaming — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Messaging & Event Streaming</h1>
+    </div>
+
+    <div class="nav-section-label">Concepts</div>
+    <a class="nav-item active" onclick="show('intro')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Why Decouple?
+    </a>
+
+    <div class="nav-section-label">SQS</div>
+    <a class="nav-item" onclick="show('sqs-core')">
+      <span class="nav-dot" style="background:#39d0a0"></span> SQS Core
+    </a>
+    <a class="nav-item" onclick="show('sqs-advanced')">
+      <span class="nav-dot" style="background:#bc8cff"></span> SQS Advanced
+    </a>
+    <a class="nav-item" onclick="show('sqs-fifo')">
+      <span class="nav-dot" style="background:#f0a742"></span> SQS FIFO & ASG
+    </a>
+
+    <div class="nav-section-label">SNS</div>
+    <a class="nav-item" onclick="show('sns')">
+      <span class="nav-dot" style="background:#ff7b72"></span> SNS & Fan-Out
+    </a>
+
+    <div class="nav-section-label">Kinesis</div>
+    <a class="nav-item" onclick="show('kds')">
+      <span class="nav-dot" style="background:#56d364"></span> Kinesis Data Streams
+    </a>
+    <a class="nav-item" onclick="show('firehose')">
+      <span class="nav-dot" style="background:#db6eb0"></span> Data Firehose
+    </a>
+
+    <div class="nav-section-label">Other & Reference</div>
+    <a class="nav-item" onclick="show('mq')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Amazon MQ
+    </a>
+    <a class="nav-item" onclick="show('compare')">
+      <span class="nav-dot" style="background:#f0a742"></span> SQS vs SNS vs Kinesis
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ WHY DECOUPLE ══════════════ -->
+    <div id="intro" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Foundations</div>
+        <div class="page-title">Why Decouple Applications?</div>
+        <div class="page-desc">The problem with tightly coupled synchronous systems — and how async messaging solves it.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">DCL</div>
+          <div class="concept-meta">
+            <div class="concept-title">Synchronous vs Asynchronous Communication <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Why tight coupling breaks at scale — and the three decoupling patterns</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>In a synchronous (tightly coupled) architecture, Service A calls Service B and waits for a response. If B is slow or unavailable, A is blocked — and any traffic spike that overwhelms B cascades directly into A. Decoupling adds an intermediary so services operate independently.</p>
+          <table class="compare-table">
+            <tr><th>Pattern</th><th>Service</th><th>Model</th><th>Best for</th></tr>
+            <tr><td class="label">Queue</td><td>SQS</td><td>One producer, one consumer (pull model). Messages wait to be processed.</td><td>Work queues, task offloading, load leveling, decoupling services</td></tr>
+            <tr><td class="label">Pub/Sub</td><td>SNS</td><td>One producer, many consumers (push model). All subscribers receive every message.</td><td>Event notifications, fan-out, broadcasting to multiple systems</td></tr>
+            <tr><td class="label">Stream</td><td>Kinesis</td><td>Many producers, many consumers. Messages retained and replayable. Ordered within shard.</td><td>Real-time analytics, log ingestion, event sourcing, IoT telemetry</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Decoupling provides: <strong>resilience</strong> (producer keeps working if consumer is down), <strong>elasticity</strong> (scale consumers independently), <strong>load leveling</strong> (smooth out traffic spikes), and <strong>fault isolation</strong> (failures don't cascade).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>All three AWS services (SQS, SNS, Kinesis) are fully managed — no servers to provision, no message brokers to operate.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Queue (SQS) = point-to-point, consumer deletes messages after processing. Pub/Sub (SNS) = broadcast to all subscribers. Stream (Kinesis) = ordered, replayable, retained. When the exam describes a "traffic spike overwhelming a downstream service" → SQS queue in between is almost always the answer.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SQS CORE ══════════════ -->
+    <div id="sqs-core" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — SQS</div>
+        <div class="page-title">SQS — Standard Queue Core</div>
+        <div class="page-desc">Amazon's oldest service — fully managed message queuing with at-least-once delivery and best-effort ordering.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SQS</div>
+          <div class="concept-meta">
+            <div class="concept-title">SQS Standard Queue <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Fully managed queue — unlimited throughput, at-least-once delivery</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>SQS (Simple Queue Service) is AWS's oldest service and the foundational tool for decoupling components. Producers send messages to a queue; consumers poll the queue, process messages, and delete them. SQS is the buffer between services.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Unlimited throughput</strong> and unlimited number of messages in the queue. Fully serverless — no provisioning required.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default message retention: <strong>4 days</strong>. Maximum retention: <strong>14 days</strong>. Messages not processed within this window are permanently deleted.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Maximum message size: <strong>256 KB</strong>. For larger payloads, store the data in S3 and send a reference in the SQS message (use the SQS Extended Client library).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>At-least-once delivery</strong>: a message may be delivered more than once. Your consumer must be <strong>idempotent</strong> — processing the same message twice should produce the same result.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Best-effort ordering</strong>: messages are generally delivered in the order they were sent, but this is NOT guaranteed in a Standard queue. Use FIFO queue for strict ordering.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Consumers <strong>poll</strong> the queue (pull model) — SQS doesn't push to consumers. Consumers must actively request messages.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multiple consumers can poll the same queue — each message is delivered to only <strong>one consumer</strong> (competing consumers pattern). Messages are not broadcast to all consumers (that's SNS).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>SQS is the #1 answer for "decouple two services" or "buffer a traffic spike." Key limits: 256 KB max message, 14 days max retention, at-least-once delivery (idempotent consumers required). Standard queue = unlimited throughput, no ordering guarantee. Need ordering? → FIFO queue.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">DLQ</div>
+          <div class="concept-meta">
+            <div class="concept-title">Dead Letter Queue (DLQ) <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Capture messages that repeatedly fail processing — prevent poison pill loops</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A Dead Letter Queue is a separate SQS queue that receives messages the main queue has failed to process successfully after a configured number of attempts. Prevents one bad message from blocking the entire queue indefinitely.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Configure a <strong>maxReceiveCount</strong> on the source queue (e.g. 5). If a message is received and not deleted after 5 attempts, SQS moves it to the DLQ automatically.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The DLQ must be the <strong>same type</strong> as the source queue: Standard → Standard DLQ, FIFO → FIFO DLQ.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Set a <strong>long retention period</strong> on the DLQ (up to 14 days) so you have time to debug failed messages before they expire.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DLQ Redrive</strong>: after fixing the bug, you can replay messages from the DLQ back to the source queue for reprocessing — without re-ingesting them from the producer.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use CloudWatch alarms on <code>ApproximateNumberOfMessagesNotVisible</code> and <code>NumberOfMessagesSent</code> on the DLQ to detect processing failures early.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Messages keep failing and blocking the queue" → configure a DLQ with maxReceiveCount. "Replay failed messages after fixing a bug" → DLQ Redrive. maxReceiveCount is the maximum number of times a message can be received before being moved to DLQ.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SQS ADVANCED ══════════════ -->
+    <div id="sqs-advanced" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — SQS</div>
+        <div class="page-title">SQS Advanced Features</div>
+        <div class="page-desc">Visibility timeout, long polling, delay queues, and message attributes.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">VIS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Visibility Timeout <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">How SQS prevents double-processing — the invisible window</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>When a consumer receives a message from SQS, the message becomes <strong>invisible</strong> to all other consumers for the visibility timeout period. This prevents two consumers from processing the same message simultaneously. The consumer must delete the message before the timeout expires, or the message becomes visible again.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default visibility timeout: <strong>30 seconds</strong>. Range: <strong>0 seconds to 12 hours</strong>. Set at the queue level; can be overridden per message via <code>ChangeMessageVisibility</code> API.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>If the consumer processes the message successfully → calls <code>DeleteMessage</code> → message permanently removed. If the consumer crashes or times out → visibility timeout expires → message becomes visible again → another consumer picks it up (at-least-once delivery).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>If visibility timeout is too short</strong>: message becomes visible before processing completes → processed twice → duplicates. If too long: a failed message is hidden for too long → delays retry → longer recovery time.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For long processing jobs, consumers should <strong>call <code>ChangeMessageVisibility</code></strong> to extend the timeout before it expires — like a heartbeat to SQS.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Messages are being processed twice" → visibility timeout is shorter than processing time. Increase it. "Message stuck invisible for too long after consumer crash" → visibility timeout is too long. The sweet spot = slightly longer than your maximum expected processing time.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">POL</div>
+          <div class="concept-meta">
+            <div class="concept-title">Long Polling <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Reduce empty responses and API costs by waiting for messages to arrive</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>By default, SQS uses <strong>short polling</strong> — the consumer sends a request, SQS checks a subset of its servers immediately, and returns any available messages (or an empty response if none exist). Long polling keeps the connection open until a message arrives or the wait time expires.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Long polling</strong>: consumer waits up to <strong>20 seconds</strong> for a message to arrive. If a message arrives during the wait → returned immediately. If not → empty response after 20s.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Long polling <strong>reduces the number of API calls</strong> (fewer empty responses) → lower costs. It also reduces latency slightly — message is returned as soon as it arrives rather than waiting for the next poll cycle.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Enable via: setting <code>WaitTimeSeconds</code> to 1–20 on the <code>ReceiveMessage</code> API call, or enabling it at the queue level (queue attribute <code>ReceiveMessageWaitTimeSeconds</code>).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Long polling is almost always preferable</strong> to short polling — lower cost, lower latency, same functionality.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Reduce SQS API costs" or "reduce empty poll responses" → enable long polling. Long polling waits up to 20 seconds. Short polling returns immediately even if the queue is empty. Long polling is preferred in almost all scenarios.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">EXT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Extended Client & Other Features <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Large messages via S3, delay queues, and message attributes</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SQS Extended Client Library</strong>: for messages larger than 256 KB, the producer stores the payload in S3 and sends a pointer in the SQS message. The consumer retrieves the pointer, downloads the payload from S3, and processes it. Messages can be up to 2 GB using this approach.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Delay Queues</strong>: delay delivery of new messages by 0–15 minutes. Messages are invisible to consumers for the delay period. Useful for scheduling retries or introducing processing lag.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Message Attributes</strong>: key-value metadata attached to a message (up to 10 attributes per message). Consumers can filter or route based on attributes without parsing the body.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Purge Queue</strong>: delete all messages in a queue instantly. Use with caution — cannot be undone.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Send a message larger than 256 KB through SQS" → SQS Extended Client Library (payload goes to S3, pointer goes to SQS). Delay queue = new message delay, up to 15 minutes. Visibility timeout = per-message processing window. Different concepts!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SQS FIFO & ASG ══════════════ -->
+    <div id="sqs-fifo" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — SQS</div>
+        <div class="page-title">SQS FIFO & Auto Scaling</div>
+        <div class="page-desc">Strict ordering, exactly-once processing, deduplication — and scaling EC2 consumers based on queue depth.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">FIFO</div>
+          <div class="concept-meta">
+            <div class="concept-title">SQS FIFO Queue <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">First-In-First-Out, exactly-once processing, strict ordering</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>FIFO (First-In-First-Out) queues guarantee that messages are processed in exactly the order they were sent, and that each message is processed exactly once. This comes at the cost of lower throughput compared to Standard queues.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Standard Queue</th><th>FIFO Queue</th></tr>
+            <tr><td class="label">Ordering</td><td>Best-effort (not guaranteed)</td><td>Strict FIFO — guaranteed</td></tr>
+            <tr><td class="label">Delivery</td><td>At-least-once (duplicates possible)</td><td>Exactly-once (deduplication built-in)</td></tr>
+            <tr><td class="label">Throughput</td><td>Unlimited</td><td>300 msg/sec (3,000 with batching)</td></tr>
+            <tr><td class="label">Name suffix</td><td>Any name</td><td>Must end in <code>.fifo</code></td></tr>
+            <tr><td class="label">DLQ support</td><td>Yes (Standard DLQ)</td><td>Yes (FIFO DLQ)</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Message Deduplication</strong>: FIFO queues deduplicate within a 5-minute window. Two methods: <strong>Content-based deduplication</strong> (SHA-256 hash of body) or a <strong>Deduplication ID</strong> you provide. If the same ID arrives within 5 minutes, the second message is discarded.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Message Groups</strong>: messages with the same <code>MessageGroupId</code> are processed in order, one at a time. Different group IDs can be processed in parallel — enabling partitioned ordering within the same queue.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>FIFO queues must have a name ending in <code>.fifo</code> — this is enforced by SQS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: financial transactions (order matters), inventory management, user command processing, any workflow where sequence is business-critical.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Messages must be processed in order" → FIFO queue. "Prevent duplicate processing" → FIFO queue with deduplication. "Throughput > 3,000 msg/sec with ordering" → not possible with FIFO — must architect differently. FIFO queue name MUST end in .fifo.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">ASG</div>
+          <div class="concept-meta">
+            <div class="concept-title">SQS + Auto Scaling Group <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Scale EC2 consumers based on queue depth — the canonical decoupling pattern</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Combining SQS with an ASG creates the most powerful decoupling pattern: the queue absorbs bursts of messages, and the ASG scales EC2 consumer instances up/down based on how many messages are waiting. Perfect for variable workloads.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>The ASG scales based on a CloudWatch metric: <code>ApproximateNumberOfMessagesVisible</code> — the number of messages in the queue waiting to be processed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use a <strong>Target Tracking policy</strong> targeting a queue depth per instance (e.g. "keep ~100 messages per consumer"). ASG adds instances when depth rises and removes them when it falls.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Architecture: <code>Producer → SQS → ASG (EC2 consumers)</code>. The queue is the buffer — producers never need to know about consumer capacity.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common use case: image/video processing pipeline. Upload triggers → message in SQS → EC2 fleet scales up → processes jobs → scales down when queue empties.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Front-end spikes overloading the backend" → add SQS between them + ASG scaling on queue depth. "Scale processing workers based on workload" → SQS + ASG with ApproximateNumberOfMessagesVisible metric. This is one of the most common architectural patterns on the exam.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SNS ══════════════ -->
+    <div id="sns" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — SNS</div>
+        <div class="page-title">SNS & Fan-Out Pattern</div>
+        <div class="page-desc">Simple Notification Service — publish once, deliver to many subscribers simultaneously.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SNS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon SNS Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Pub/Sub messaging — one message, many subscribers, push delivery</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>SNS (Simple Notification Service) implements the publish/subscribe messaging pattern. A producer publishes a message to an SNS <strong>Topic</strong>, and all subscribers to that topic receive the message simultaneously — pushed to them automatically.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Up to <strong>12,500,000 subscriptions per topic</strong>. Up to <strong>100,000 topics per account</strong> (soft limit).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported subscriber types (SNS <strong>pushes</strong> to all of them): <strong>SQS</strong>, <strong>Lambda</strong>, <strong>HTTP/HTTPS endpoints</strong>, <strong>Email / Email-JSON</strong>, <strong>SMS</strong>, <strong>Mobile Push</strong> (iOS, Android), <strong>Kinesis Data Firehose</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SNS is a <strong>push model</strong> — unlike SQS where consumers poll. SNS delivers to all subscribers as soon as the message is published.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Maximum message size: <strong>256 KB</strong> (same as SQS).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SNS does <strong>not persist messages</strong> — if a subscriber is unavailable, the message is lost for that subscriber (unless it's an SQS subscriber with its own retention). No replay capability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Message filtering</strong>: subscribers can apply a filter policy (JSON) so they only receive messages matching specific attributes. A subscriber without a filter policy receives all messages.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>SNS = broadcast to all subscribers (push). SQS = one consumer per message (pull). "Send the same event to multiple services simultaneously" → SNS. "Send an email + trigger a Lambda + write to SQS with one event" → publish to SNS with three subscribers. SNS does not persist messages — no replay.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">FAN</div>
+          <div class="concept-meta">
+            <div class="concept-title">SNS + SQS Fan-Out Pattern <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Combine SNS broadcast with SQS persistence — the canonical pub/sub + queue pattern</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Fan-Out combines SNS with multiple SQS queues as subscribers. One SNS message fans out to all SQS queues simultaneously. Each queue is consumed independently by a different service — giving you SNS broadcast + SQS durability + independent scaling.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Why SNS → SQS instead of direct SNS → service</strong>: SQS adds persistence (message retained up to 14 days), retry logic, and allows the consuming service to scale independently at its own pace.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Classic architecture: <code>Producer → SNS Topic → [SQS Queue A (email service), SQS Queue B (analytics), SQS Queue C (fraud detection)]</code></span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Adding a new consumer is as simple as subscribing a new SQS queue to the topic — <strong>no changes to the producer</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>S3 event fan-out limitation</strong>: an S3 bucket can only trigger one SNS topic per event type. To fan-out to multiple services, have S3 notify SNS → SNS fans out to multiple SQS queues.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SNS FIFO + SQS FIFO</strong>: for ordered fan-out with deduplication, SNS FIFO topics deliver to SQS FIFO queues in order. SNS FIFO has the same 300 msg/sec limit as SQS FIFO.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"S3 event notification needs to trigger multiple downstream services" → S3 → SNS → multiple SQS queues (fan-out). "Add a new consumer without changing existing producers" → add SQS queue subscription to existing SNS topic. Fan-out = SNS + SQS — the most commonly tested integration pattern involving both services.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ KINESIS DATA STREAMS ══════════════ -->
+    <div id="kds" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Kinesis</div>
+        <div class="page-title">Kinesis Data Streams</div>
+        <div class="page-desc">Real-time data streaming — ordered, replayable, multi-consumer event ingestion at massive scale.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">KDS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Kinesis Data Streams Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Sharded real-time stream — ordered within shards, replayable for 1–365 days</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Kinesis Data Streams is a real-time data streaming service designed to ingest and process large volumes of data (logs, events, IoT telemetry, clickstreams) with low latency. Unlike SQS, data is retained for replay and multiple consumers can read the same stream independently.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>A stream is made up of <strong>shards</strong> — the fundamental unit of capacity. Each shard provides: <strong>1 MB/s write</strong> (1,000 records/s), <strong>2 MB/s read</strong> per consumer.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default data retention: <strong>24 hours</strong>. Can be extended up to <strong>365 days</strong> (additional cost). Data can be <strong>replayed</strong> — multiple consumers can read the same data at different positions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Records are ordered within a shard. Records with the same <strong>partition key</strong> always go to the same shard — maintaining ordering for related events.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Max record size: <strong>1 MB</strong>. Records contain: partition key, sequence number, and data blob.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Two capacity modes: <strong>Provisioned</strong> (manually set shard count, pay per shard-hour) and <strong>On-Demand</strong> (auto-scales, pay per GB throughput — no shard management needed).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Consumers</strong>: standard (2MB/s per shard shared across all consumers — polling) or <strong>Enhanced Fan-Out</strong> (2MB/s per shard <em>per consumer</em> — push via HTTP/2, dedicated throughput per consumer).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>KDS vs SQS: KDS = ordered within shards, replayable, many consumers read same data, producers/consumers manage position (sequence number). SQS = unordered (Standard), message deleted after processing, one consumer gets each message. "Multiple applications need to process the same event stream" → KDS (or SNS fan-out). "Real-time analytics dashboard" → KDS.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SCL</div>
+          <div class="concept-meta">
+            <div class="concept-title">Shard Scaling & Capacity Planning <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Resharding, hot shards, and the On-Demand vs Provisioned choice</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Shard splitting</strong>: divide one shard into two — increases throughput. Use when a shard is at capacity (<code>ProvisionedThroughputExceededException</code>).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Shard merging</strong>: combine two shards into one — reduces cost when traffic is low.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Hot shard problem</strong>: if all records share the same partition key, all go to one shard → that shard is overwhelmed while others are idle. Use highly random or distributed partition keys (e.g. user ID, device ID) to spread load evenly.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>On-Demand mode</strong>: auto-scales shards based on observed peak throughput from the past 30 days. No shard management — best for unpredictable workloads. Higher per-GB cost.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Provisioned mode</strong>: you manually specify and pay for shards. Best for predictable high-throughput workloads where you can plan capacity in advance. Lower per-shard cost at scale.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Getting ProvisionedThroughputExceededException" → increase shard count (shard splitting) or switch to On-Demand. "All records going to one shard" → hot shard problem, use more distributed partition keys. On-Demand = hands-off, higher cost. Provisioned = manual, cheaper at scale.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ DATA FIREHOSE ══════════════ -->
+    <div id="firehose" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Kinesis</div>
+        <div class="page-title">Amazon Data Firehose</div>
+        <div class="page-desc">Fully managed ETL streaming delivery — load data to S3, Redshift, OpenSearch, and Splunk with zero code.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">FH</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Data Firehose <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Near-real-time delivery to storage and analytics destinations — fully serverless</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Data Firehose (formerly Kinesis Data Firehose) is a fully managed service for loading streaming data into destinations like S3, Redshift, Amazon OpenSearch, Splunk, and custom HTTP endpoints. It handles buffering, batching, compression, and encryption automatically — no consumer code to write.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Destinations</strong>: Amazon S3, Amazon Redshift (via S3 intermediate), Amazon OpenSearch Service, Splunk, Datadog, MongoDB, any custom HTTP endpoint.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Firehose is <strong>near-real-time</strong>, not real-time — it buffers data before delivery. Buffer size: 1–128 MB. Buffer interval: 60–900 seconds. Data is delivered when either threshold is hit first.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Fully serverless</strong> — no shards to manage, no consumer code. Scales automatically. You pay per GB of data processed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports optional <strong>data transformation</strong> via Lambda before delivery — convert formats, filter records, enrich data.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports compression (GZIP, Snappy, ZIP) and encryption at rest before writing to S3.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>No data storage or replay</strong> — Firehose delivers and forgets. If you need replay, use Kinesis Data Streams (which can feed Firehose).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data sources: can receive data directly from producers, from Kinesis Data Streams, CloudWatch Logs, CloudWatch Events, IoT, or Kinesis Agent.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Firehose vs KDS: KDS = real-time, ordered, replayable, you manage consumers. Firehose = near-real-time, automatic delivery to destination, no code, no replay. "Load logs into S3 or Redshift automatically" → Firehose. "Multiple applications need to process the same stream in real time" → KDS. They are often chained: KDS (real-time processing) → Firehose (delivery to S3).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">KDS vs Firehose <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">When to use each Kinesis service</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>Kinesis Data Streams</th><th>Amazon Data Firehose</th></tr>
+            <tr><td class="label">Latency</td><td>Real-time (~200 ms)</td><td>Near-real-time (60s–15min buffer)</td></tr>
+            <tr><td class="label">Management</td><td>You manage shards and consumers</td><td>Fully managed, serverless</td></tr>
+            <tr><td class="label">Data retention</td><td>1–365 days, replayable</td><td>No storage, no replay</td></tr>
+            <tr><td class="label">Consumer code</td><td>You write consumer code (KCL, Lambda, etc.)</td><td>No consumer code — destination configured, delivery automatic</td></tr>
+            <tr><td class="label">Scaling</td><td>Manual (Provisioned) or auto (On-Demand)</td><td>Fully automatic</td></tr>
+            <tr><td class="label">Destinations</td><td>Any application (via SDK/KCL)</td><td>S3, Redshift, OpenSearch, Splunk, HTTP endpoint</td></tr>
+            <tr><td class="label">Transformation</td><td>Consumer processes and transforms</td><td>Optional Lambda transformation before delivery</td></tr>
+            <tr><td class="label">Best for</td><td>Real-time analytics, complex processing, multiple consumers, replay</td><td>ETL to analytics stores, log archiving, simple delivery pipelines</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ AMAZON MQ ══════════════ -->
+    <div id="mq" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 8 — Amazon MQ</div>
+        <div class="page-title">Amazon MQ</div>
+        <div class="page-desc">Managed message broker for legacy AMQP/MQTT/STOMP workloads migrating to AWS — not a serverless service.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">MQ</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon MQ Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managed ActiveMQ and RabbitMQ — lift-and-shift migration of on-premises message brokers</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon MQ is a managed message broker service that runs <strong>Apache ActiveMQ</strong> or <strong>RabbitMQ</strong> on AWS. It is designed specifically for organizations migrating existing on-premises messaging applications that use standard broker protocols — without rewriting the application to use SQS or SNS.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports open standard protocols: <strong>AMQP</strong>, <strong>MQTT</strong>, <strong>STOMP</strong>, <strong>OpenWire</strong>, and <strong>WebSocket</strong>. These are the protocols used by ActiveMQ and RabbitMQ.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Amazon MQ is <strong>NOT serverless</strong> — it runs on provisioned EC2-like instances. You choose the instance size and pay per broker-hour. You also manage broker configuration.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Does not scale as massively as SQS/SNS — limited by the broker instance size. Not designed for millions of messages per second.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports both <strong>queues</strong> (point-to-point) and <strong>topics</strong> (pub/sub) — same as ActiveMQ/RabbitMQ behavior on-premises.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>High availability: deploy in <strong>Multi-AZ active/standby</strong> configuration with automatic failover. Standby takes over if the primary broker fails.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Amazon MQ runs <strong>inside your VPC</strong> — not publicly accessible by default. Accessed via private endpoints from within the VPC or over VPN/Direct Connect.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>The exam trigger for Amazon MQ is always migration: "existing application uses ActiveMQ/RabbitMQ/AMQP/MQTT on-premises, wants to migrate to AWS without rewriting." → Amazon MQ. If building a new application → use SQS (simpler, serverless, more scalable). Amazon MQ = migration path, not the greenfield choice.</div>
+          <div class="warn-box"><strong>KEY DISTINCTION</strong>Amazon MQ is not serverless and does not scale like SQS. It's a managed version of existing broker software. Choose SQS/SNS for new cloud-native applications. Choose Amazon MQ only when protocol compatibility with existing on-premises brokers is required.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ COMPARISON ══════════════ -->
+    <div id="compare" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">SQS vs SNS vs Kinesis</div>
+        <div class="page-desc">The definitive comparison — scenario-to-service mapping and all key numbers in one place.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Full Service Comparison <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Side-by-side across all dimensions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>SQS</th><th>SNS</th><th>Kinesis Data Streams</th></tr>
+            <tr><td class="label">Pattern</td><td>Queue (point-to-point)</td><td>Pub/Sub (broadcast)</td><td>Stream (ordered log)</td></tr>
+            <tr><td class="label">Delivery model</td><td>Pull (consumers poll)</td><td>Push (to all subscribers)</td><td>Pull (consumers track position)</td></tr>
+            <tr><td class="label">Consumers</td><td>One consumer per message (competing consumers)</td><td>All subscribers receive every message</td><td>Multiple consumers, each reads full stream independently</td></tr>
+            <tr><td class="label">Ordering</td><td>Standard: no guarantee. FIFO: strict.</td><td>No ordering guarantee</td><td>Ordered within a shard</td></tr>
+            <tr><td class="label">Retention / replay</td><td>Up to 14 days. Message deleted after processing.</td><td>No persistence. No replay.</td><td>1–365 days. Fully replayable.</td></tr>
+            <tr><td class="label">Max message size</td><td>256 KB (2 GB with Extended Client)</td><td>256 KB</td><td>1 MB</td></tr>
+            <tr><td class="label">Throughput</td><td>Unlimited (Standard); 3,000/s (FIFO)</td><td>Unlimited</td><td>1 MB/s write per shard</td></tr>
+            <tr><td class="label">Scaling model</td><td>Serverless, auto-scales</td><td>Serverless, auto-scales</td><td>Provision shards manually or On-Demand</td></tr>
+            <tr><td class="label">Real-time?</td><td>Near-real-time (seconds)</td><td>Near-real-time (seconds)</td><td>Real-time (~200ms)</td></tr>
+            <tr><td class="label">Best for</td><td>Work queues, task offloading, decoupling services, buffering spikes</td><td>Event notifications, fan-out, alerting, broadcasting to many services</td><td>Real-time analytics, log processing, IoT telemetry, event sourcing, clickstream</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Map any exam scenario to the right service instantly</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"Decouple two services / buffer a traffic spike"</td><td class="label">SQS Standard Queue</td></tr>
+            <tr><td>"Messages must be processed in order, no duplicates"</td><td class="label">SQS FIFO Queue</td></tr>
+            <tr><td>"Message fails repeatedly, don't block the queue"</td><td class="label">SQS Dead Letter Queue</td></tr>
+            <tr><td>"Reduce empty SQS poll responses and API costs"</td><td class="label">SQS Long Polling (up to 20s)</td></tr>
+            <tr><td>"Payload larger than 256 KB through SQS"</td><td class="label">SQS Extended Client Library (S3)</td></tr>
+            <tr><td>"Scale EC2 workers based on queue backlog"</td><td class="label">SQS + ASG (ApproximateNumberOfMessagesVisible)</td></tr>
+            <tr><td>"Send same event to Email + Lambda + SQS simultaneously"</td><td class="label">SNS Topic with multiple subscribers</td></tr>
+            <tr><td>"S3 event to multiple downstream services"</td><td class="label">S3 → SNS → multiple SQS queues (fan-out)</td></tr>
+            <tr><td>"Subscribe selectively — only certain messages per service"</td><td class="label">SNS with message filter policy</td></tr>
+            <tr><td>"Real-time analytics on clickstream data"</td><td class="label">Kinesis Data Streams</td></tr>
+            <tr><td>"Multiple apps reading same event stream independently"</td><td class="label">Kinesis Data Streams (Enhanced Fan-Out)</td></tr>
+            <tr><td>"Replay events from 3 days ago"</td><td class="label">Kinesis Data Streams (data retention)</td></tr>
+            <tr><td>"Load logs into S3 automatically, no code"</td><td class="label">Amazon Data Firehose → S3</td></tr>
+            <tr><td>"Load streaming data into Redshift"</td><td class="label">Data Firehose → Redshift (via S3 intermediate)</td></tr>
+            <tr><td>"Migrate on-prem ActiveMQ / RabbitMQ to AWS"</td><td class="label">Amazon MQ</td></tr>
+            <tr><td>"AMQP / MQTT / STOMP protocol compatibility needed"</td><td class="label">Amazon MQ</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">NUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Numbers to Memorize <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hard limits and defaults that appear in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>SQS max message size: <strong>256 KB</strong> (2 GB via Extended Client).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SQS default retention: <strong>4 days</strong>. Maximum: <strong>14 days</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SQS visibility timeout default: <strong>30 seconds</strong>. Range: 0 – <strong>12 hours</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SQS long polling max wait: <strong>20 seconds</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SQS delay queue max: <strong>15 minutes</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SQS FIFO throughput: <strong>300 msg/s</strong> (3,000 msg/s with batching of 10).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SQS FIFO deduplication window: <strong>5 minutes</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SNS max message size: <strong>256 KB</strong>. Max subscriptions per topic: <strong>12.5 million</strong>. Max topics: <strong>100,000</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>KDS shard write: <strong>1 MB/s</strong> or <strong>1,000 records/s</strong>. Shard read: <strong>2 MB/s</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>KDS default retention: <strong>24 hours</strong>. Maximum: <strong>365 days</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>KDS max record size: <strong>1 MB</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Firehose buffer: <strong>1–128 MB</strong> or <strong>60–900 seconds</strong> (whichever comes first).</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

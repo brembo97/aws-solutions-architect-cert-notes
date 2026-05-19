@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CloudFront & Global Accelerator — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Global Content Delivery</h1>
+    </div>
+
+    <div class="nav-section-label">CloudFront</div>
+    <a class="nav-item active" onclick="show('cf-overview')">
+      <span class="nav-dot" style="background:#58a6ff"></span> CloudFront Overview
+    </a>
+    <a class="nav-item" onclick="show('cf-origins')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Origins & Caching
+    </a>
+    <a class="nav-item" onclick="show('cf-security')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Security & Geo Restriction
+    </a>
+    <a class="nav-item" onclick="show('cf-advanced')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Cache Invalidation & Advanced
+    </a>
+
+    <div class="nav-section-label">Global Accelerator</div>
+    <a class="nav-item" onclick="show('ga')">
+      <span class="nav-dot" style="background:#f0a742"></span> Global Accelerator
+    </a>
+
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('compare')">
+      <span class="nav-dot" style="background:#56d364"></span> CloudFront vs GA
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ CLOUDFRONT OVERVIEW ══════════════ -->
+    <div id="cf-overview" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — CloudFront</div>
+        <div class="page-title">CloudFront Overview</div>
+        <div class="page-desc">AWS's global Content Delivery Network — cache content at 450+ edge locations worldwide for low-latency delivery.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">CDN</div>
+          <div class="concept-meta">
+            <div class="concept-title">What is CloudFront? <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Global CDN — serve cached content from the edge, not the origin</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudFront is AWS's Content Delivery Network (CDN). It caches copies of your content at <strong>Edge Locations</strong> distributed around the world, so users receive content from a nearby edge location instead of your origin server — dramatically reducing latency and origin load.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront has <strong>450+ edge locations</strong> globally (also called Points of Presence / PoPs). These are distinct from AWS Regions and AZs — they are smaller caching nodes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cache hit</strong>: request is served directly from the edge location — fast, no origin request. <strong>Cache miss</strong>: edge location fetches from the origin, caches the response, then serves the user.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront reduces origin load — instead of every user request hitting your S3 bucket or ALB, most requests are served from cache. Reduces costs and protects origin from traffic spikes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Content is cached for a configurable duration — the <strong>TTL (Time To Live)</strong>. After TTL expires, the next request triggers a fresh fetch from the origin.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront supports both <strong>static content</strong> (images, JS, CSS, videos) and <strong>dynamic content</strong> (API responses, personalized pages). Dynamic content can be forwarded to the origin with full header/cookie/query-string passthrough.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront integrates natively with <strong>AWS Shield</strong> (DDoS protection), <strong>AWS WAF</strong> (web application firewall), <strong>ACM</strong> (free SSL certificates), <strong>Route 53</strong>, and <strong>Lambda@Edge / CloudFront Functions</strong>.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Improve global read performance for static content" → CloudFront. "Protect against DDoS attacks at the edge" → CloudFront + Shield. "Add HTTPS to an S3 static website" → CloudFront (S3 website hosting is HTTP only). CloudFront is always the answer when the question involves global caching, low-latency delivery, or edge-level SSL termination.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">OAC</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudFront with S3 — Origin Access Control <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Lock down S3 so only CloudFront can read it — OAC replaces OAI</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>When CloudFront serves content from an S3 bucket, you should block direct public access to the S3 bucket so users must go through CloudFront. This is done using <strong>Origin Access Control (OAC)</strong> — the modern replacement for the older Origin Access Identity (OAI).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>OAC (Origin Access Control)</strong>: the current recommended approach. Creates an IAM-based identity that CloudFront uses to sign requests to S3. The S3 bucket policy grants <code>s3:GetObject</code> only to the CloudFront distribution's OAC principal.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>OAI (Origin Access Identity)</strong>: the legacy approach (still valid, still tested). A CloudFront special user identity granted access via the bucket policy. OAC is preferred because it supports all S3 regions including SSE-KMS encrypted buckets.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>With OAC/OAI configured: S3 Block Public Access remains <strong>enabled</strong>. Users who access the S3 URL directly get a 403 Forbidden. Only requests through CloudFront are authorized.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>OAC supports: S3 buckets in all regions, SSE-KMS encrypted buckets, and S3 Object Lambda.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The S3 bucket used as a CloudFront origin should be configured as a <strong>REST API endpoint</strong> (bucket name format), not the S3 website endpoint — unless you need website-specific features like custom 404 pages.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Restrict S3 bucket access so only CloudFront can serve content" → OAC (or OAI for legacy). S3 Block Public Access stays ON. Users hitting S3 directly = 403. Users hitting CloudFront = content served. OAC is the modern approach; OAI still appears in exam questions — know both.</div>
+          <div class="warn-box"><strong>SECURITY WARNING</strong>Never disable S3 Block Public Access when using CloudFront + S3. The whole point of OAC/OAI is that the bucket stays private. If you make the bucket public, you bypass CloudFront security entirely (WAF, signed URLs, geo restrictions).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ORIGINS & CACHING ══════════════ -->
+    <div id="cf-origins" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Origins & Caching</div>
+        <div class="page-title">Origins & Cache Behavior</div>
+        <div class="page-desc">All supported origin types, how CloudFront caches responses, and how cache behavior is configured.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">ORI</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudFront Origins <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">S3, ALB, EC2, API Gateway, and custom HTTP origins</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A CloudFront origin is the source of truth for your content. CloudFront fetches content from the origin on a cache miss and stores a copy at the edge. Multiple origins can be configured per distribution, with different cache behaviors routing different URL patterns to different origins.</p>
+          <table class="compare-table">
+            <tr><th>Origin Type</th><th>Access method</th><th>Key considerations</th></tr>
+            <tr><td class="label">S3 Bucket</td><td>OAC or OAI (for private buckets) or public bucket policy</td><td>Best for static assets. Use OAC to keep bucket private. CloudFront adds HTTPS. Can use as static website too.</td></tr>
+            <tr><td class="label">S3 Website Endpoint</td><td>Public HTTP endpoint (no OAC)</td><td>Use when you need S3 website features (custom index/error pages). Must be publicly accessible — no OAC support.</td></tr>
+            <tr><td class="label">ALB</td><td>CloudFront reaches ALB via public DNS. ALB must be publicly accessible.</td><td>EC2 instances behind ALB can be private (only ALB needs public access). Security Group on ALB must allow CloudFront edge IPs.</td></tr>
+            <tr><td class="label">EC2 (direct)</td><td>CloudFront reaches EC2 via public IP. EC2 must be publicly accessible.</td><td>EC2 must have a public IP and Security Group allowing CloudFront edge IPs. Not recommended — use ALB instead.</td></tr>
+            <tr><td class="label">API Gateway</td><td>HTTPS endpoint (public)</td><td>Great for serverless APIs. CloudFront caches API responses at the edge. Can also restrict API Gateway to only accept requests from CloudFront.</td></tr>
+            <tr><td class="label">Custom HTTP Origin</td><td>Any publicly accessible HTTP/HTTPS server</td><td>On-premises servers, other cloud providers, MediaStore, MediaPackage. Must be accessible from internet.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>For ALB or EC2 origins: the backend <strong>Security Group must allow inbound traffic from CloudFront's managed prefix list</strong> (or published IP ranges). CloudFront edge nodes have known IP ranges that AWS publishes and maintains.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Origin Groups</strong>: configure a primary and failover origin. If the primary returns a 5xx error, CloudFront automatically retries the request on the failover origin — provides origin-level HA.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"CloudFront with EC2/ALB" → the EC2/ALB must be publicly accessible (CloudFront is outside your VPC). "Keep EC2 private, only CloudFront can reach it" → put an ALB in front (ALB public, EC2 private), use CloudFront → ALB. EC2 cannot be private if CloudFront needs to reach it directly.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CBH</div>
+          <div class="concept-meta">
+            <div class="concept-title">Cache Behaviors & TTL <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Control what gets cached, for how long, and what reaches the origin</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Cache behaviors are rules that determine how CloudFront handles requests for different URL patterns. Each behavior maps a path pattern to an origin and specifies caching settings, allowed HTTP methods, and what headers/cookies/query strings to forward.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Cache behavior path patterns are matched in order of specificity. A <strong>default behavior</strong> (<code>*</code>) catches everything not matched by more specific patterns.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>TTL settings</strong>: Default TTL (used when the origin doesn't send cache headers), Minimum TTL, and Maximum TTL. If the origin sends <code>Cache-Control</code> headers, CloudFront respects them within the min/max TTL range.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cache key</strong>: by default, the cache key is just the URL. You can include headers, cookies, and query strings in the cache key — but this reduces cache hit rate (more unique keys = fewer hits).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Origin request policy</strong>: controls what CloudFront sends to the origin (headers, cookies, query strings) separately from what's in the cache key. Allows forwarding context to the origin without fragmenting the cache.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>HTTP methods: GET/HEAD always cached. PUT/POST/PATCH/DELETE are <strong>never cached</strong> — always forwarded to origin. OPTIONS can be cached or forwarded.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Including cookies or query strings in the cache key reduces cache hit ratio — more specific keys = fewer cache hits. For dynamic APIs, forward query strings to origin but don't include them in the cache key unless you specifically need per-query caching.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SECURITY & GEO RESTRICTION ══════════════ -->
+    <div id="cf-security" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Security</div>
+        <div class="page-title">Security & Geo Restriction</div>
+        <div class="page-desc">HTTPS enforcement, signed URLs/cookies, geo blocking, and WAF integration at the edge.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">GEO</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudFront Geo Restriction <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Block or allow content delivery based on the user's country</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudFront Geo Restriction (also called Geoblocking) allows you to restrict which countries can access your content — either with an allowlist (only listed countries can access) or a blocklist (listed countries are denied).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Allowlist</strong>: only users in the specified countries can access content. All other countries receive a <strong>403 Forbidden</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Blocklist</strong>: users in the listed countries are blocked (403). All other countries can access.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Country determination is based on a <strong>third-party geo-IP database</strong> that maps IP addresses to countries. Not 100% accurate — users with VPNs can bypass it.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: copyright and licensing restrictions (streaming rights by country), export compliance (OFAC sanctions), regulatory requirements.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Restriction is applied at the <strong>CloudFront distribution level</strong> — applies to all content in the distribution unless overridden by a more granular solution like Lambda@Edge.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>CloudFront Geo Restriction blocks at the country level using IP geolocation. Compare to Route 53 Geolocation routing, which controls DNS resolution by country. These are complementary, not identical — CloudFront blocks content delivery; Route 53 controls which DNS record is returned. "Block users in specific countries from accessing content" → CloudFront Geo Restriction.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">SGN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Signed URLs & Signed Cookies <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Time-limited, user-specific access to private CloudFront content</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudFront Signed URLs and Signed Cookies let you restrict access to content so only authenticated and authorized users can access it — with an expiration time and optional IP restriction.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Signed URL</th><th>Signed Cookie</th></tr>
+            <tr><td class="label">Grants access to</td><td>One specific file / object</td><td>Multiple files / an entire path pattern</td></tr>
+            <tr><td class="label">How it works</td><td>URL includes signature, expiry, and optional IP. Share the URL with the user.</td><td>Cookie includes signature and expiry. User's browser sends cookie on each request.</td></tr>
+            <tr><td class="label">Use case</td><td>Share a single video, single download link, individual premium resource</td><td>Membership site with access to a whole content library, subscriber area</td></tr>
+            <tr><td class="label">URL change required?</td><td>Yes — URL changes per signed resource</td><td>No — existing URLs work, cookie authorizes them</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Signed URLs from CloudFront vs S3 Pre-signed URLs: CloudFront signed URLs go through CloudFront (caching, WAF, geo restriction apply). S3 pre-signed URLs go directly to S3 (bypass CloudFront entirely).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Signed URLs are created using <strong>CloudFront Key Pairs</strong> (trusted key groups) — managed separately from IAM. The private key signs the URL; CloudFront verifies with the public key.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can restrict access by: expiration date/time, IP address range (optional), and path pattern (which files are accessible).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Paid video streaming — only subscribers can watch" → CloudFront Signed URL (per video) or Signed Cookie (subscriber library). "S3 Pre-signed URL vs CloudFront Signed URL" → CloudFront signed = through CDN (caching, security policies apply). S3 pre-signed = bypasses CloudFront, goes direct to S3.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">HTTPS</div>
+          <div class="concept-meta">
+            <div class="concept-title">HTTPS & SSL Enforcement <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Viewer protocol policy, SSL certificates, and end-to-end encryption</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Viewer Protocol Policy</strong>: controls how CloudFront handles HTTP vs HTTPS from viewers. Options: <code>HTTP and HTTPS</code> (allow both), <code>Redirect HTTP to HTTPS</code> (preferred), <code>HTTPS Only</code> (reject HTTP).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Origin Protocol Policy</strong>: controls how CloudFront communicates with the origin. Options: HTTP Only, HTTPS Only, or Match Viewer (use whatever the viewer used).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront uses <strong>ACM certificates</strong> for HTTPS. ACM certificates for CloudFront must be created in <strong>us-east-1</strong> (N. Virginia) — regardless of the distribution's origin region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Custom SSL certificates are supported via SNI (no extra cost) or dedicated IP (legacy, $600/month per distribution — avoid).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>ACM certificate for CloudFront must be in <strong>us-east-1</strong> — this is a very common trap. A certificate in eu-west-1 will NOT work with CloudFront even if the origin is there. Always create CloudFront SSL certificates in us-east-1.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CACHE INVALIDATION & ADVANCED ══════════════ -->
+    <div id="cf-advanced" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — Advanced CloudFront</div>
+        <div class="page-title">Cache Invalidation & Advanced Features</div>
+        <div class="page-desc">Force content refresh at the edge, Lambda@Edge, CloudFront Functions, and pricing model.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">INV</div>
+          <div class="concept-meta">
+            <div class="concept-title">Cache Invalidation <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Force CloudFront edge locations to discard cached content before TTL expires</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Normally, cached content is served until the TTL expires — even if you've updated the origin. Cache Invalidation forces all edge locations to remove specific cached files immediately, so the next request fetches a fresh copy from the origin.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Invalidation paths support wildcards: <code>/images/*</code> invalidates all files in the images prefix. <code>/*</code> invalidates the entire distribution (use sparingly — increases origin load).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Invalidation is <strong>not instant</strong> — it propagates to all edge locations, which takes a few seconds to a couple of minutes. Not suitable as a real-time solution.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cost</strong>: first 1,000 invalidation paths per month are free. Additional paths are $0.005 per path. Wildcard counts as one path regardless of how many objects it matches.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Best practice</strong>: instead of frequent invalidations, use <strong>versioned file names</strong> (e.g. <code>app.v2.js</code> instead of <code>app.js</code>). New filename → guaranteed fresh fetch, no invalidation needed, old version still cached for users who haven't refreshed.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Updated S3 objects are not showing up in CloudFront" → run a cache invalidation or reduce TTL. "Most cost-effective way to ensure users always get the latest version" → versioned file names (no invalidation cost, no TTL wait). Cache invalidation is the immediate but costlier solution.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">EDGE</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda@Edge & CloudFront Functions <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Run code at the edge — customize request/response without a round-trip to origin</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Both Lambda@Edge and CloudFront Functions let you run code at CloudFront edge locations to customize HTTP request and response behavior — authentication, header manipulation, URL rewrites, A/B testing — without the latency of a round-trip to the origin.</p>
+          <table class="compare-table">
+            <tr><th></th><th>CloudFront Functions</th><th>Lambda@Edge</th></tr>
+            <tr><td class="label">Runtime</td><td>JavaScript (ES5.1)</td><td>Node.js or Python</td></tr>
+            <tr><td class="label">Trigger points</td><td>Viewer request, viewer response only</td><td>Viewer request, viewer response, origin request, origin response</td></tr>
+            <tr><td class="label">Execution time</td><td>&lt; 1 ms</td><td>Up to 5 seconds (viewer) / 30 seconds (origin)</td></tr>
+            <tr><td class="label">Memory</td><td>2 MB</td><td>Up to 10 GB</td></tr>
+            <tr><td class="label">Network access</td><td>No</td><td>Yes</td></tr>
+            <tr><td class="label">Scale</td><td>Millions of req/sec</td><td>Thousands of req/sec</td></tr>
+            <tr><td class="label">Cost</td><td>~$0.10 per million invocations</td><td>~$0.60 per million invocations + duration</td></tr>
+            <tr><td class="label">Best for</td><td>Simple header manipulation, URL normalization, JWT validation, cache key manipulation</td><td>Complex logic, external API calls, database queries, image transformation, A/B testing with backend logic</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>CloudFront Functions = lightweight, viewer-only, very fast, cheap. Lambda@Edge = full Lambda power, all 4 event triggers, can call external APIs. "Add security headers to every response" → CloudFront Functions. "Authenticate users by calling an auth API at the edge" → Lambda@Edge (needs network access).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">PRC</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudFront Pricing <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Price classes and data transfer costs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Pricing varies by region — data transfer out from North America edge locations is cheapest; Asia Pacific and South America are most expensive.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Price Classes</strong>: reduce cost by limiting which edge locations are used. Three options: <strong>All</strong> (all edge locations, best performance), <strong>Price Class 200</strong> (excludes most expensive regions), <strong>Price Class 100</strong> (only North America and Europe — cheapest).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data transfer from CloudFront to viewers is billed per GB. Data transfer from origin to CloudFront edge (origin fetch) is also billed — but much less than direct origin-to-viewer transfer since the edge caches reduce origin fetches.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Free tier</strong>: 1 TB of data transfer out and 10 million HTTP requests per month.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Reduce CloudFront costs for a global application" → use a lower Price Class (e.g. Price Class 100 if your users are mainly in North America/Europe). Trade-off: higher latency for users in excluded regions. If global performance matters → Price Class All.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ GLOBAL ACCELERATOR ══════════════ -->
+    <div id="ga" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Global Accelerator</div>
+        <div class="page-title">AWS Global Accelerator</div>
+        <div class="page-desc">Route TCP/UDP traffic over AWS's private global network — static IPs, anycast routing, and instant failover.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">GA</div>
+          <div class="concept-meta">
+            <div class="concept-title">Global Accelerator Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Improve global application performance using AWS's private backbone network</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Global Accelerator routes your users' traffic through AWS's global private network instead of the public internet. Users connect to the nearest AWS edge location (via <strong>anycast</strong>), and their traffic travels over AWS's high-throughput, low-latency private backbone to your application endpoints.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Global Accelerator provides <strong>2 static anycast IPv4 addresses</strong> (and optionally 2 IPv6) that are globally fixed. These IPs are your application's single entry point worldwide — no DNS changes needed for failover.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Anycast routing</strong>: both IP addresses are announced from all AWS edge locations simultaneously. The user's network automatically routes to the nearest edge location using BGP routing protocols — no DNS lookup required.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works at <strong>Layer 3 / Layer 4</strong> — supports TCP and UDP. Does not understand HTTP (no content-based routing, no caching). This distinguishes it from CloudFront.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Endpoints can be: <strong>ALBs, NLBs, EC2 instances, or Elastic IPs</strong> in any AWS region. You can have multiple endpoints across regions — Global Accelerator routes to the healthiest, nearest one.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Traffic dials</strong>: assign a percentage (0–100%) of traffic to each endpoint group (region). Use to gradually shift traffic during deployments or maintenance — similar to weighted routing but for live TCP connections.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Health checks</strong>: monitors endpoints continuously. On failure, traffic is rerouted to healthy endpoints within <strong>less than 1 minute</strong> — without DNS TTL delays (unlike Route 53 failover).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Integrated with <strong>AWS Shield Standard</strong> for DDoS protection at no additional cost. The anycast static IPs are protected by Shield.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Static IP for a global application with instant failover" → Global Accelerator. "Non-HTTP protocol (TCP/UDP gaming, IoT, VoIP) needing global performance" → Global Accelerator. "Clients need to whitelist a fixed IP for a globally distributed app" → Global Accelerator (2 static IPs). The key differentiator from CloudFront: Global Accelerator has NO caching — it's about network routing, not content delivery.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">HOW</div>
+          <div class="concept-meta">
+            <div class="concept-title">How Global Accelerator Works <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Anycast, edge locations, and the private AWS backbone</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Understanding the traffic flow through Global Accelerator clarifies why it improves performance and provides unique benefits over DNS-based solutions.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">1.</span> <span>User's request hits the <strong>nearest AWS edge location</strong> (same 450+ PoPs as CloudFront) — typically within milliseconds of the user.</span></div>
+            <div class="kp"><span class="kp-bullet">2.</span> <span>At the edge, traffic is handed off to the <strong>AWS global private network</strong> — bypassing the unpredictable public internet for the remainder of the journey.</span></div>
+            <div class="kp"><span class="kp-bullet">3.</span> <span>Traffic travels over AWS's dedicated fiber backbone to the optimal application endpoint (determined by health, proximity, and traffic dial settings).</span></div>
+            <div class="kp"><span class="kp-bullet">4.</span> <span>The response follows the same path back to the user via the edge location.</span></div>
+          </div>
+          <div class="key-points" style="margin-top:12px">
+            <div class="kp"><span class="kp-bullet">→</span> <span>The public internet is only used for the <strong>first mile</strong> (user → nearest edge). Everything else is AWS's private network — more reliable, lower latency, consistent throughput.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Contrast with DNS-based solutions (Route 53 latency routing): DNS routes to a region, but the traffic still travels the public internet between the user and the regional endpoint.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>The performance gain from Global Accelerator is greatest for users geographically distant from the application region — e.g. a user in Sydney accessing an app in us-east-1. The Sydney user hits an Australian edge immediately, then rides AWS's backbone the rest of the way. Without GA, the entire path is over the public internet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CLOUDFRONT VS GLOBAL ACCELERATOR ══════════════ -->
+    <div id="compare" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">CloudFront vs Global Accelerator</div>
+        <div class="page-desc">The most-tested comparison in this module — know exactly when to choose one over the other.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">VS</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudFront vs Global Accelerator <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Caching CDN vs network-level global routing — different tools for different problems</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>CloudFront</th><th>Global Accelerator</th></tr>
+            <tr><td class="label">Primary purpose</td><td>Cache and deliver content from edge locations (CDN)</td><td>Route traffic over AWS private network to reduce latency (network accelerator)</td></tr>
+            <tr><td class="label">Protocol</td><td>HTTP / HTTPS / WebSocket</td><td>TCP / UDP (any protocol)</td></tr>
+            <tr><td class="label">OSI Layer</td><td>Layer 7 (application)</td><td>Layer 3/4 (network/transport)</td></tr>
+            <tr><td class="label">Caching</td><td>Yes — serves content from edge cache</td><td>No caching — pure network routing</td></tr>
+            <tr><td class="label">Static IP</td><td>No — CloudFront hostnames have dynamic IPs</td><td>Yes — 2 fixed anycast IPs globally</td></tr>
+            <tr><td class="label">Failover speed</td><td>Subject to DNS TTL (seconds to minutes)</td><td>&lt; 1 minute — no DNS involved</td></tr>
+            <tr><td class="label">Content type</td><td>Static (images, JS, CSS) and dynamic (API responses)</td><td>Any TCP/UDP traffic — gaming, IoT, VoIP, APIs, non-HTTP</td></tr>
+            <tr><td class="label">IP whitelisting</td><td>Not possible (dynamic IPs)</td><td>Yes — 2 fixed IPs clients can whitelist</td></tr>
+            <tr><td class="label">Geo restriction</td><td>Yes (built-in country blocking)</td><td>No built-in geo restriction</td></tr>
+            <tr><td class="label">WAF integration</td><td>Yes — WAF can be attached to distribution</td><td>No direct WAF integration</td></tr>
+            <tr><td class="label">Best for</td><td>Static websites, media streaming, APIs with cacheable responses, adding HTTPS to S3</td><td>Real-time gaming, financial trading, global TCP/UDP apps, instant failover, static IP requirement</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>The exam loves asking this comparison. Key triggers: "caching" → CloudFront. "static IP" → Global Accelerator. "HTTP/HTTPS website" → CloudFront. "TCP/UDP non-HTTP" → Global Accelerator. "instant failover without DNS" → Global Accelerator. "DDoS protection + WAF at edge" → CloudFront. When in doubt: CloudFront = content, Global Accelerator = connections.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">KEY</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Facts to Memorize <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Numbers and rules that appear directly in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront edge locations: <strong>450+</strong> worldwide (more than AWS Regions and AZs combined).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ACM certificate for CloudFront: must be in <strong>us-east-1 (N. Virginia)</strong> — not any other region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>OAC vs OAI: <strong>OAC is the modern replacement</strong>. OAI is legacy but still tested. OAC supports SSE-KMS encrypted S3 buckets; OAI does not.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Cache invalidation: <strong>first 1,000 paths/month free</strong>. Wildcards count as one path. Best practice = versioned filenames.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Signed URL = <strong>one file</strong>. Signed Cookie = <strong>multiple files / entire path</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront Geo Restriction blocks at the <strong>country level</strong> using IP geolocation database.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Global Accelerator provides exactly <strong>2 static anycast IPv4 addresses</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Global Accelerator failover: <strong>less than 1 minute</strong> — no DNS TTL wait.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudFront Functions: viewer-only triggers, &lt;1ms, no network access, JavaScript only.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda@Edge: all 4 triggers (viewer req/res + origin req/res), up to 5–30s, can call external APIs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Price Class 100 = <strong>North America + Europe only</strong> (cheapest). Price Class All = all edge locations (best performance, most expensive).</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

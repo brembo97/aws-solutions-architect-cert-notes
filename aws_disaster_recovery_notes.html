@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Disaster Recovery — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .spectrum-bar { display: flex; align-items: stretch; border-radius: 8px; overflow: hidden; margin: 16px 0 8px; border: 1px solid var(--border); }
+  .spectrum-item { flex: 1; padding: 12px 10px; text-align: center; font-size: 12px; font-family: var(--font-mono); }
+  .spectrum-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Disaster Recovery</h1>
+    </div>
+    <div class="nav-section-label">Core Concepts</div>
+    <a class="nav-item active" onclick="show('foundations')"><span class="nav-dot" style="background:#58a6ff"></span> RPO, RTO & Scope</a>
+    <div class="nav-section-label">DR Strategies</div>
+    <a class="nav-item" onclick="show('backup-restore')"><span class="nav-dot" style="background:#39d0a0"></span> Backup & Restore</a>
+    <a class="nav-item" onclick="show('pilot-light')"><span class="nav-dot" style="background:#bc8cff"></span> Pilot Light</a>
+    <a class="nav-item" onclick="show('warm-standby')"><span class="nav-dot" style="background:#f0a742"></span> Warm Standby</a>
+    <a class="nav-item" onclick="show('multi-site')"><span class="nav-dot" style="background:#ff7b72"></span> Multi-Site Active/Active</a>
+    <div class="nav-section-label">AWS Services for DR</div>
+    <a class="nav-item" onclick="show('services')"><span class="nav-dot" style="background:#56d364"></span> Key DR Services</a>
+    <a class="nav-item" onclick="show('database-dr')"><span class="nav-dot" style="background:#db6eb0"></span> Database DR Patterns</a>
+    <a class="nav-item" onclick="show('on-prem-dr')"><span class="nav-dot" style="background:#58a6ff"></span> On-Premises DR</a>
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('cheatsheet')"><span class="nav-dot" style="background:#f0a742"></span> Cheat Sheet</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- FOUNDATIONS -->
+    <div id="foundations" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Core Concepts</div>
+        <div class="page-title">RPO, RTO & DR Scope</div>
+        <div class="page-desc">The two metrics that define every DR strategy, disaster scopes, and the cost vs recovery speed spectrum.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">RPO</div>
+          <div class="concept-meta">
+            <div class="concept-title">RPO — Recovery Point Objective <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">How much data can you afford to lose? The maximum acceptable data loss window</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>RPO is the maximum amount of data loss your business can tolerate, expressed as a time window. It answers: "If a disaster occurs right now, how old can the most recent backup be?" Lower RPO = more frequent backups = higher cost.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RPO = 1 hour</strong>: if a database is backed up every hour, in the worst case you lose up to 60 minutes of transactions. Acceptable for many business applications.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RPO = 0</strong>: no data loss. Requires synchronous replication — every write must be committed to both primary and standby simultaneously. Very expensive, may impact latency.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RPO = 24 hours</strong>: acceptable for non-critical systems. Daily backups. Low cost.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RPO drives backup frequency, replication lag tolerance, and whether synchronous vs asynchronous replication is required.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>RPO = data loss tolerance (time between last backup and disaster). Higher RPO = more data loss acceptable = cheaper. Lower RPO = less data loss = more expensive (more frequent snapshots, synchronous replication).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">RTO</div>
+          <div class="concept-meta">
+            <div class="concept-title">RTO — Recovery Time Objective <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">How long can the business be down? The maximum acceptable downtime window</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>RTO is the maximum amount of time your application can be offline after a disaster before unacceptable business impact occurs. Lower RTO = faster recovery = more pre-provisioned infrastructure = higher cost.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RTO = 4 hours</strong>: the application can be down up to 4 hours while teams restore from backup. Acceptable for internal tools.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RTO = minutes</strong>: requires pre-provisioned standby infrastructure that can be activated quickly. DNS failover to a warm standby region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RTO ≈ 0</strong>: zero downtime. Active/active multi-region where traffic shifts automatically. Maximum cost.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RTO drives infrastructure pre-provisioning, automation of failover, DNS TTL settings, and runbook complexity.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>RPO = data loss tolerance (backward in time). RTO = downtime tolerance (forward in time). They are independent — you can have low RPO but high RTO (frequent snapshots but slow restoration). The exam gives RPO/RTO requirements and asks which strategy fits. Map: high RPO + high RTO → Backup & Restore. Low RPO + Low RTO → Multi-Site.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SCP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Disaster Scope & AWS Regions <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">What you're protecting against determines the geographic span of your DR architecture</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Disaster scope</th><th>Recovery target</th><th>AWS solution</th></tr>
+            <tr><td class="label">Single instance / AZ failure</td><td>Other AZ in same region</td><td>Multi-AZ: RDS Multi-AZ, ELB + ASG across 2+ AZs, EFS (inherently multi-AZ)</td></tr>
+            <tr><td class="label">Full region failure or data corruption</td><td>Different AWS region</td><td>Cross-region: S3 CRR, RDS cross-region Read Replica, Aurora Global Database, DynamoDB Global Tables</td></tr>
+            <tr><td class="label">Account-level breach or accidental deletion</td><td>Isolated backup account</td><td>S3 versioning + MFA Delete, AWS Backup cross-account, separate AWS accounts per environment</td></tr>
+            <tr><td class="label">On-premises → cloud DR</td><td>Cloud as DR site</td><td>Storage Gateway, DataSync, AWS Elastic Disaster Recovery, Direct Connect + VPN failover</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Multi-AZ = HA within a region (AZ failure). Multi-Region = DR across regions (full region failure). They are different and complementary. Never confuse them — Multi-AZ does NOT protect against region failure.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">TRD</div>
+          <div class="concept-meta">
+            <div class="concept-title">The DR Spectrum — Cost vs Recovery Speed <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Four strategies from cheapest/slowest to most expensive/fastest</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>All DR strategies lie on a spectrum. Moving right reduces RPO and RTO but increases cost. The right answer depends entirely on business requirements — a $10M/hour platform justifies Multi-Site; an internal HR tool can tolerate Backup & Restore.</p>
+          <div class="spectrum-bar">
+            <div class="spectrum-item" style="background:rgba(86,211,100,0.08); border-right:1px solid var(--border);">
+              <div style="color:var(--accent-green);font-weight:600;">Backup & Restore</div>
+              <div class="spectrum-label">Hours–Days RTO</div>
+              <div class="spectrum-label">Hours RPO</div>
+              <div class="spectrum-label" style="margin-top:4px;color:var(--accent-teal);">$ Cheapest</div>
+            </div>
+            <div class="spectrum-item" style="background:rgba(88,166,255,0.08); border-right:1px solid var(--border);">
+              <div style="color:var(--accent-blue);font-weight:600;">Pilot Light</div>
+              <div class="spectrum-label">10s min–Hours RTO</div>
+              <div class="spectrum-label">Minutes RPO</div>
+              <div class="spectrum-label" style="margin-top:4px;color:var(--accent-teal);">$$</div>
+            </div>
+            <div class="spectrum-item" style="background:rgba(188,140,255,0.08); border-right:1px solid var(--border);">
+              <div style="color:var(--accent-purple);font-weight:600;">Warm Standby</div>
+              <div class="spectrum-label">Minutes RTO</div>
+              <div class="spectrum-label">Seconds RPO</div>
+              <div class="spectrum-label" style="margin-top:4px;color:var(--accent-teal);">$$$</div>
+            </div>
+            <div class="spectrum-item" style="background:rgba(255,123,114,0.08);">
+              <div style="color:var(--accent-red);font-weight:600;">Multi-Site</div>
+              <div class="spectrum-label">Near-zero RTO</div>
+              <div class="spectrum-label">Near-zero RPO</div>
+              <div class="spectrum-label" style="margin-top:4px;color:var(--accent-teal);">$$$$ Most expensive</div>
+            </div>
+          </div>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>This spectrum is the single most important concept for DR exam questions. Every scenario maps to one of these four strategies.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKUP & RESTORE -->
+    <div id="backup-restore" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">DR Strategy 1 — Lowest Cost</div>
+        <div class="page-title">Backup & Restore</div>
+        <div class="page-desc">Store backups off-site and restore from scratch on disaster. High RPO and RTO, minimal ongoing cost.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">B&R</div>
+          <div class="concept-meta">
+            <div class="concept-title">Backup & Restore Strategy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">RPO: hours. RTO: hours to days. Cost: $. No standby infrastructure — provision from scratch.</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>In Backup & Restore, you regularly back up data and configuration to a different region or account. On disaster, you provision new infrastructure from scratch and restore data from the backup. There is no standby — all resources are created at recovery time.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lowest cost</strong>: pay only for backup storage. No compute running in the DR region until a disaster occurs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Highest RPO and RTO</strong>: restoring data and provisioning infrastructure takes hours to days depending on volume and complexity.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>AWS Backup</strong>: centralized backup service for EC2, EBS, RDS, DynamoDB, EFS, S3, FSx. Define backup plans (schedule, retention, lifecycle). Cross-region and cross-account copy rules. <strong>Vault Lock</strong> = WORM immutable backups even root cannot delete.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Infrastructure as Code</strong>: store CloudFormation/CDK/Terraform templates in a separate region/account. At recovery time, run the template to re-provision all infrastructure. This is what makes Backup & Restore feasible at scale — no manual rebuilding.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>S3 CRR</strong>: replicate S3 data automatically to DR region. <strong>EBS snapshots</strong>: copy to DR region. <strong>RDS snapshots</strong>: copy to DR region or use automated backup cross-region copy. <strong>AMI copies</strong>: replicate to DR region so EC2 can launch identically configured instances quickly.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glacier</strong>: very cheap long-term archive storage. Higher restore time (minutes to hours). Use for compliance archives or rarely-accessed backups.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Lowest cost DR — acceptable to be down for several hours" → Backup & Restore. "Immutable backups for compliance" → AWS Backup Vault Lock. "How to quickly re-provision infrastructure after disaster?" → IaC (CloudFormation) stored in another region. Cross-account backups protect against account-level disasters.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PILOT LIGHT -->
+    <div id="pilot-light" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">DR Strategy 2</div>
+        <div class="page-title">Pilot Light</div>
+        <div class="page-desc">Keep the critical data core running in DR — scale the rest from zero when disaster strikes.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">PLT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Pilot Light Strategy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">RPO: minutes. RTO: tens of minutes to hours. Cost: $$. Database replica runs, compute does not.</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The "pilot light" analogy: a tiny flame always burns, ready to ignite the full furnace immediately when needed. In DR, you keep the most critical component — the database — continuously running and replicated in the DR region. On disaster, provision the remaining layers (app servers, load balancers) around it.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Always running in DR</strong>: the database tier — RDS cross-region Read Replica, Aurora Global Database secondary, or DynamoDB Global Table replica. Data is always replicated → very low RPO (seconds to minutes of async lag).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>NOT running in DR</strong>: application servers, web servers, load balancers. These are provisioned on demand from AMIs and CloudFormation when disaster is declared.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Failover steps</strong>: (1) detect disaster, (2) promote database replica to primary, (3) provision app/web servers from AMIs via CloudFormation or SSM runbook, (4) update Route 53 DNS to DR region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RTO limited by compute provisioning time — typically 10–30 minutes. Faster with pre-configured AMIs and automated runbooks (SSM Automation Documents).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Much cheaper than Warm Standby — only the database tier runs continuously. Compute in DR region runs only during the disaster.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Pilot Light = data always replicated, compute not running. "Critical data tier is always replicated, app tier scaled from zero on failover" → Pilot Light. The key distinction from Warm Standby: with Pilot Light you PROVISION new instances (slower); with Warm Standby you SCALE existing instances (faster).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WARM STANDBY -->
+    <div id="warm-standby" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">DR Strategy 3</div>
+        <div class="page-title">Warm Standby</div>
+        <div class="page-desc">A fully functional but under-provisioned copy in DR — scale it out on failover, not up from nothing.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">WRM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Warm Standby Strategy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">RPO: seconds. RTO: minutes. Cost: $$$. Full stack at minimum capacity — scale on failover.</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Warm Standby runs a complete but scaled-down version of the production system in the DR region — all tiers present (web, application, database), but at minimum/reduced capacity. On disaster, scale out the DR environment to full production capacity via Auto Scaling.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Always running in DR</strong>: the entire stack — ELB, EC2 ASG (minimum 1–2 instances), database replica. Everything is running at reduced scale.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Failover steps</strong>: (1) detect disaster, (2) promote database replica, (3) scale out EC2 ASG to full production capacity (fast — no provisioning, just scaling), (4) update Route 53 to route all traffic to DR region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RTO measured in minutes — app tier already running at low capacity, scale-out is fast. No instance provisioning required — just increase ASG desired count.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Optional dual use</strong>: the warm standby can serve a fraction (e.g. 10%) of production traffic continuously — validates it actually works and reduces failover from 0% → 100% to 10% → 100%. Reduces cost by making the standby do useful work.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Cost optimization: use smaller instance types in DR (t3.small instead of m5.large). On failover, use a launch template that specifies larger instances or scale out the smaller ones.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Warm Standby = full stack, scaled down. Pilot Light = data only, no compute. "RTO of minutes, infrastructure already running but not at full scale" → Warm Standby. "RTO near-zero, always active in all regions" → Multi-Site Active/Active.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MULTI-SITE -->
+    <div id="multi-site" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">DR Strategy 4 — Maximum Resilience</div>
+        <div class="page-title">Multi-Site Active/Active</div>
+        <div class="page-desc">Production traffic in multiple regions simultaneously — zero downtime, near-zero data loss, maximum cost.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">A/A</div>
+          <div class="concept-meta">
+            <div class="concept-title">Multi-Site Active/Active Strategy <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">RPO: near-zero. RTO: near-zero. Cost: $$$$. Full production in multiple regions simultaneously.</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Multi-Site Active/Active runs full production workloads in two or more AWS regions simultaneously. Traffic is distributed across regions via Route 53 or Global Accelerator. If one region fails, the others absorb all traffic automatically — no failover procedure, no downtime.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Both regions serve live production traffic</strong>: no standby. Route 53 Weighted or Latency routing distributes users. Each region is sized to handle 100% of traffic if the other fails.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Database — the hardest part</strong>: multiple active regions writing to databases requires active-active replication. Options: <strong>DynamoDB Global Tables</strong> (writes in any region, multi-master, ~1s replication), <strong>Aurora Global Database</strong> (one primary for writes — technically active/passive for writes but active/active for reads; secondary can be promoted in &lt;1 minute), <strong>CockroachDB/Cassandra/Keyspaces</strong> for true distributed SQL.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Conflict resolution</strong>: with multi-master writes (DynamoDB Global Tables), last-writer-wins based on timestamp. Application must be designed to handle potential conflicts or use partition-based routing to avoid same-record conflicts.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Automatic failover</strong>: Route 53 health checks + failover routing or Global Accelerator health checks automatically stop sending traffic to the failed region. No manual procedure to execute.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cost</strong>: full production infrastructure in multiple regions 24/7. Double or triple compute, database, and data transfer costs vs single-region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: mission-critical platforms ($X million/minute downtime cost), financial trading systems, globally-distributed consumer apps, regulatory zero-data-loss requirements.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Zero downtime and zero data loss requirement" → Multi-Site Active/Active. "Writes accepted in any region with no downtime on region failure" → DynamoDB Global Tables. Note: Aurora Global Database is often called "active/active" but writes go to one primary — secondaries serve reads. For true multi-master writes → DynamoDB Global Tables.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KEY DR SERVICES -->
+    <div id="services" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — AWS Tools</div>
+        <div class="page-title">Key AWS Services for DR</div>
+        <div class="page-desc">The services that appear most in DR architectures — what they do, when to use them.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">BAK</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Backup <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Centralized managed backup across all AWS services — cross-account and cross-region</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports: EC2, EBS, RDS (all engines), Aurora, DynamoDB, EFS, FSx for Windows/Lustre, S3, Storage Gateway, DocumentDB, Neptune.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Backup Plans</strong>: define frequency (hourly/daily/weekly/monthly), retention, lifecycle (move to cold storage after N days), and copy rules (copy to another region or account).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Backup Vault Lock (WORM)</strong>: once enabled, backups cannot be deleted by anyone — including root. Required for PCI, HIPAA, and other compliance frameworks that mandate immutable retention.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cross-account backups</strong>: copy backups to a separate isolated AWS account for protection against account compromise, ransomware, or admin error in the primary account.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Centralized backup policy across all AWS services and accounts" → AWS Backup. "Backups that not even root can delete" → AWS Backup Vault Lock. Cross-account backup = defense-in-depth against account-level disasters.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">DRS</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Elastic Disaster Recovery (DRS) & MGN <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Continuous block-level replication for fast failover of on-premises and cloud workloads</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>AWS Elastic Disaster Recovery (DRS)</strong>: formerly CloudEndure Disaster Recovery. Installs a lightweight replication agent on source servers (on-premises or other cloud). Continuously replicates block-level changes to low-cost staging EBS volumes in AWS. On disaster, launch recovery EC2 instances in minutes. RPO: seconds. RTO: minutes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Staging area</strong>: low-cost EBS volumes in the target AWS region, continuously updated with changes. Full EC2 instances only launch during an actual DR event or test drill — keeping standby costs low.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>AWS MGN (Application Migration Service)</strong>: same continuous replication technology but for <em>migration</em> (lift-and-shift to EC2), not ongoing DR. Performs a final cutover when migration is ready.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DRS supports: physical servers, VMware, Hyper-V, other clouds (Azure, GCP). Any server that can run the replication agent.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DRS supports failback — after on-premises is rebuilt, replicate from AWS back to on-premises and cut over.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>DRS = DR use case (continuous protection, failover on disaster). MGN = migration use case (one-time lift-and-shift). Both use block-level continuous replication agents. "Replicate on-premises servers to AWS for DR with RPO of seconds" → AWS Elastic Disaster Recovery.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">R53</div>
+          <div class="concept-meta">
+            <div class="concept-title">Route 53 & Global Accelerator for DR <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">DNS-based and anycast-based traffic failover between regions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Route 53 Failover routing</strong>: primary record points to main region (with health check). Secondary record points to DR region. On primary health check failure, Route 53 returns DR endpoint. Subject to DNS TTL caching — set low TTL (60s) on failover records to minimize switchover time.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Route 53 health check timing</strong>: checks every 30s (or 10s with fast health check option). Fails after 3 consecutive failures (~90s detection). Total failover time = detection + TTL expiry. For aggressive RTO, use fast health checks + low TTL.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Global Accelerator</strong>: anycast routing — no DNS TTL delay. Failover is at the network layer, propagates in under 30 seconds regardless of client DNS caching. Better RTO for non-HTTP workloads or when DNS delay is unacceptable.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For multi-site active/active: Route 53 Weighted (split traffic by percentage) or Latency (route to nearest region) — both with health checks that automatically remove failed endpoints.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Automatic DNS-based region failover" → Route 53 Failover routing + health check. "Sub-minute RTO without DNS delay" → Global Accelerator (anycast, no TTL). Route 53 failover = fast but constrained by DNS TTL. Global Accelerator failover = faster, no DNS, better for strict RTO.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATABASE DR -->
+    <div id="database-dr" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Database DR</div>
+        <div class="page-title">Database DR Patterns</div>
+        <div class="page-desc">How to architect each AWS database for cross-region disaster recovery.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">DB</div>
+          <div class="concept-meta">
+            <div class="concept-title">Database DR by Service <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">RDS, Aurora, DynamoDB, ElastiCache, Redshift — DR pattern for each</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Database</th><th>Within-Region HA</th><th>Cross-Region DR</th><th>Key DR notes</th></tr>
+            <tr><td class="label">RDS</td><td>Multi-AZ (sync standby, auto-failover ~1–2 min)</td><td>Cross-region Read Replica → promote manually on disaster</td><td>Async replication → some data loss possible. Snapshot copies for Backup & Restore fallback. Manual promotion required.</td></tr>
+            <tr><td class="label">Aurora</td><td>Multi-AZ by default (6 copies/3 AZs, &lt;30s failover)</td><td>Aurora Global Database (1 primary + up to 5 secondaries, &lt;1s replication, &lt;1min RTO for region failover)</td><td>Best cross-region relational DR option. Secondary promoted in under 1 minute with near-zero data loss.</td></tr>
+            <tr><td class="label">DynamoDB</td><td>3-AZ replication by default</td><td>Global Tables (active-active, multi-region multi-master, ~1s replication lag)</td><td>True multi-master writes in any region. Last-writer-wins conflict resolution. Requires Streams to be enabled.</td></tr>
+            <tr><td class="label">ElastiCache Redis</td><td>Multi-AZ with automatic failover</td><td>No native cross-region replication. Periodic RDB snapshot to S3 CRR → restore in DR region.</td><td>Accept cache cold start on recovery. Cache is usually re-warmable — may not need full DR for cache tier.</td></tr>
+            <tr><td class="label">Redshift</td><td>Single-AZ (RA3 Multi-AZ optional)</td><td>Automated snapshot copy to DR region (every 8 hours or on demand)</td><td>Restoring large Redshift cluster from snapshot can take hours — high RTO. Plan accordingly.</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Aurora cross-region DR — RTO &lt; 1 minute" → Aurora Global Database. "DynamoDB active-active writes in two regions" → Global Tables. "Cross-region DR for RDS" → promote cross-region Read Replica (async replication — some data loss possible). RDS Multi-AZ = HA (same region, no DR). Cross-region Read Replica = DR (different region, manual promotion).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ON-PREMISES DR -->
+    <div id="on-prem-dr" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Hybrid DR</div>
+        <div class="page-title">On-Premises to AWS DR</div>
+        <div class="page-desc">Using AWS as the disaster recovery site for on-premises workloads.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">HYB</div>
+          <div class="concept-meta">
+            <div class="concept-title">On-Premises → AWS DR Patterns <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Storage, compute replication, and network connectivity for hybrid DR</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Server replication</strong>: AWS Elastic Disaster Recovery (DRS) installs an agent on on-premises servers, continuously replicates block-level data to staging EBS volumes in AWS. On disaster, launch recovery EC2 instances in minutes. Near-zero RPO, minutes RTO.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>File/object replication</strong>: AWS DataSync — scheduled, high-speed sync of on-premises NFS/SMB files to S3/EFS/FSx. Storage Gateway (Volume Gateway, Stored mode) — primary data on-premises, async backup to S3 for snapshot-based recovery.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Network resilience</strong>: use both Direct Connect (primary — dedicated, fast, low latency) AND Site-to-Site VPN (backup — internet-based, lower cost). VPN activates automatically if Direct Connect fails. A single Direct Connect connection is a single point of failure — always pair with VPN.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DNS cutover</strong>: on failover, update public DNS to point to AWS endpoints (ALB DNS, CloudFront, Route 53 records). Pre-lower DNS TTLs before planned maintenance windows for faster cutover.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Failback</strong>: after on-premises is rebuilt, replicate from AWS back to on-premises using DRS failback, DataSync reverse sync, or Storage Gateway. Test failback as part of your DR runbook — it's often overlooked.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Replicate on-premises servers to AWS for DR with RPO seconds" → AWS Elastic Disaster Recovery (DRS). "Sync on-premises files to S3 for DR" → DataSync. "Network resilience for hybrid connectivity" → Direct Connect + VPN as failover. Direct Connect alone has NO built-in HA.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHEAT SHEET -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">DR Cheat Sheet</div>
+        <div class="page-desc">Strategy selector, scenario mappings, and critical exam distinctions.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">STR</div>
+          <div class="concept-meta">
+            <div class="concept-title">Strategy Selector Table <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Match any RPO/RTO requirement to the right strategy</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Strategy</th><th>RPO</th><th>RTO</th><th>Cost</th><th>What runs in DR</th></tr>
+            <tr><td class="label">Backup & Restore</td><td>Hours</td><td>Hours–Days</td><td>$ (storage only)</td><td>Nothing — provision from scratch</td></tr>
+            <tr><td class="label">Pilot Light</td><td>Minutes</td><td>10s min – Hours</td><td>$$ (DB only)</td><td>Database replica only</td></tr>
+            <tr><td class="label">Warm Standby</td><td>Seconds–Minutes</td><td>Minutes</td><td>$$$ (full stack, min scale)</td><td>Scaled-down complete stack</td></tr>
+            <tr><td class="label">Multi-Site Active/Active</td><td>Near-zero</td><td>Near-zero</td><td>$$$$ (full prod ×N regions)</td><td>Full production in all regions</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario → Answer Mapping <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Every exam DR scenario mapped to the right answer</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"Lowest cost DR — acceptable downtime of hours"</td><td class="label">Backup & Restore + IaC (CloudFormation)</td></tr>
+            <tr><td>"Data always replicated, compute spins up on failover"</td><td class="label">Pilot Light</td></tr>
+            <tr><td>"Full stack always running in DR at minimum capacity"</td><td class="label">Warm Standby</td></tr>
+            <tr><td>"Zero downtime, traffic live in two regions"</td><td class="label">Multi-Site Active/Active</td></tr>
+            <tr><td>"Active-active multi-region writes — DynamoDB"</td><td class="label">DynamoDB Global Tables</td></tr>
+            <tr><td>"Aurora cross-region DR, RTO &lt; 1 minute"</td><td class="label">Aurora Global Database</td></tr>
+            <tr><td>"Cross-region DR for RDS PostgreSQL"</td><td class="label">Cross-region Read Replica → manual promotion</td></tr>
+            <tr><td>"Centralized backup across all services and accounts"</td><td class="label">AWS Backup</td></tr>
+            <tr><td>"Immutable backups nobody can delete (compliance)"</td><td class="label">AWS Backup Vault Lock</td></tr>
+            <tr><td>"Replicate on-premises servers to AWS — RPO seconds"</td><td class="label">AWS Elastic Disaster Recovery (DRS)</td></tr>
+            <tr><td>"Migrate on-premises servers to EC2 — minimal downtime"</td><td class="label">AWS Application Migration Service (MGN)</td></tr>
+            <tr><td>"Automatic DNS failover between regions"</td><td class="label">Route 53 Failover routing + health checks</td></tr>
+            <tr><td>"Sub-minute RTO without DNS TTL delay"</td><td class="label">Global Accelerator (anycast routing)</td></tr>
+            <tr><td>"Sync on-premises files to S3 for DR"</td><td class="label">AWS DataSync</td></tr>
+            <tr><td>"On-prem to AWS network — HA connectivity"</td><td class="label">Direct Connect (primary) + Site-to-Site VPN (backup)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">KEY</div>
+          <div class="concept-meta">
+            <div class="concept-title">Critical Distinctions & Exam Traps <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The most common exam mistakes on DR</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multi-AZ ≠ Multi-Region</strong>: Multi-AZ = HA within one region (AZ failure). Multi-Region = DR across regions (region failure). You need both for complete resilience. They are not interchangeable.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RDS Multi-AZ ≠ Read Replica</strong>: Multi-AZ = synchronous, auto-failover, same region, no reads from standby. Read Replica = asynchronous, manual promotion, cross-region capable, serves reads. Completely different features.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Pilot Light vs Warm Standby</strong>: Pilot Light = data tier only running. Warm Standby = full stack running at min scale. Warm Standby is faster to recover because app tier is already running (scale vs provision).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RPO vs RTO</strong>: RPO = data loss (backward — last backup). RTO = downtime (forward — recovery time). Independent: you can have low RPO + high RTO (frequent backups, slow restoration).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DNS failover delay</strong>: Route 53 failover takes time equal to detection delay + TTL cache expiry. Clients may hit failed region for up to TTL seconds. Set low TTL (60s). For zero-delay → Global Accelerator.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DRS vs MGN</strong>: DRS = ongoing DR protection + continuous replication + failover when disaster occurs. MGN = one-time migration to EC2 + final cutover. Different purposes, same underlying technology.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Direct Connect is NOT HA alone</strong>: a single Direct Connect connection is a single point of failure. HA hybrid connectivity = two Direct Connect connections in different locations OR Direct Connect + VPN failover.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Aurora Global Database writes</strong>: writes go to ONE primary region. Secondaries serve reads and can be promoted. This is technically active/passive for writes — not the same as DynamoDB Global Tables which accept writes in any region (true active/active).</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

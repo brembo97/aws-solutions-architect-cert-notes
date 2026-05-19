@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Security & Encryption — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Security & Encryption</h1>
+    </div>
+
+    <div class="nav-section-label">Encryption & Keys</div>
+    <a class="nav-item active" onclick="show('encryption')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Encryption 101 & KMS
+    </a>
+    <a class="nav-item" onclick="show('kms-advanced')">
+      <span class="nav-dot" style="background:#39d0a0"></span> KMS Advanced
+    </a>
+    <a class="nav-item" onclick="show('cloudhsm')">
+      <span class="nav-dot" style="background:#bc8cff"></span> CloudHSM
+    </a>
+
+    <div class="nav-section-label">Secrets & Certificates</div>
+    <a class="nav-item" onclick="show('ssm')">
+      <span class="nav-dot" style="background:#f0a742"></span> SSM Parameter Store
+    </a>
+    <a class="nav-item" onclick="show('secrets')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Secrets Manager
+    </a>
+    <a class="nav-item" onclick="show('acm')">
+      <span class="nav-dot" style="background:#56d364"></span> ACM
+    </a>
+
+    <div class="nav-section-label">Network Security</div>
+    <a class="nav-item" onclick="show('waf')">
+      <span class="nav-dot" style="background:#db6eb0"></span> WAF & Shield
+    </a>
+    <a class="nav-item" onclick="show('firewall')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Firewall Manager
+    </a>
+
+    <div class="nav-section-label">Threat Detection</div>
+    <a class="nav-item" onclick="show('guardduty')">
+      <span class="nav-dot" style="background:#39d0a0"></span> GuardDuty
+    </a>
+    <a class="nav-item" onclick="show('inspector')">
+      <span class="nav-dot" style="background:#f0a742"></span> Inspector & Macie
+    </a>
+
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('cheatsheet')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Cheat Sheet
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ ENCRYPTION 101 & KMS ══════════════ -->
+    <div id="encryption" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Encryption & KMS</div>
+        <div class="page-title">Encryption 101 & AWS KMS</div>
+        <div class="page-desc">Encryption fundamentals and the AWS Key Management Service — the backbone of data protection across all AWS services.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">101</div>
+          <div class="concept-meta">
+            <div class="concept-title">Encryption Fundamentals <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">At-rest vs in-transit, symmetric vs asymmetric, envelope encryption</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Encryption converts plaintext data into unreadable ciphertext using a key. Without the key, the data is worthless. AWS services apply encryption at two layers: at rest (stored data) and in transit (data moving over a network).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Encryption at rest</strong>: protects data stored on disk, in databases, or in object storage. Uses symmetric encryption (AES-256). The same key encrypts and decrypts. Examples: SSE-S3, SSE-KMS, EBS encryption, RDS encryption.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Encryption in transit</strong>: protects data moving over a network — between services, between client and server. Uses TLS/SSL (asymmetric for key exchange, then symmetric for bulk data). Examples: HTTPS, TLS between app and RDS, encrypted S3 API calls.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Symmetric encryption</strong>: one key for both encrypt and decrypt (AES-256). Fast, used for bulk data. The challenge: how to securely share the key with the other party.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Asymmetric encryption</strong>: a key pair — public key (encrypt only, can share freely) and private key (decrypt only, never share). RSA, Elliptic Curve. Slower than symmetric. Used for key exchange, digital signatures, TLS handshake.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Envelope encryption</strong>: the KMS pattern. A Data Encryption Key (DEK) encrypts the actual data. The DEK itself is encrypted by a KMS Master Key (CMK/KMS Key). Only the encrypted DEK is stored with the data — the plaintext DEK is never persisted. This way KMS only needs to handle small key operations, not large data volumes.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Envelope encryption = DEK encrypts data, KMS key encrypts the DEK. This is how S3, EBS, RDS, and virtually every AWS encryption works. "Why not just encrypt everything directly with KMS?" — KMS limits you to 4 KB payload. Envelope encryption lets you encrypt arbitrary-size data efficiently while keeping the master key centrally managed.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">KMS</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS KMS Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Centrally manage encryption keys — audit usage, control access, rotate automatically</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Key Management Service (KMS) is a managed service for creating, managing, and controlling cryptographic keys. It is the central key management layer used by virtually every AWS service that offers encryption. KMS integrates with CloudTrail — every key usage is logged.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Three KMS key types</strong>: <strong>AWS Managed Keys</strong> (created automatically by AWS services like S3, EBS — free, cannot customize key policy, auto-rotate every year, named <code>aws/service</code>), <strong>Customer Managed Keys (CMK)</strong> (you create, manage, define key policy, rotate — $1/month/key), <strong>AWS Owned Keys</strong> (internal AWS keys shared across accounts — free, no visibility).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Key material origins</strong>: <strong>KMS-generated</strong> (default — AWS generates and manages key material in FIPS 140-2 validated HSMs), <strong>External</strong> (you import your own key material — you manage rotation), <strong>CloudHSM</strong> (key material generated in your dedicated HSM cluster).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>KMS key operations</strong>: Encrypt (up to 4 KB plaintext), Decrypt, GenerateDataKey (generate a DEK — returns plaintext + encrypted copy), GenerateDataKeyWithoutPlaintext (for deferred use), Sign/Verify (asymmetric keys only), GetPublicKey.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Key policies</strong>: resource-based policy attached to each KMS key. Controls who can use and manage the key. Unlike IAM (where the root account implicitly has all permissions), <strong>KMS requires an explicit key policy that grants root access</strong> — otherwise the root cannot use the key.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Automatic key rotation</strong>: Customer Managed Keys can be set to auto-rotate annually. AWS keeps old key material for decryption; new material is used for encryption going forward. The key ID stays the same — application code changes are not required.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>KMS limits</strong>: 10,000 API requests per second per region (can be increased). Each Encrypt/Decrypt/GenerateDataKey call counts. At high S3 request rates with SSE-KMS, consider <strong>S3 Bucket Keys</strong> to reduce KMS API calls by up to 99%.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudTrail integration</strong>: every KMS API call is logged — who used the key, when, for what. Provides a full audit trail of cryptographic operations.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>KMS max direct encryption: 4 KB. Larger data → envelope encryption (GenerateDataKey). AWS Managed Keys = free, auto-rotate, cannot customize. Customer Managed Keys = $1/month, full control. "Audit who used an encryption key" → CloudTrail + KMS. Key policy must explicitly grant root access — root does NOT implicitly have KMS key access.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ KMS ADVANCED ══════════════ -->
+    <div id="kms-advanced" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — KMS Advanced</div>
+        <div class="page-title">KMS Advanced Features</div>
+        <div class="page-desc">Multi-Region Keys, cross-account encryption patterns, S3 replication with KMS, and sharing encrypted AMIs.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">MRK</div>
+          <div class="concept-meta">
+            <div class="concept-title">KMS Multi-Region Keys <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Replicate keys across regions — decrypt in a different region without re-encryption</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>KMS Multi-Region Keys are a set of interoperable KMS keys in different AWS regions that have the same key material and key ID. Data encrypted with the primary key in one region can be decrypted using the replica key in another region — without cross-region API calls.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multi-Region Key IDs always start with <code>mrk-</code> (vs single-region keys that start with a UUID). The same key ID works in all regions where the key is replicated.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each replica key is an <strong>independent</strong> KMS key in its region — has its own key policy, grants, and CloudTrail logs. They share key material but are managed separately.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: global DynamoDB tables (encrypt in us-east-1, replicate to eu-west-1, decrypt in eu-west-1 without cross-region KMS calls), cross-region disaster recovery, global client-side encryption.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multi-Region Keys are NOT the default — most use cases don't need them. Use when: you need to decrypt data in a different region using the same key, or you're building globally distributed applications with local encryption/decryption.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Encrypt DynamoDB data in one region and decrypt in another without re-encrypting" → KMS Multi-Region Key. Multi-Region Keys share key material, have the same key ID with <code>mrk-</code> prefix, but each replica is independently managed. Without Multi-Region Keys, you'd need to call KMS in the original region to decrypt — adds latency and creates a dependency.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">S3R</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Replication with Encryption <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Replicate SSE-KMS encrypted objects — key permissions and Multi-Region Key options</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Replication works with SSE-S3 and SSE-KMS encrypted objects, but SSE-KMS replication requires explicit configuration because objects must be decrypted in the source region and re-encrypted in the destination region.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SSE-S3 encrypted objects</strong>: replicated by default — no extra configuration needed. AWS handles the key.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SSE-KMS encrypted objects</strong>: must explicitly opt in to replicate. The replication configuration must specify: (1) the KMS key to use for encryption in the destination, (2) the IAM role must be granted <code>kms:Decrypt</code> on the source key and <code>kms:Encrypt</code> on the destination key.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Replication with SSE-KMS is slower (throttled by KMS API limits) — each object requires a Decrypt + Encrypt KMS call. Use S3 Bucket Keys to reduce KMS call volume.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multi-Region KMS Keys for S3 replication</strong>: objects are still re-encrypted (even with Multi-Region Keys, S3 replication always decrypts and re-encrypts), but the same key ID can be used in both regions, simplifying key management.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Replicate SSE-KMS encrypted S3 objects" → must configure SSE-KMS in the replication rule, must grant the replication IAM role Decrypt (source key) + Encrypt (destination key). SSE-C encrypted objects CANNOT be replicated — customer provides key per request, replication service can't provide it.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">AMI</div>
+          <div class="concept-meta">
+            <div class="concept-title">Encrypted AMI Sharing Process <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Share an AMI encrypted with a CMK across AWS accounts</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Sharing an encrypted AMI between AWS accounts is more complex than sharing an unencrypted one because the KMS key used to encrypt the underlying EBS snapshot must also be shared.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Step 1</strong>: The AMI must be encrypted with a <strong>Customer Managed Key (CMK)</strong> — not an AWS Managed Key. AWS Managed Keys cannot be shared cross-account.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Step 2</strong>: Modify the KMS key policy in Account A to grant Account B the permissions: <code>kms:DescribeKey</code>, <code>kms:ReEncrypt*</code>, <code>kms:CreateGrant</code>, <code>kms:Decrypt</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Step 3</strong>: Share the AMI (modify launch permissions) with Account B's account ID.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Step 4</strong>: Account B can now launch instances from the shared AMI. Account B can optionally copy the AMI and re-encrypt it with their own CMK for independence from Account A's key.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>AMI encrypted with an AWS Managed Key cannot be shared across accounts — must use a Customer Managed Key. Both the AMI AND the underlying KMS key must be shared. The receiving account must have KMS key permissions granted via the source account's key policy.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CLOUDHSM ══════════════ -->
+    <div id="cloudhsm" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Hardware Security</div>
+        <div class="page-title">AWS CloudHSM</div>
+        <div class="page-desc">Dedicated hardware security modules — your own tamper-resistant cryptographic hardware in AWS.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">HSM</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS CloudHSM <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">FIPS 140-2 Level 3 dedicated hardware — you manage the keys, AWS manages the hardware</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudHSM provides dedicated Hardware Security Modules (HSMs) in your AWS account. Unlike KMS (where AWS manages the HSMs and your key material), CloudHSM gives you exclusive access to the hardware — you manage the keys and users, AWS manages only the physical hardware and availability.</p>
+          <table class="compare-table">
+            <tr><th></th><th>AWS KMS</th><th>AWS CloudHSM</th></tr>
+            <tr><td class="label">Hardware</td><td>AWS-managed, shared HSMs (multi-tenant)</td><td>Dedicated, single-tenant HSM hardware — yours only</td></tr>
+            <tr><td class="label">FIPS level</td><td>FIPS 140-2 Level 2 (some Level 3)</td><td>FIPS 140-2 Level 3 (tamper-evident, tamper-resistant)</td></tr>
+            <tr><td class="label">Key management</td><td>AWS manages key material (in their HSMs)</td><td>You manage keys exclusively — AWS has NO access</td></tr>
+            <tr><td class="label">Key types</td><td>Symmetric + Asymmetric (RSA, ECC)</td><td>Symmetric + Asymmetric — broader algorithm support</td></tr>
+            <tr><td class="label">Integration</td><td>Native with most AWS services (S3, EBS, RDS, etc.)</td><td>Limited native integration — use PKCS#11, JCE, CNG APIs from your application</td></tr>
+            <tr><td class="label">HA</td><td>Managed by AWS, multi-AZ</td><td>Deploy HSM cluster across multiple AZs manually</td></tr>
+            <tr><td class="label">Cost</td><td>$1/key/month for CMKs + API call charges</td><td>~$1.45/HSM/hour (dedicated hardware)</td></tr>
+            <tr><td class="label">Use when</td><td>Standard encryption for AWS services, compliance requires key management audit trail</td><td>Regulatory compliance requiring dedicated hardware (PCI DSS, HIPAA strict), BYOK with hardware control, SSL/TLS offloading, custom cryptographic operations</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Compliance requires dedicated single-tenant HSM hardware" or "FIPS 140-2 Level 3" → CloudHSM. "Standard encryption with audit trail" → KMS. CloudHSM is more expensive and requires more management. AWS has NO access to keys in CloudHSM — you alone hold the crypto officer credentials. If you lose them, you lose the keys permanently.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SSM PARAMETER STORE ══════════════ -->
+    <div id="ssm" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — Secrets & Config</div>
+        <div class="page-title">SSM Parameter Store</div>
+        <div class="page-desc">Centralized, hierarchical config and secrets storage — integrated with IAM, KMS, and CloudFormation.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SSM</div>
+          <div class="concept-meta">
+            <div class="concept-title">SSM Parameter Store Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hierarchical key-value store for configuration data and secrets — Standard vs Advanced tiers</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Systems Manager Parameter Store provides secure, hierarchical storage for configuration data and secrets. It is free for standard parameters, deeply integrated with IAM for access control, and natively integrated with KMS for encryption.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Hierarchical naming</strong>: parameters are organized in a path structure (e.g. <code>/myapp/prod/db-password</code>, <code>/myapp/dev/db-password</code>). You can retrieve all parameters under a path prefix in one API call — making per-environment config management clean.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Parameter types</strong>: <code>String</code> (plain text), <code>StringList</code> (comma-separated values), <code>SecureString</code> (encrypted with KMS — value is encrypted at rest, decrypted on access by authorized callers).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Standard vs Advanced tiers</strong>: Standard = free, up to 10,000 parameters, max 4 KB value, no parameter policies. Advanced = $0.05/parameter/month, up to 100,000 parameters, max 8 KB, supports parameter policies (TTL/expiry, notification on change).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Versioning</strong>: every change to a parameter creates a new version. You can retrieve a specific version (<code>/myapp/db-password:3</code>) or always get the latest. Useful for rollback and audit.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>IAM access control</strong>: use IAM policies to grant access to specific parameter paths. E.g. allow EC2 instances in production to read only <code>/myapp/prod/*</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EventBridge integration</strong>: trigger Lambda or SNS when a parameter changes — useful for automated redeployment when config changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Native integration with: EC2 (CloudWatch Agent config), CloudFormation (reference parameters in templates), Lambda (read config at startup), ECS Task Definitions (inject config as environment variables).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>SSM Parameter Store = free for basic use, hierarchical paths, versioning, KMS encryption option. No automatic rotation (use Lambda + EventBridge to rotate manually). If you need automatic rotation → Secrets Manager. "Store database passwords securely for Lambda to retrieve" → SSM SecureString or Secrets Manager. Cost difference: SSM = free (Standard), Secrets Manager = $0.40/secret/month.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SECRETS MANAGER ══════════════ -->
+    <div id="secrets" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Secrets Management</div>
+        <div class="page-title">AWS Secrets Manager</div>
+        <div class="page-desc">Purpose-built secrets management with automatic rotation — the right choice for database credentials and API keys.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SEC</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Secrets Manager <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Automatic credential rotation, native RDS/Aurora/Redshift integration, cross-account sharing</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Secrets Manager is a dedicated secrets management service designed specifically for storing, rotating, and accessing sensitive credentials — database passwords, API keys, OAuth tokens. Its key differentiator from SSM Parameter Store is <strong>automatic rotation</strong>.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Automatic rotation</strong>: the defining feature. Secrets Manager uses a Lambda function to automatically rotate credentials on a configurable schedule. For RDS, Aurora, Redshift, DocumentDB — AWS provides built-in rotation Lambda functions that update both the secret AND the database password simultaneously.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Native database integration</strong>: for RDS (MySQL, PostgreSQL, Oracle, SQL Server), Aurora, Redshift, and DocumentDB — Secrets Manager natively understands the credential format and how to rotate passwords. Rotation happens without application downtime.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Encryption</strong>: all secrets are encrypted at rest with KMS (using an AWS Managed Key <code>aws/secretsmanager</code> by default, or a CMK you specify).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cross-account access</strong>: a resource-based policy on the secret can allow other AWS accounts to retrieve it. Cross-account rotation requires additional Lambda permissions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multi-Region Secrets</strong>: replicate secrets to multiple AWS regions. The replica is read-only and stays in sync with the primary. Used for multi-region applications that need local secret access (DR failover, global apps).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cost</strong>: $0.40 per secret per month + $0.05 per 10,000 API calls. More expensive than SSM Parameter Store (free for Standard).</span></div>
+          </div>
+
+          <table class="compare-table" style="margin-top:14px">
+            <tr><th></th><th>SSM Parameter Store</th><th>Secrets Manager</th></tr>
+            <tr><td class="label">Cost</td><td>Free (Standard), $0.05/param/month (Advanced)</td><td>$0.40/secret/month</td></tr>
+            <tr><td class="label">Auto rotation</td><td>No (manual via Lambda)</td><td>Yes — native for RDS/Aurora/Redshift</td></tr>
+            <tr><td class="label">Max value size</td><td>4 KB (Standard), 8 KB (Advanced)</td><td>64 KB</td></tr>
+            <tr><td class="label">Cross-account sharing</td><td>Via IAM roles</td><td>Resource-based policy on secret</td></tr>
+            <tr><td class="label">Best for</td><td>Application config, non-rotating secrets, large config hierarchies</td><td>Database credentials, API keys, any secret needing automatic rotation</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Automatically rotate RDS database password every 30 days without downtime" → Secrets Manager. "Store app config strings with optional encryption" → SSM Parameter Store. The automatic rotation capability is the key differentiator — if the question mentions rotation, it's almost always Secrets Manager.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ACM ══════════════ -->
+    <div id="acm" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — TLS Certificates</div>
+        <div class="page-title">AWS Certificate Manager (ACM)</div>
+        <div class="page-desc">Provision, manage, and auto-renew free TLS/SSL certificates for use with AWS services.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">ACM</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Certificate Manager <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Free TLS certificates with automatic renewal for CloudFront, ALB, API Gateway, and more</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ACM provisions, manages, and auto-renews TLS/SSL certificates for use with integrated AWS services. Public certificates are completely free — no cost for the certificate itself, only for the AWS services using it.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Certificate types</strong>: <strong>Public certificates</strong> (free, issued by Amazon's Certificate Authority, auto-renewed, only usable with AWS services) and <strong>Private certificates</strong> (requires AWS Private CA, costs $400/month for the CA + $0.75/cert, use for internal services).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Supported services</strong>: ALB, NLB, CloudFront, API Gateway, Elastic Beanstalk, CloudFormation, AppSync. <strong>Cannot</strong> be used on EC2 instances directly — ACM certificates are not exportable (private key never leaves ACM).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Automatic renewal</strong>: ACM automatically renews certificates before expiry (typically 60 days before expiry). No manual renewal. Renewal is fully transparent — no downtime.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Domain validation methods</strong>: <strong>DNS validation</strong> (recommended — add a CNAME record to your DNS; ACM checks it; auto-renewable as long as CNAME stays) and <strong>Email validation</strong> (sends email to domain owner contacts — must manually re-validate at renewal).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudFront certificates MUST be in us-east-1</strong> — regardless of the CloudFront distribution's origin region. All other services use certificates in the same region as the service.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports wildcard certificates (<code>*.example.com</code>) and multi-domain (SAN) certificates — one certificate for multiple domains.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Importing third-party certificates is supported — upload cert + private key + certificate chain to ACM. ACM does NOT auto-renew imported certificates — you must manually renew and re-import.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Add HTTPS to an ALB for free" → ACM public certificate on the ALB. CloudFront certificates → must be in us-east-1. "ACM certificate on EC2 directly" → NOT POSSIBLE — ACM certificates are not exportable. Use ACM on an ALB in front of EC2 instead. DNS validation is preferred over email for auto-renewal.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ WAF & SHIELD ══════════════ -->
+    <div id="waf" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Network Security</div>
+        <div class="page-title">WAF & AWS Shield</div>
+        <div class="page-desc">Layer 7 web application firewall and DDoS protection at the network and application layers.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">WAF</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS WAF <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Layer 7 web application firewall — protect against SQL injection, XSS, bad bots, and more</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS WAF (Web Application Firewall) filters HTTP/HTTPS traffic at Layer 7 using customizable rules. It protects web applications from common exploits like SQL injection, cross-site scripting (XSS), and bot traffic — before requests reach your application.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Deployable on</strong>: CloudFront (global, closest to users), ALB, API Gateway, AWS AppSync, Cognito User Pool. <strong>Not on NLB</strong> — WAF is Layer 7 only; NLB is Layer 4.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Web ACL (Access Control List)</strong>: the WAF policy. Contains rules and rule groups. Rules are evaluated in priority order. Each rule returns Allow, Block, Count, or CAPTCHA.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Rule conditions</strong>: IP addresses/ranges, geographic origin (country), HTTP headers (User-Agent, Referer), URI strings, query string parameters, request body (first 64 KB inspected), HTTP method, size constraints.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Managed Rule Groups</strong>: pre-built rule sets from AWS and third-party Marketplace sellers — covering OWASP Top 10, known bad IPs, WordPress vulnerabilities, PHP vulnerabilities, bot detection, etc. No need to write rules from scratch.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Rate-based rules</strong>: block IPs that exceed a request threshold within a 5-minute window — protects against HTTP flood attacks and brute force. Set at any threshold above 100 requests per 5 minutes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>IP Sets</strong>: maintain lists of blocked or allowed IPs that can be shared across Web ACLs and updated dynamically (e.g. via Lambda that reads from a threat intelligence feed).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Block SQL injection and XSS" → WAF. "Block a specific country from accessing your API" → WAF Geo Match rule. "Rate-limit requests from a single IP" → WAF rate-based rule. WAF is NOT deployed on NLB (Layer 4). WAF on CloudFront = global protection at the edge.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SLD</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Shield <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">DDoS protection — Standard (free) and Advanced (paid with response team)</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Shield protects AWS resources against Distributed Denial of Service (DDoS) attacks. All AWS accounts get Shield Standard automatically. Shield Advanced is a paid tier for enhanced protection of critical workloads.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Shield Standard</th><th>Shield Advanced</th></tr>
+            <tr><td class="label">Cost</td><td>Free — automatically enabled for all AWS customers</td><td>$3,000/month per organization + data transfer fees</td></tr>
+            <tr><td class="label">Protection scope</td><td>Layer 3/4 DDoS attacks — SYN/UDP floods, reflection attacks against EC2, ELB, CloudFront, Route 53</td><td>Layer 3/4 AND Layer 7 attacks. Covers EC2, ELB, CloudFront, Route 53, Global Accelerator, Elastic IPs</td></tr>
+            <tr><td class="label">DDoS Response Team (DRT)</td><td>No — self-service only</td><td>Yes — 24/7 access to AWS DDoS Response Team during attacks</td></tr>
+            <tr><td class="label">Cost protection</td><td>No</td><td>Yes — AWS credits scaling costs incurred due to DDoS attacks</td></tr>
+            <tr><td class="label">WAF integration</td><td>No</td><td>Yes — automatic WAF rules deployed by DRT during attacks</td></tr>
+            <tr><td class="label">Attack visibility</td><td>Limited</td><td>Near-real-time attack diagnostics and reports</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Shield Standard = free, always on, Layer 3/4 only. Shield Advanced = $3K/month, Layer 3/4/7, DDoS Response Team, cost protection. "Protect against large-scale DDoS with expert support and cost coverage" → Shield Advanced. Shield Standard is implicit for all AWS accounts — you don't configure it.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">BPS</div>
+          <div class="concept-meta">
+            <div class="concept-title">DDoS Protection Best Practices <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Architecture patterns that minimize DDoS attack surface</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Use CloudFront in front of everything</strong>: absorbs volumetric attacks at edge. Traffic scrubbed before reaching your origin. Protects origins by hiding their IPs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Global Accelerator for non-HTTP</strong>: provides static IPs and reroutes around DDoS — traffic enters AWS backbone immediately.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Route 53 for DNS resilience</strong>: Route 53 is distributed across many PoPs — very hard to DDoS. Use Alias records to route to CloudFront/ALB, not directly to EC2 IPs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>WAF on CloudFront or ALB</strong>: rate-limit requests, block geographic regions, filter application-layer attack patterns before they reach origin servers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Auto Scaling + ELB</strong>: absorb large traffic increases at the application layer. Scale out to handle load while Shield/WAF filters attack traffic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Obfuscate origins</strong>: backend EC2 instances and ALBs in private subnets. Only CloudFront has the origin address — attackers can't directly target your servers.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ FIREWALL MANAGER ══════════════ -->
+    <div id="firewall" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 8 — Centralized Security</div>
+        <div class="page-title">AWS Firewall Manager</div>
+        <div class="page-desc">Centrally configure and enforce security rules across all accounts in your AWS Organization.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">FWM</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Firewall Manager <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Organization-wide security policy management — WAF, Shield, Security Groups, Network Firewall</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Firewall Manager is a security management service that lets you centrally configure and enforce security policies across all accounts in your AWS Organization. New accounts automatically get the policies applied.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Manages: <strong>WAF rules</strong> (apply the same Web ACL across all CloudFronts/ALBs in the org), <strong>Shield Advanced</strong> (enable for all accounts centrally), <strong>Security Groups</strong> (enforce baseline SG rules org-wide), <strong>Network Firewall</strong> policies, <strong>Route 53 Resolver DNS Firewall</strong> rules.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Requires: <strong>AWS Organizations</strong> (must be the management account or delegated admin), <strong>AWS Config must be enabled</strong> in all accounts (Firewall Manager uses Config to assess compliance).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>New resources and new accounts automatically inherit the Firewall Manager policies — enforcing security as teams create new ALBs, CloudFronts, or VPCs.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Enforce the same WAF rules across all ALBs in all AWS accounts in the organization" → Firewall Manager. "Automatically apply WAF to new CloudFront distributions created in any account" → Firewall Manager. Requires Organizations + Config enabled. WAF is the rule engine; Firewall Manager is the organization-wide deployment mechanism.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ GUARDDUTY ══════════════ -->
+    <div id="guardduty" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 9 — Threat Detection</div>
+        <div class="page-title">Amazon GuardDuty</div>
+        <div class="page-desc">Intelligent threat detection using ML — find malicious behavior across your AWS account, no setup required.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">GD</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon GuardDuty <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">ML-powered threat detection — finds account compromise, crypto-mining, and unusual API calls</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon GuardDuty is a threat detection service that continuously analyzes your AWS account activity using machine learning, anomaly detection, and integrated threat intelligence — without requiring agents or any infrastructure changes.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Data sources analyzed</strong>: CloudTrail Management Events (API calls), CloudTrail S3 Data Events (S3 access patterns), VPC Flow Logs (network traffic), DNS Logs (domain name queries), EKS Audit Logs, RDS Login Activity, Lambda Network Activity, Runtime Monitoring (EC2/EKS/ECS process behavior).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>GuardDuty does NOT use its own log collection — it reads from the existing CloudTrail, VPC Flow Logs, and DNS logs your account already generates. Zero infrastructure impact.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Threat examples GuardDuty detects</strong>: cryptocurrency mining (EC2 communicating with known mining pools), compromised credentials (unusual API calls from unexpected geographies), data exfiltration (S3 data being accessed from unusual IPs), lateral movement (instance calling anomalous internal IPs), port scanning from EC2 instances, Tor network communication.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Findings are delivered as JSON to GuardDuty console and can be sent to <strong>EventBridge</strong> to trigger automated remediation (Lambda to revoke IAM credentials, isolate an EC2 instance, block an IP in WAF).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>30-day free trial</strong>. After trial, charged based on volume of data analyzed. Enable with one click — no agents, no log forwarding setup.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multi-account</strong>: designate a GuardDuty administrator account (via Organizations) that aggregates findings from all member accounts in one view.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Trusted IP lists and Threat lists</strong>: add known-safe IP ranges (bypasses findings for those IPs) and known-bad IP lists (immediately flag any contact with those IPs).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Detect compromised EC2 instances communicating with known malware C&C servers" → GuardDuty. "Detect cryptocurrency mining in my account" → GuardDuty. "Automatically respond to GuardDuty findings" → GuardDuty → EventBridge → Lambda. GuardDuty = passive detection. To actively block → configure EventBridge + Lambda remediation. Disabling GuardDuty = disable the detector (don't just suspend — suspend keeps billing).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ INSPECTOR & MACIE ══════════════ -->
+    <div id="inspector" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 10 — Vulnerability & Data Security</div>
+        <div class="page-title">Amazon Inspector & Amazon Macie</div>
+        <div class="page-desc">Continuous vulnerability scanning for EC2/containers, and sensitive data discovery for S3.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">INS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Inspector <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Automated CVE scanning for EC2 instances, Lambda, and container images in ECR</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Inspector is a continuous vulnerability management service that automatically scans EC2 instances, Lambda functions, and container images in ECR for known software vulnerabilities (CVEs) and unintended network exposure.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>What it scans</strong>: <strong>EC2 instances</strong> (OS vulnerabilities in packages, unintended network exposure via Security Groups), <strong>ECR container images</strong> (OS and application packages in images, scanned when pushed), <strong>Lambda functions</strong> (software libraries in the deployment package).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Inspector uses the <strong>SSM Agent</strong> on EC2 instances for software inventory — no separate Inspector agent needed. Agentless scanning is also available for some checks.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Findings are centralized in the Inspector console and sent to <strong>EventBridge</strong> and <strong>AWS Security Hub</strong>. Each finding has a risk score based on CVE severity + exploitability + exposure.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Inspector continuously re-evaluates findings as new CVEs are published — no need to re-trigger scans manually. If a new CVE is disclosed and your instance is vulnerable, Inspector surfaces it automatically.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multi-account</strong>: delegate administration to a central account via AWS Organizations — aggregate findings from all accounts.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Scan EC2 instances for software vulnerabilities" → Amazon Inspector. "Scan ECR container images for CVEs on push" → Amazon Inspector (ECR Enhanced Scanning). "Scan Lambda function code for vulnerabilities" → Amazon Inspector. Inspector = vulnerability scanning (software CVEs + network exposure). GuardDuty = behavioral threat detection (runtime + network anomalies).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">MAC</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Macie <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">ML-powered sensitive data discovery in S3 — find PII before it becomes a compliance problem</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Macie is a data security service that uses machine learning to automatically discover, classify, and protect sensitive data stored in Amazon S3. It identifies Personally Identifiable Information (PII) and other sensitive data types across your S3 estate.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Macie scans S3 objects and automatically classifies data containing: <strong>PII</strong> (names, email addresses, SSNs, passport numbers, credit card numbers, bank account numbers, driver's license numbers), health information, intellectual property, and custom data types you define.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Also identifies <strong>S3 bucket security risks</strong>: publicly accessible buckets, buckets not encrypted, buckets shared with external accounts, buckets without logging enabled.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Findings are sent to EventBridge — trigger Lambda to quarantine or re-encrypt discovered sensitive data, or notify a compliance team via SNS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: GDPR compliance (find all S3 objects containing EU citizen data), PCI-DSS (find credit card numbers stored in S3), HIPAA (find PHI in S3 that shouldn't be there).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multi-account</strong>: delegate Macie administration to one account to see findings across the entire organization's S3 data.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Find PII stored in S3 buckets" → Amazon Macie. "Detect credit card numbers accidentally uploaded to S3" → Macie. "Identify publicly accessible S3 buckets containing sensitive data" → Macie. Macie is S3-only — it doesn't scan databases or other storage. For scanning RDS for sensitive data, use a third-party tool or Comprehend on exported data.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CHEAT SHEET ══════════════ -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Security & Encryption Cheat Sheet</div>
+        <div class="page-desc">Scenario mappings, confusing pairs, and key numbers for the exam.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Map any exam scenario to the right security service</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"Manage encryption keys with full audit trail"</td><td class="label">AWS KMS (Customer Managed Key)</td></tr>
+            <tr><td>"FIPS 140-2 Level 3 dedicated hardware HSM"</td><td class="label">AWS CloudHSM</td></tr>
+            <tr><td>"Encrypt data larger than 4 KB with KMS"</td><td class="label">Envelope encryption (GenerateDataKey)</td></tr>
+            <tr><td>"Decrypt in a different region without cross-region KMS calls"</td><td class="label">KMS Multi-Region Key</td></tr>
+            <tr><td>"Free parameter storage with optional KMS encryption"</td><td class="label">SSM Parameter Store (SecureString)</td></tr>
+            <tr><td>"Automatically rotate RDS database password"</td><td class="label">AWS Secrets Manager</td></tr>
+            <tr><td>"Free TLS certificate for ALB with auto-renewal"</td><td class="label">ACM (AWS Certificate Manager)</td></tr>
+            <tr><td>"ACM certificate for CloudFront"</td><td class="label">ACM in us-east-1 only</td></tr>
+            <tr><td>"Block SQL injection on web application"</td><td class="label">AWS WAF</td></tr>
+            <tr><td>"Rate-limit API requests from a single IP"</td><td class="label">WAF rate-based rule</td></tr>
+            <tr><td>"DDoS protection with 24/7 AWS response team"</td><td class="label">AWS Shield Advanced</td></tr>
+            <tr><td>"Apply WAF rules to all ALBs across all org accounts"</td><td class="label">AWS Firewall Manager</td></tr>
+            <tr><td>"Detect compromised EC2 / crypto-mining / unusual API calls"</td><td class="label">Amazon GuardDuty</td></tr>
+            <tr><td>"Auto-remediate GuardDuty findings"</td><td class="label">GuardDuty → EventBridge → Lambda</td></tr>
+            <tr><td>"Scan EC2/ECR/Lambda for CVEs continuously"</td><td class="label">Amazon Inspector</td></tr>
+            <tr><td>"Find PII stored in S3 buckets"</td><td class="label">Amazon Macie</td></tr>
+            <tr><td>"Share encrypted AMI across accounts"</td><td class="label">Use CMK (not AWS Managed Key) → share KMS key policy + AMI</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">PAIR</div>
+          <div class="concept-meta">
+            <div class="concept-title">Confusing Pairs <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The most common exam distractors in this module</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>KMS vs CloudHSM</strong>: KMS = multi-tenant, AWS manages HSMs, deep AWS service integration, FIPS 140-2 L2. CloudHSM = dedicated single-tenant, you manage keys exclusively, FIPS 140-2 L3, limited native AWS integration.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SSM Parameter Store vs Secrets Manager</strong>: SSM = free (Standard), no auto-rotation, config + secrets. Secrets Manager = $0.40/secret/month, automatic rotation for RDS/Aurora/Redshift. Choose by: need rotation? → Secrets Manager. Cost-sensitive? → SSM.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>WAF vs Shield</strong>: WAF = Layer 7 application firewall (SQL injection, XSS, rate limiting, geo-blocking). Shield = DDoS volumetric protection (Layer 3/4 with Standard, Layer 7 with Advanced). They are complementary — both can be used together.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>GuardDuty vs Inspector vs Macie</strong>: GuardDuty = behavioral threat detection (runtime anomalies, compromised accounts). Inspector = vulnerability scanning (CVEs in software). Macie = sensitive data discovery (PII in S3). Three different security domains.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>WAF vs Firewall Manager</strong>: WAF = the actual rule engine (Web ACL). Firewall Manager = the deployment mechanism that applies WAF rules (and other policies) across all accounts in an organization. Firewall Manager manages WAF at scale.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>AWS Managed Key vs Customer Managed Key</strong>: AWS Managed = free, auto-rotates, cannot customize policy, cannot share cross-account. CMK = $1/month, full control, shareable. For cross-account encryption → must use CMK.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">NUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Numbers <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hard limits and costs that appear in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>KMS max direct encrypt payload: <strong>4 KB</strong>. Above = envelope encryption.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>KMS CMK cost: <strong>$1/month per key</strong>. AWS Managed Keys: <strong>free</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>KMS Multi-Region Key ID prefix: <strong>mrk-</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SSM Parameter Store: <strong>free (Standard, up to 10,000 params, 4 KB)</strong>. Advanced: $0.05/param/month, 8 KB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Secrets Manager cost: <strong>$0.40/secret/month</strong>. Max secret size: <strong>64 KB</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ACM public certificates: <strong>free</strong>. ACM Private CA: $400/month.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ACM certificates for CloudFront: must be in <strong>us-east-1</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ACM: <strong>cannot be exported or used on EC2 directly</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>WAF rate-based rules: minimum threshold <strong>100 requests per 5 minutes</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>WAF HTTP body inspection: first <strong>64 KB</strong> only.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Shield Advanced cost: <strong>$3,000/month per organization</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Shield Standard: <strong>free</strong>, always on, all AWS accounts.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>GuardDuty free trial: <strong>30 days</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS Managed Key auto-rotation: <strong>every year (365 days)</strong>, automatic.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

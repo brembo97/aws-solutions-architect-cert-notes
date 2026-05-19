@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Storage — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a; --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Storage</h1>
+    </div>
+    <div class="nav-section-label">S3 — Module 1</div>
+    <a class="nav-item active" onclick="show('s3basics')"><span class="nav-dot" style="background:#58a6ff"></span> S3 Fundamentals</a>
+    <a class="nav-item" onclick="show('s3security')"><span class="nav-dot" style="background:#ff7b72"></span> S3 Security</a>
+    <a class="nav-item" onclick="show('s3classes')"><span class="nav-dot" style="background:#f0a742"></span> Storage Classes</a>
+    <a class="nav-item" onclick="show('s3data')"><span class="nav-dot" style="background:#39d0a0"></span> Data Management</a>
+    <a class="nav-item" onclick="show('s3access')"><span class="nav-dot" style="background:#bc8cff"></span> Access Patterns</a>
+    <a class="nav-item" onclick="show('s3perf')"><span class="nav-dot" style="background:#56d364"></span> Performance & Ops</a>
+    <a class="nav-item" onclick="show('s3adv')"><span class="nav-dot" style="background:#db6eb0"></span> Advanced S3</a>
+    <div class="nav-section-label">Storage Extras — Module 2</div>
+    <a class="nav-item" onclick="show('snow')"><span class="nav-dot" style="background:#58a6ff"></span> Snow Family</a>
+    <a class="nav-item" onclick="show('fsx')"><span class="nav-dot" style="background:#39d0a0"></span> Amazon FSx</a>
+    <a class="nav-item" onclick="show('gateway')"><span class="nav-dot" style="background:#f0a742"></span> Storage Gateway</a>
+    <a class="nav-item" onclick="show('transfer')"><span class="nav-dot" style="background:#bc8cff"></span> Transfer & DataSync</a>
+    <a class="nav-item" onclick="show('compare')"><span class="nav-dot" style="background:#ff7b72"></span> All Storage Compared</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ S3 FUNDAMENTALS ══════════════ -->
+    <div id="s3basics" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">S3 — Module 1.1</div>
+        <div class="page-title">S3 Fundamentals</div>
+        <div class="page-desc">Core concepts — buckets, objects, naming rules, and the S3 data model every exam question assumes you know.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">S3</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Infinitely scalable object storage — the backbone of AWS architectures</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 (Simple Storage Service) is AWS's core object storage service. It stores files as objects inside buckets, scales infinitely, and is used for everything from static website hosting to data lake storage and backup archives.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Buckets</strong> are globally unique (across all AWS accounts and all regions) but are created in a specific region. Data never leaves that region unless you explicitly replicate it.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Bucket naming rules: 3–63 characters, lowercase letters/numbers/hyphens only, no uppercase, no IP addresses, must start with a letter or number.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Objects</strong> are the files stored in S3. Maximum object size: <strong>5 TB</strong>. A single PUT upload can transfer up to <strong>5 GB</strong> — for larger objects you must use Multipart Upload.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Objects have a <strong>Key</strong> (full path from bucket root, e.g. <code>images/2024/photo.jpg</code>), a <strong>Value</strong> (the data bytes), metadata, tags, and optionally a version ID.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 has <strong>no true folder hierarchy</strong> — the key is the full path string. The console shows "folders" as a UI convenience, but they are prefixes in the key name.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default limit: <strong>100 buckets per account</strong> (soft limit, can be increased to 1,000 via support). No limit on number of objects per bucket.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 is <strong>strongly consistent</strong> since December 2020 — read-after-write consistency for all operations (PUTs, DELETEs, overwrites) in all regions.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Max single PUT = 5 GB; max object = 5 TB. Use Multipart Upload for files > 5 GB (recommended for > 100 MB). Buckets are regional but names are globally unique. S3 is object storage — not block storage (EBS) or file storage (EFS).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">VRS</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Versioning <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Keep every version of an object — protects against accidental deletes and overwrites</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Versioning preserves every version of an object in a bucket. Overwrites and deletes become recoverable — accidental changes can be undone by restoring a previous version.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Versioning is <strong>enabled at the bucket level</strong>. Once enabled, it can only be <strong>suspended</strong> (not fully disabled) — all previous versions are retained.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Objects uploaded before versioning was enabled get a version ID of <strong>null</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Deleting a versioned object places a <strong>delete marker</strong> on it — the object is hidden but not actually removed. To permanently delete: explicitly delete the specific version ID.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Suspending versioning does not delete existing versions — it stops creating new ones for future uploads.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Versioning is a <strong>prerequisite</strong> for S3 Replication and MFA Delete.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Versioning increases storage costs — every version is billed. Use Lifecycle rules to expire old versions.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Protect against accidental deletion" → enable Versioning. Deleting a versioned object creates a delete marker — the object is NOT gone until you delete the specific version. Versioning cannot be turned off once enabled — only suspended.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">REP</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Replication <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">CRR and SRR — async object replication across buckets</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Replication automatically and asynchronously copies objects from a source bucket to a destination bucket. Versioning must be enabled on both source and destination.</p>
+          <table class="compare-table">
+            <tr><th></th><th>CRR — Cross-Region Replication</th><th>SRR — Same-Region Replication</th></tr>
+            <tr><td class="label">Scope</td><td>Source and destination in different regions</td><td>Source and destination in same region</td></tr>
+            <tr><td class="label">Use cases</td><td>Compliance (data residency in multiple regions), lower latency for global users, cross-region DR</td><td>Log aggregation from multiple buckets, live replication between prod and test accounts</td></tr>
+            <tr><td class="label">Cost</td><td>Data transfer fees between regions apply</td><td>No data transfer fee (same region)</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Replication is <strong>asynchronous</strong> — there may be a short delay before the object appears in the destination.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Only <strong>new objects</strong> are replicated after replication is enabled. Existing objects are NOT automatically replicated — use <strong>S3 Batch Replication</strong> to copy existing objects.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Delete markers are <strong>not replicated by default</strong>. This can optionally be enabled with Delete Marker Replication.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Replication is <strong>not chained</strong> — if bucket A replicates to bucket B, and B replicates to C, objects in A do NOT automatically end up in C.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can replicate between buckets in different AWS accounts — requires bucket policy on destination granting the source account permission to write.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Replication does not copy existing objects — only new uploads after setup. Use Batch Replication for existing objects. Delete markers are NOT replicated by default. Versioning is required on both buckets.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ S3 SECURITY ══════════════ -->
+    <div id="s3security" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">S3 — Module 1.2</div>
+        <div class="page-title">S3 Security</div>
+        <div class="page-desc">Bucket policies, encryption options, MFA Delete, access logs, and CORS.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">POL</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Bucket Policies & Access Control <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Resource-based policies that control who can access a bucket and how</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 uses three access control mechanisms. Understanding when to use each is critical for the exam.</p>
+          <table class="compare-table">
+            <tr><th>Mechanism</th><th>Scope</th><th>Use when</th></tr>
+            <tr><td class="label">Bucket Policy</td><td>Bucket + objects inside it. JSON resource-based policy attached to the bucket.</td><td>Grant cross-account access; make a bucket public; require encryption on upload; restrict access to specific IPs or VPC endpoints.</td></tr>
+            <tr><td class="label">IAM Policy</td><td>Attached to IAM users/roles/groups. Controls which S3 actions an identity can perform.</td><td>Grant access to specific users within your AWS account.</td></tr>
+            <tr><td class="label">ACLs (Access Control Lists)</td><td>Object-level or bucket-level XML-based permissions.</td><td>Legacy mechanism — AWS recommends disabling ACLs and using bucket policies instead. Still tested on exams.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Block Public Access</strong> settings (4 settings, all on by default at account and bucket level) override any bucket policy that would grant public access. Must be turned off to make a bucket public.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Evaluation order: if IAM allows AND bucket policy allows (or is absent) → access granted. If either explicitly denies → denied.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For cross-account access: the bucket policy must grant the other account access, AND the other account's IAM policy must allow the action.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Block Public Access is still on but the bucket policy allows public access" → the bucket is NOT public. Block Public Access always wins. For static website hosting, Block Public Access must be disabled on the bucket.</div>
+          <div class="warn-box"><strong>SECURITY WARNING</strong>Never disable Block Public Access unless intentionally hosting a public resource. S3 data exposure from misconfigured buckets is one of the most common AWS security incidents.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">ENC</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Encryption <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Four encryption types — SSE-S3, SSE-KMS, SSE-C, and client-side</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Type</th><th>Key management</th><th>Header required</th><th>Key detail</th></tr>
+            <tr><td class="label">SSE-S3</td><td>AWS manages keys entirely. AES-256.</td><td><code>x-amz-server-side-encryption: AES256</code></td><td>Default since Jan 2023. Zero cost. No audit trail per object.</td></tr>
+            <tr><td class="label">SSE-KMS</td><td>AWS KMS manages keys. You control key policy and rotation.</td><td><code>x-amz-server-side-encryption: aws:kms</code></td><td>KMS API calls logged in CloudTrail. Each S3 operation = 1 KMS API call (costs money, can hit KMS throttle).</td></tr>
+            <tr><td class="label">DSSE-KMS</td><td>Same as SSE-KMS but applies two layers of KMS encryption.</td><td><code>x-amz-server-side-encryption: aws:kms:dsse</code></td><td>Dual-layer for compliance requirements needing multiple encryption layers.</td></tr>
+            <tr><td class="label">SSE-C</td><td>Customer provides their own key with every request. AWS uses it, then discards it.</td><td>Must use HTTPS. Key sent in request header.</td><td>AWS never stores the key. You manage rotation/loss. Only via CLI/SDK — not console.</td></tr>
+            <tr><td class="label">Client-Side Encryption</td><td>Customer encrypts before upload. S3 stores ciphertext.</td><td>No special header — S3 doesn't know it's encrypted.</td><td>Full customer responsibility. AWS has no visibility into data.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Default encryption</strong>: since January 2023, all new S3 objects are automatically encrypted with SSE-S3 at no extra cost. Bucket owners can change the default to SSE-KMS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>To <strong>enforce encryption on upload</strong>, use a bucket policy with a Deny on <code>s3:PutObject</code> if the <code>x-amz-server-side-encryption</code> header is absent or wrong. Note: default encryption makes this less necessary now.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SSE-KMS high request rates can hit KMS service limits — consider requesting a KMS quota increase or using S3 Bucket Keys (reduces KMS calls by up to 99%).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>SSE-KMS = you control key policy + CloudTrail logging of key use. SSE-C = you provide the key on every API call, AWS never stores it — HTTPS required. "Compliance requiring audit trail of key usage" → SSE-KMS. "Customer must retain full control of the key" → SSE-C or client-side.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">MFA</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 MFA Delete <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Require MFA to permanently delete object versions or suspend versioning</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>MFA Delete adds an extra layer of protection — permanently deleting an object version or suspending versioning requires an MFA code in addition to credentials.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can only be enabled/disabled by the <strong>bucket owner using the root account</strong> — no IAM user can enable it, even admins.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Requires <strong>Versioning to be enabled</strong> on the bucket first.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>MFA is required for: permanently deleting an object version, and suspending versioning. It is NOT required for: uploading objects, creating delete markers, or listing versions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can only be configured via the <strong>AWS CLI</strong> — not the S3 console.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Only the root account can enable MFA Delete — not IAM admins. Versioning must be on first. MFA Delete protects against accidental or malicious permanent deletion of specific versions.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">LOG</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Access Logs <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Detailed audit trail of every request made to an S3 bucket</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Access Logs record every request made to a bucket — who made it, what they requested, and the response. Logs are written to a separate S3 bucket in the same region.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Logs contain: requester, bucket name, request time, request action, response status, error code.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Never log to the same bucket you are monitoring</strong> — this creates an infinite logging loop and your bucket will grow indefinitely.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Logs may take up to <strong>a few hours</strong> to be delivered — they are not real-time.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Log files can be analyzed with Amazon Athena (SQL queries on S3) for security analysis or usage reporting.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>A classic trick question: if you set the access log destination to the same bucket being monitored, you create an infinite loop. Always use a separate dedicated logging bucket.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CORS</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 CORS <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Cross-Origin Resource Sharing — allow web pages to access objects from other S3 buckets</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CORS (Cross-Origin Resource Sharing) is a browser security feature that blocks web pages from making requests to a different domain than the one that served the page. To allow it, the target server (S3) must respond with the correct CORS headers.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 CORS is configured on the <strong>bucket being requested</strong> (the resource bucket), not on the bucket hosting the website.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common scenario: your website is hosted at <code>www.example.com</code> (bucket A) and fetches images from <code>assets.example.com</code> (bucket B). Bucket B needs a CORS rule allowing origin <code>www.example.com</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CORS configuration specifies: AllowedOrigins, AllowedMethods (GET, POST, etc.), AllowedHeaders, MaxAgeSeconds.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>If a JavaScript app hosted in one S3 bucket is getting CORS errors when fetching from another S3 bucket → add a CORS rule on the SOURCE bucket (the one being fetched FROM), not the bucket hosting the website.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ S3 STORAGE CLASSES ══════════════ -->
+    <div id="s3classes" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">S3 — Module 1.3</div>
+        <div class="page-title">S3 Storage Classes</div>
+        <div class="page-desc">Eight storage tiers — choose based on access frequency, retrieval speed, and cost tolerance.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CLS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Storage Class Comparison <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The full tier comparison — from Standard to Glacier Deep Archive</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Class</th><th>AZs</th><th>Min storage</th><th>Retrieval</th><th>Best for</th></tr>
+            <tr><td class="label">S3 Standard</td><td>≥3</td><td>None</td><td>Instant (ms)</td><td>Frequently accessed data. Default class. No retrieval fee.</td></tr>
+            <tr><td class="label">S3 Intelligent-Tiering</td><td>≥3</td><td>None</td><td>Instant (ms)</td><td>Unknown or changing access patterns. Auto-moves objects between tiers. Small monthly monitoring fee per object.</td></tr>
+            <tr><td class="label">S3 Standard-IA</td><td>≥3</td><td>30 days</td><td>Instant (ms)</td><td>Infrequently accessed but must be available immediately. Lower storage cost + per-GB retrieval fee.</td></tr>
+            <tr><td class="label">S3 One Zone-IA</td><td>1 only</td><td>30 days</td><td>Instant (ms)</td><td>Infrequent access, data that can be recreated if AZ lost. 20% cheaper than Standard-IA.</td></tr>
+            <tr><td class="label">S3 Express One Zone</td><td>1 only</td><td>None</td><td>Single-digit ms</td><td>Latency-sensitive workloads needing sub-10ms access. Highest performance, single AZ, uses S3 Directory Buckets.</td></tr>
+            <tr><td class="label">S3 Glacier Instant Retrieval</td><td>≥3</td><td>90 days</td><td>Instant (ms)</td><td>Archive accessed once a quarter. Same latency as Standard but much cheaper storage.</td></tr>
+            <tr><td class="label">S3 Glacier Flexible Retrieval</td><td>≥3</td><td>90 days</td><td>Expedited: 1–5 min / Standard: 3–5 hrs / Bulk: 5–12 hrs</td><td>Archive accessed 1–2x per year. Cheapest Glacier for occasional retrieval.</td></tr>
+            <tr><td class="label">S3 Glacier Deep Archive</td><td>≥3</td><td>180 days</td><td>Standard: 12 hrs / Bulk: 48 hrs</td><td>Lowest cost storage in AWS. Long-term retention 7–10 years. Regulatory archives.</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Scenario questions map access frequency to class: daily = Standard; changing/unknown = Intelligent-Tiering; weekly/monthly = Standard-IA; quarterly = Glacier Instant; once a year = Glacier Flexible; 7-10 year archive = Glacier Deep Archive. One Zone-IA is cheaper but data is lost if the AZ fails. Minimum storage duration fees apply (charged even if deleted early).</div>
+          <div class="warn-box"><strong>COST WARNING</strong>Glacier classes have minimum storage durations: 90 days (Glacier Instant + Flexible), 180 days (Deep Archive). Deleting objects before the minimum charges you for the remaining days.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">LCY</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lifecycle Rules & S3 Analytics <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Automate object transitions and expirations across storage classes</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Lifecycle rules automatically transition objects to cheaper storage classes or expire/delete them after a defined number of days — no manual intervention needed.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Transition actions</strong>: move objects to a cheaper class after N days (e.g. Standard → Standard-IA after 30 days → Glacier after 90 days).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Expiration actions</strong>: permanently delete objects after N days. Can target: current versions, non-current versions, incomplete multipart uploads, and expired delete markers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Rules can be scoped to a <strong>prefix</strong> (e.g. <code>logs/</code>) or <strong>object tags</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Transition constraints</strong>: Standard → Standard-IA requires ≥30 days. Standard-IA → Glacier requires ≥30 more days. Cannot skip a tier (must follow waterfall order).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>S3 Analytics</strong>: analyzes access patterns and recommends when to transition from Standard to Standard-IA. Takes 24–48 hours to start generating recommendations. Does NOT recommend Glacier transitions.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Automatically move logs to Glacier after 90 days then delete after 365 days" → Lifecycle rule. S3 Analytics helps decide WHEN to set up transitions but only for Standard to Standard-IA. Use it to generate data, then configure lifecycle rules based on the output.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">LCK</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Object Lock & Glacier Vault Lock <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">WORM — Write Once Read Many for compliance</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Object Lock enforces WORM (Write Once Read Many) storage. Once locked, objects cannot be overwritten or deleted for a set period — even by root. Used for regulatory compliance (SEC, FINRA, HIPAA).</p>
+          <table class="compare-table">
+            <tr><th>Mode</th><th>Who can delete?</th><th>Use case</th></tr>
+            <tr><td class="label">Compliance Mode</td><td>Nobody — not even root — can delete or shorten the retention period.</td><td>Strict regulatory compliance where immutability must be absolute.</td></tr>
+            <tr><td class="label">Governance Mode</td><td>Root and users with special IAM permissions can delete.</td><td>Protect against accidental deletion while allowing admin override.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Legal Hold</strong>: an alternative lock with no expiry — can be applied/removed by users with <code>s3:PutObjectLegalHold</code> permission. Useful during active litigation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Object Lock requires <strong>Versioning to be enabled</strong>. It must be enabled at bucket creation — cannot be added to an existing non-versioned bucket.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glacier Vault Lock</strong>: similar WORM concept for Glacier Vaults. Uses a Vault Lock Policy — once locked, the policy itself cannot be changed.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Prevent object deletion for compliance — not even root can delete" → Compliance Mode Object Lock. "Protect against deletion but allow admin override" → Governance Mode. "Financial/healthcare regulation requiring immutable storage" → Compliance Mode or Glacier Vault Lock.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ S3 DATA MANAGEMENT ══════════════ -->
+    <div id="s3data" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">S3 — Module 1.4</div>
+        <div class="page-title">Data Management</div>
+        <div class="page-desc">Event notifications, batch operations, Storage Lens, and S3 Requester Pays.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">EVT</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Event Notifications <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Trigger Lambda, SNS, or SQS on S3 object events</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Event Notifications let you automatically trigger downstream services when objects are created, deleted, replicated, or have their storage class changed.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported destinations: <strong>Lambda</strong>, <strong>SNS</strong>, <strong>SQS</strong>, and <strong>Amazon EventBridge</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Event types include: <code>s3:ObjectCreated:*</code>, <code>s3:ObjectRemoved:*</code>, <code>s3:ObjectRestore:*</code>, <code>s3:Replication:*</code>, <code>s3:LifecycleTransition</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Notifications can be <strong>filtered by prefix or suffix</strong> (e.g. only trigger on <code>.jpg</code> files in the <code>uploads/</code> prefix).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Amazon EventBridge integration</strong>: route S3 events to EventBridge for more advanced routing, filtering, and fan-out to many destinations simultaneously. EventBridge also archives events and enables replay.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Delivery is typically within seconds but <strong>not guaranteed to be exactly once</strong> — for exactly-once processing, use SQS FIFO queues.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Process uploaded images automatically" → S3 Event Notification → Lambda. "Fan out S3 events to multiple targets" → use EventBridge (much more flexible than direct S3 → Lambda). EventBridge supports filtering, archiving, and replay — S3 direct notifications do not.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">BAT</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Batch Operations <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Run operations on millions of S3 objects with a single request</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Batch Operations executes a single operation across billions of S3 objects in bulk — useful for one-time migrations, bulk encryption, or mass tagging.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported operations: copy objects, replace object tags, set ACLs, restore from Glacier, invoke Lambda per object, set Object Lock, replicate existing objects (Batch Replication).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Requires a <strong>manifest file</strong> (CSV or S3 Inventory report) listing the objects to process.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS manages retries, tracks progress, sends completion reports, and generates CloudWatch metrics.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use <strong>S3 Inventory</strong> to generate the list of objects, then feed that into a Batch Operations job.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Encrypt all existing unencrypted S3 objects at once" → S3 Batch Operations (copy objects with encryption enabled). "Replicate existing objects to a new bucket" → Batch Replication via Batch Operations. Batch Operations is for bulk one-time operations; Lifecycle rules are for ongoing automation.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">LNS</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Storage Lens <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Organization-wide S3 usage and activity visibility</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Storage Lens gives you a unified, organization-wide view of S3 storage usage, activity trends, and cost optimization recommendations across all buckets and accounts.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Provides metrics across accounts, regions, and buckets — not just a single bucket. Aggregates at the organization level via AWS Organizations.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Metrics include: total storage size, object count, average object size, % data that could be moved to cheaper storage classes, replication status.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Free tier: 28 default usage metrics. Advanced metrics (activity metrics, CloudWatch integration) are paid.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Recommendations highlight cost savings opportunities (e.g. "40% of data in Standard hasn't been accessed in 90 days — consider Intelligent-Tiering").</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Storage Lens = visibility and recommendations across your entire S3 estate. S3 Analytics = transition recommendations for a single bucket. Storage Lens is the org-level tool; S3 Analytics is per-bucket.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">RPY</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Requester Pays <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Shift data transfer costs to the requester instead of the bucket owner</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>By default, the bucket owner pays for storage and data transfer costs. With Requester Pays, the requester (downloader) pays for the data transfer and request costs instead of the bucket owner.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>The requester must be <strong>authenticated</strong> (cannot be anonymous) — they must have an AWS account and the request must include <code>x-amz-request-payer: requester</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use case: sharing large public datasets (e.g. genomics data, satellite imagery) where the bucket owner wants to offset download costs.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"A company shares a large public dataset and doesn't want to pay for download costs" → S3 Requester Pays. The requester must be authenticated — anonymous access doesn't work with Requester Pays.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ S3 ACCESS PATTERNS ══════════════ -->
+    <div id="s3access" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">S3 — Module 1.5</div>
+        <div class="page-title">Access Patterns</div>
+        <div class="page-desc">Pre-signed URLs, Access Points, Object Lambda, Static Website Hosting, and cross-account access patterns.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">PSU</div>
+          <div class="concept-meta">
+            <div class="concept-title">Pre-Signed URLs <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Time-limited URLs that grant temporary access to a private S3 object</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A pre-signed URL embeds the creator's credentials and an expiry time into a URL. Anyone with the URL can perform the allowed action (GET or PUT) on the object without needing AWS credentials — until the URL expires.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Generated by: an IAM user, an IAM role, or the bucket owner. The URL inherits the <strong>permissions of the signing identity</strong> at the time of the request.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default expiry: <strong>3,600 seconds (1 hour)</strong>. Maximum: <strong>604,800 seconds (7 days)</strong> when signed with SigV4 and an IAM role or instance profile.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: temporary download links for private content (e.g. paid media, personalized reports), pre-signed upload URLs to let users upload directly to S3 without going through your servers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>If the signing identity's permissions are revoked, the pre-signed URL stops working immediately (because access is evaluated at request time using the embedded credentials).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Allow a user to download a private S3 object for 2 hours without giving them AWS credentials" → pre-signed URL. "Allow a mobile app to upload a file directly to S3" → pre-signed PUT URL. Avoids your servers acting as a proxy for large uploads/downloads.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">APT</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Access Points <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Named access endpoints with their own policies — simplify large-scale access management</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Access Points are named network endpoints attached to a bucket. Each has its own DNS name and access policy, allowing you to create separate permission policies for different applications or teams — without maintaining one giant bucket policy.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each Access Point has its own <strong>unique DNS hostname</strong> and its own <strong>access point policy</strong> (like a bucket policy scoped to a prefix).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Access Points can be restricted to a <strong>specific VPC</strong> — traffic only accessible from within that VPC (requires a VPC endpoint).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The bucket policy must grant Access Points permission to access the bucket (or use <code>aws:sourceAccount</code> condition).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Example: one Access Point for the analytics team (read-only on <code>data/</code> prefix), another for the finance team (read/write on <code>reports/</code> prefix) — cleaner than one complex bucket policy.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Many teams need different access to different prefixes in one bucket — the bucket policy is getting unwieldy" → S3 Access Points. Each Access Point = separate policy scoped to a prefix. VPC-restricted Access Points ensure data never leaves the VPC.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">OLM</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Object Lambda <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Transform S3 objects on-the-fly as they are retrieved</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Object Lambda adds a Lambda function to the retrieval path of S3 objects. When an application requests an object via a special Object Lambda Access Point, the Lambda function intercepts the request, transforms the data, and returns the modified result.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works via a special <strong>Object Lambda Access Point</strong> — the application uses this endpoint instead of the regular S3 endpoint.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The original object in S3 is never modified — the transformation happens in-flight.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: redact PII from CSVs before returning to analytics users, convert image formats on-the-fly, add watermarks, decompress files, enrich data from other systems.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Eliminates the need to maintain multiple copies of the same data in different formats.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Return PII-redacted version of S3 objects to the analytics team, and the full version to the data science team, without duplicating the data" → S3 Object Lambda with two access points. One Lambda redacts PII; the other passes through unmodified.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">WEB</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Static Website Hosting <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Host a static website directly from an S3 bucket</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 can serve static websites (HTML, CSS, JS, images) directly from a bucket. It generates an HTTP endpoint but does not support HTTPS — use CloudFront for HTTPS.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>URL format: <code>http://&lt;bucket-name&gt;.s3-website.&lt;region&gt;.amazonaws.com</code></span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Requires: (1) static website hosting enabled on the bucket, (2) an <code>index.html</code> specified as the index document, (3) Block Public Access turned OFF, (4) a bucket policy granting <code>s3:GetObject</code> to everyone (<code>*</code>).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 website hosting is <strong>HTTP only</strong> — to add HTTPS or a custom domain, put CloudFront in front.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You can configure a custom error document (e.g. <code>404.html</code>).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>If you need HTTPS for an S3 static website → CloudFront + S3 (not S3 alone). If a 403 Forbidden is returned when visiting the website → Block Public Access is still on, or the bucket policy doesn't allow s3:GetObject to public.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ S3 PERFORMANCE & OPS ══════════════ -->
+    <div id="s3perf" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">S3 — Module 1.6</div>
+        <div class="page-title">Performance & Operations</div>
+        <div class="page-desc">Multipart Upload, Transfer Acceleration, byte-range fetches, and maximizing S3 throughput.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">PRF</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Performance Optimization <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Multipart Upload, Transfer Acceleration, byte-range fetches, and request rate limits</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 scales automatically to high request rates, but knowing the performance features and limits is frequently tested.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Request rate limits</strong>: S3 can handle <strong>3,500 PUT/COPY/POST/DELETE</strong> and <strong>5,500 GET/HEAD</strong> requests per second, per prefix. Spread objects across multiple prefixes to scale beyond these limits.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multipart Upload</strong>: required for objects > 5 GB; recommended for objects > 100 MB. Splits a file into parts, uploads in parallel, then S3 assembles them. Parts can be retried individually on failure.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>S3 Transfer Acceleration</strong>: uploads travel to the nearest AWS Edge Location (CloudFront PoP) over the public internet, then traverse AWS's private backbone to the target S3 region. Helps for uploads from geographically distant locations. Costs extra.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Byte-Range Fetches</strong>: request specific byte ranges of an object in parallel — like multipart for downloads. Dramatically improves download throughput for large files. Also useful to retrieve just the header of a file.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Old guidance about random key prefixes for performance is no longer relevant — S3 partitions automatically based on request load since 2018.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Speed up global uploads to S3" → Transfer Acceleration. "Upload a 10 GB file reliably" → Multipart Upload. "Speed up large object downloads" → Byte-Range Fetches. Transfer Acceleration uses the same endpoint format: <code>bucket.s3-accelerate.amazonaws.com</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ S3 ADVANCED ══════════════ -->
+    <div id="s3adv" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">S3 — Module 1.7</div>
+        <div class="page-title">Advanced S3</div>
+        <div class="page-desc">S3 Express One Zone, S3 Select, and the overall S3 architecture for exam scenarios.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">EXP</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Express One Zone <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Highest-performance S3 — single-digit millisecond latency, single AZ</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Express One Zone is a storage class for latency-sensitive applications requiring consistent single-digit millisecond response times. It uses a different bucket type — <strong>S3 Directory Buckets</strong> — and stores data in a single AZ.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Up to <strong>10x faster</strong> than standard S3 with consistent sub-10ms latency. Request costs are lower; storage costs are higher than Standard.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Uses <strong>Directory Buckets</strong> — a different bucket type from standard S3 (general-purpose buckets). Directory Buckets have different naming conventions and limits.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data is stored in <strong>one AZ only</strong> — no redundancy across AZs. Data is lost if the AZ fails.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: ML training data access, high-frequency analytics, interactive applications needing consistent low latency.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works well co-located with compute (EC2, Lambda, ECS) in the same AZ for maximum performance.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Consistently sub-10ms S3 access for ML training or analytics" → S3 Express One Zone. Trade-off: single AZ (lower durability) for maximum performance. Contrast with One Zone-IA: both are single AZ, but Express One Zone is about latency; One Zone-IA is about cost savings for infrequent access.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">SEL</div>
+          <div class="concept-meta">
+            <div class="concept-title">S3 Select & Glacier Select <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Run SQL queries on S3 objects without downloading the whole file</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>S3 Select lets you use SQL expressions to retrieve a subset of data from an S3 object (CSV, JSON, Parquet) — filtering happens on the S3 side, so you only transfer the data you need.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports CSV, JSON, and Parquet formats with GZIP or BZIP2 compression (CSV and JSON only).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can reduce data transfer by up to <strong>400x</strong> and improve performance by up to <strong>400%</strong> compared to downloading the full object and filtering client-side.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Glacier Select</strong>: same concept for objects stored in Glacier Flexible Retrieval — run SQL queries during the retrieval process.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>S3 Select is about cost and performance optimization — retrieve only the rows/columns you need from a large CSV or Parquet file. Contrast with Athena: Athena runs SQL across many S3 objects (data lake queries); S3 Select queries a single object.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SNOW FAMILY ══════════════ -->
+    <div id="snow" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Storage Extras — Module 2.1</div>
+        <div class="page-title">AWS Snow Family</div>
+        <div class="page-desc">Physical devices for offline data migration and edge computing when the network isn't fast enough.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">SNW</div>
+          <div class="concept-meta">
+            <div class="concept-title">Snow Family Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Snowcone, Snowball Edge, Snowmobile — physical data transfer devices</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The Snow Family are physical appliances that AWS ships to your location. You load data onto them locally, ship them back to AWS, and AWS imports the data into S3. Used when transferring data over the internet would take too long or is not feasible.</p>
+          <table class="compare-table">
+            <tr><th>Device</th><th>Capacity</th><th>Compute</th><th>Use case</th></tr>
+            <tr><td class="label">Snowcone</td><td>8 TB HDD / 14 TB SSD</td><td>2 vCPUs, 4 GB RAM</td><td>Smallest — fits in a backpack. Ideal for space-constrained or remote environments. Can use DataSync over WiFi/internet too.</td></tr>
+            <tr><td class="label">Snowball Edge Storage Optimized</td><td>80 TB usable</td><td>40 vCPUs, 80 GB RAM</td><td>Large-scale data migrations. Edge computing with limited needs.</td></tr>
+            <tr><td class="label">Snowball Edge Compute Optimized</td><td>42 TB usable</td><td>52 vCPUs, 208 GB RAM (optional GPU)</td><td>Edge ML inference, video analysis, local processing before shipping data.</td></tr>
+            <tr><td class="label">Snowmobile</td><td>Up to 100 PB per truck</td><td>N/A (transfer only)</td><td>Exabyte-scale migration. A literal shipping container on a truck. Best when > 10 PB to migrate.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Rule of thumb: if data transfer over your network would take <strong>more than 1 week</strong>, use Snowball instead.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Snowball devices support <strong>EC2-compatible compute</strong> (AMIs) and <strong>Lambda</strong> functions at the edge — run local processing before uploading.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data is automatically encrypted on the device using KMS. AWS erases devices after data is imported (NIST 800-88 compliant).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Snowball cannot import directly into Glacier</strong> — data goes into S3 Standard first, then you use a Lifecycle rule to transition to Glacier.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Migrate 50 TB of data, network bandwidth is limited" → Snowball Edge. "Migrate 100 PB" → Snowmobile. "Snowball → Glacier" → not possible directly; use S3 → Lifecycle rule → Glacier. Snowcone is the smallest form factor. Compute Optimized = most vCPUs/RAM for edge processing.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ AMAZON FSx ══════════════ -->
+    <div id="fsx" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Storage Extras — Module 2.2</div>
+        <div class="page-title">Amazon FSx</div>
+        <div class="page-desc">Fully managed third-party file systems — Windows File Server, Lustre, NetApp ONTAP, and OpenZFS.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">FSx</div>
+          <div class="concept-meta">
+            <div class="concept-title">FSx File Systems <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Four fully managed high-performance file systems for specialized workloads</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>FSx for…</th><th>Protocol</th><th>OS</th><th>Best for</th><th>Key facts</th></tr>
+            <tr><td class="label">Windows File Server</td><td>SMB</td><td>Windows</td><td>Windows apps, Active Directory integration, shared Windows storage</td><td>Supports AD auth, DFS namespaces, NTFS. Multi-AZ available. Can be accessed from Linux via SMB too.</td></tr>
+            <tr><td class="label">Lustre</td><td>Lustre (POSIX)</td><td>Linux</td><td>High-performance computing (HPC), ML training, financial modeling, video processing</td><td>Integrates natively with S3 (read/write S3 objects as files). Sub-millisecond latency. Hundreds of GB/s throughput. Can be persistent or scratch.</td></tr>
+            <tr><td class="label">NetApp ONTAP</td><td>NFS, SMB, iSCSI</td><td>Linux + Windows</td><td>Migrate on-prem NetApp workloads. Multi-protocol. Snapshots, cloning.</td><td>Supports deduplication, compression. SnapMirror for replication. Point-in-time snapshots.</td></tr>
+            <tr><td class="label">OpenZFS</td><td>NFS (v3, v4)</td><td>Linux + Windows</td><td>Migrate on-prem ZFS workloads. Snapshots and clones.</td><td>Up to 1 million IOPS. 0.5ms latency. Point-in-time snapshots, data cloning.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>FSx for Lustre has two deployment types: <strong>Scratch</strong> (short-term processing, no replication, cheaper) and <strong>Persistent</strong> (long-term storage, replicated within AZ).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>FSx for Windows File Server vs EFS: both are shared file storage but EFS uses NFS (Linux only), while FSx for Windows uses SMB (Windows-native). Use FSx for Windows when Active Directory integration is needed.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Windows shared file storage with AD integration" → FSx for Windows File Server. "HPC or ML training needing maximum throughput" → FSx for Lustre. "Lustre integrated with S3" → FSx for Lustre (objects appear as files). "Linux shared storage" → EFS (simpler) or FSx for Lustre (HPC).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ STORAGE GATEWAY ══════════════ -->
+    <div id="gateway" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Storage Extras — Module 2.3</div>
+        <div class="page-title">AWS Storage Gateway</div>
+        <div class="page-desc">Bridge between on-premises infrastructure and AWS cloud storage — three gateway types for different use cases.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">GWY</div>
+          <div class="concept-meta">
+            <div class="concept-title">Storage Gateway Types <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">S3 File Gateway, FSx File Gateway, Volume Gateway, Tape Gateway</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Storage Gateway is a hybrid cloud storage service that connects on-premises environments to AWS storage (S3, FSx, EBS). It runs as a VM appliance (or hardware appliance) on-premises and caches frequently used data locally for low-latency access.</p>
+          <table class="compare-table">
+            <tr><th>Gateway Type</th><th>Protocol</th><th>Backed by</th><th>Use case</th></tr>
+            <tr><td class="label">S3 File Gateway</td><td>NFS / SMB</td><td>S3 (Standard, IA, One Zone-IA)</td><td>Store and retrieve S3 objects as files from on-premises. Recently accessed files cached locally. Good for file shares that need cloud backup.</td></tr>
+            <tr><td class="label">FSx File Gateway</td><td>SMB</td><td>FSx for Windows File Server</td><td>On-prem Windows users access FSx with local caching. AD integration. Better performance than S3 File Gateway for Windows use cases.</td></tr>
+            <tr><td class="label">Volume Gateway</td><td>iSCSI</td><td>S3 (backed by EBS snapshots)</td><td>Block storage volumes for on-premises servers. Two modes: Cached (primary in S3, cache on-prem) or Stored (primary on-prem, async backup to S3).</td></tr>
+            <tr><td class="label">Tape Gateway</td><td>iSCSI VTL</td><td>S3 + Glacier</td><td>Replace physical tape backups with virtual tapes stored in S3/Glacier. Works with existing backup software (Veeam, Backup Exec, etc.).</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Storage Gateway caches <strong>most recently used data locally</strong> — provides low-latency access while durably storing everything in AWS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can run as a VM on VMware ESXi, Microsoft Hyper-V, KVM, or as a physical hardware appliance from AWS.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"On-premises backup to S3 with NFS/SMB interface" → S3 File Gateway. "Replace physical tape library" → Tape Gateway. "Block storage volumes on-prem backed by S3" → Volume Gateway. "On-prem Windows AD users accessing FSx" → FSx File Gateway. The gateway type is decided by the protocol needed and what's being stored.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ TRANSFER & DATASYNC ══════════════ -->
+    <div id="transfer" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Storage Extras — Module 2.4</div>
+        <div class="page-title">Transfer Family & DataSync</div>
+        <div class="page-desc">Managed file transfer protocols into S3/EFS, and high-speed automated data synchronization.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">TRN</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Transfer Family <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managed SFTP, FTPS, FTP, and AS2 endpoints for S3 and EFS</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Transfer Family provides fully managed file transfer endpoints for SFTP, FTPS, FTP, and AS2 protocols. Files are transparently stored in S3 or EFS — your trading partners and legacy systems keep using the protocols they already know.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported protocols: <strong>SFTP</strong> (SSH File Transfer Protocol), <strong>FTPS</strong> (FTP over TLS), <strong>FTP</strong> (unencrypted — use only in private networks), <strong>AS2</strong> (Applicability Statement 2 — EDI/B2B).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Storage backends: <strong>Amazon S3</strong> or <strong>Amazon EFS</strong>. Files transferred via SFTP land directly in S3 or EFS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports authentication via: service-managed (user/password or SSH keys stored in Transfer Family), Active Directory (via AWS Directory Service), LDAP, custom identity provider (Lambda).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multi-AZ endpoints available for high availability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Pricing: hourly per endpoint + per GB transferred.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Partners send files via SFTP to S3 without code changes" → AWS Transfer Family. "Replace on-premises SFTP server" → Transfer Family. "B2B EDI file exchange" → Transfer Family with AS2. Transfer Family = protocol compatibility bridge to S3/EFS.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">DSY</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS DataSync <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">High-speed, scheduled, automated data transfer between on-premises and AWS</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>DataSync is a fully managed data transfer service for moving large amounts of data between on-premises storage and AWS (S3, EFS, FSx), or between AWS storage services. It handles scheduling, monitoring, data validation, and network optimization automatically.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can transfer data <strong>up to 10x faster</strong> than open-source tools by using parallel multi-threaded transfers and network optimization.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported sources and destinations: NFS shares, SMB shares, HDFS, S3 API-compatible storage, S3 (all classes), EFS, FSx for Windows, FSx for Lustre, FSx for ONTAP, FSx for OpenZFS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Runs an <strong>agent</strong> (VM) on-premises to connect to your on-prem storage. Agent connects outbound to AWS — no inbound firewall rules needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Automatically handles: data integrity verification (checksums), encryption in transit (TLS), bandwidth throttling, scheduling, and retry logic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can also sync <strong>between AWS storage services</strong> (e.g. S3 to EFS, S3 to another S3 bucket in a different region) — no agent needed for AWS-to-AWS transfers.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>DataSync vs Storage Gateway: DataSync = one-time or scheduled migrations (move/sync data into AWS). Storage Gateway = ongoing hybrid access (on-prem servers continuously accessing cloud storage). DataSync vs S3 Replication: DataSync can transfer to EFS and FSx; S3 Replication only copies between S3 buckets.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ALL STORAGE COMPARED ══════════════ -->
+    <div id="compare" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Storage Extras — Module 2.5</div>
+        <div class="page-title">All AWS Storage Options Compared</div>
+        <div class="page-desc">The definitive scenario-to-service mapping — answer any storage question on the exam.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Storage Service Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Scenario → service mapping for every storage option</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Service</th></tr>
+            <tr><td>"Object storage, unlimited scale, 99.999999999% durability"</td><td class="label">Amazon S3</td></tr>
+            <tr><td>"Static website hosting with HTTPS"</td><td class="label">S3 + CloudFront</td></tr>
+            <tr><td>"Unknown access patterns, auto cost-optimize"</td><td class="label">S3 Intelligent-Tiering</td></tr>
+            <tr><td>"Archive, access once a quarter"</td><td class="label">S3 Glacier Instant Retrieval</td></tr>
+            <tr><td>"Archive 7–10 years, 12-hour retrieval OK"</td><td class="label">S3 Glacier Deep Archive</td></tr>
+            <tr><td>"Immutable storage for compliance, can't be deleted by anyone"</td><td class="label">S3 Object Lock (Compliance Mode)</td></tr>
+            <tr><td>"Persistent single-instance block storage for EC2"</td><td class="label">Amazon EBS</td></tr>
+            <tr><td>"Shared Linux file system across many EC2 instances"</td><td class="label">Amazon EFS</td></tr>
+            <tr><td>"Shared Windows file system with Active Directory"</td><td class="label">FSx for Windows File Server</td></tr>
+            <tr><td>"HPC / ML training needing max throughput, S3 integration"</td><td class="label">FSx for Lustre</td></tr>
+            <tr><td>"Migrate 80 TB with limited bandwidth"</td><td class="label">Snowball Edge</td></tr>
+            <tr><td>"Migrate petabytes / exabytes (100 PB+)"</td><td class="label">Snowmobile</td></tr>
+            <tr><td>"Hybrid — on-prem NFS/SMB access to S3"</td><td class="label">Storage Gateway (S3 File Gateway)</td></tr>
+            <tr><td>"Replace physical tape backups"</td><td class="label">Storage Gateway (Tape Gateway)</td></tr>
+            <tr><td>"On-prem servers via iSCSI, block storage backed by S3"</td><td class="label">Storage Gateway (Volume Gateway)</td></tr>
+            <tr><td>"SFTP uploads to S3 from partners"</td><td class="label">AWS Transfer Family</td></tr>
+            <tr><td>"Migrate NFS data to EFS or S3 at high speed"</td><td class="label">AWS DataSync</td></tr>
+            <tr><td>"Temporary private download link for users"</td><td class="label">S3 Pre-signed URL</td></tr>
+            <tr><td>"Different teams need different access to prefixes in one bucket"</td><td class="label">S3 Access Points</td></tr>
+            <tr><td>"Return transformed/redacted S3 data per requester"</td><td class="label">S3 Object Lambda</td></tr>
+            <tr><td>"Sub-10ms latency S3 for ML or analytics"</td><td class="label">S3 Express One Zone</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">KEY</div>
+          <div class="concept-meta">
+            <div class="concept-title">Storage Numbers to Memorize <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The hard numbers that appear in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 max object size: <strong>5 TB</strong>. Max single PUT: <strong>5 GB</strong>. Use Multipart Upload above 100 MB (required above 5 GB).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 request rates: <strong>3,500 write / 5,500 read</strong> per second per prefix.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 Pre-signed URL max expiry: <strong>7 days</strong> (604,800 seconds).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 Standard-IA / One Zone-IA minimum storage duration: <strong>30 days</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Glacier Instant / Flexible minimum storage duration: <strong>90 days</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Glacier Deep Archive minimum storage duration: <strong>180 days</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 default bucket limit: <strong>100 per account</strong> (can increase to 1,000).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 Replication: only new objects replicated. Delete markers NOT replicated by default. Versioning required on both buckets.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Snowcone: <strong>8 TB HDD / 14 TB SSD</strong>. Snowball Edge Storage: <strong>80 TB</strong>. Snowmobile: <strong>100 PB</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EFS storage class: Linux only. FSx for Windows: SMB, Windows only (but accessible from Linux via SMB mount). EBS: AZ-locked, single instance.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

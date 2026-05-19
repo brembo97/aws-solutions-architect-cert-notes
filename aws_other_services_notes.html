@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Other Services — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Other Services</h1>
+    </div>
+    <div class="nav-section-label">Infrastructure</div>
+    <a class="nav-item active" onclick="show('infra')"><span class="nav-dot" style="background:#58a6ff"></span> CloudFormation & SSM</a>
+    <div class="nav-section-label">Compute & Data</div>
+    <a class="nav-item" onclick="show('compute')"><span class="nav-dot" style="background:#39d0a0"></span> Batch, Outposts & AppFlow</a>
+    <div class="nav-section-label">Messaging & Engagement</div>
+    <a class="nav-item" onclick="show('messaging')"><span class="nav-dot" style="background:#f0a742"></span> SES & Pinpoint</a>
+    <div class="nav-section-label">Cost & Operations</div>
+    <a class="nav-item" onclick="show('cost')"><span class="nav-dot" style="background:#ff7b72"></span> Cost Explorer & Scheduler</a>
+    <div class="nav-section-label">Developer & Migration</div>
+    <a class="nav-item" onclick="show('dev')"><span class="nav-dot" style="background:#bc8cff"></span> Amplify & Migration</a>
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('cheatsheet')"><span class="nav-dot" style="background:#56d364"></span> Quick Reference</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ INFRASTRUCTURE ══════════════ -->
+    <div id="infra" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Infrastructure as Code & Management</div>
+        <div class="page-title">CloudFormation & Systems Manager</div>
+        <div class="page-desc">Define infrastructure as code and manage EC2 fleets at scale — two foundational AWS operations services.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">CFN</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS CloudFormation <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Declarative infrastructure as code — provision entire AWS environments from a template</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudFormation lets you define your entire AWS infrastructure in a JSON or YAML template file — VPCs, EC2, RDS, IAM roles, Lambda functions, everything. You submit the template and CloudFormation creates, updates, or deletes all the resources as a single unit called a <strong>stack</strong>.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Declarative</strong>: you describe the desired end state ("I want 2 EC2 instances behind an ALB"), not the steps to get there. CloudFormation figures out the order and dependencies.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Stacks</strong>: a collection of AWS resources managed as one unit. Create, update, or delete the entire stack atomically. If creation fails, CloudFormation rolls back all resources (all-or-nothing).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Change Sets</strong>: preview what CloudFormation will change before applying an update — see which resources will be added, modified, or replaced. Prevents surprises.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>StackSets</strong>: deploy the same CloudFormation template across multiple AWS accounts and regions in one operation. Used with AWS Organizations for governance and standardization.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Service Role</strong>: a CloudFormation service role lets CloudFormation create resources on your behalf using the role's permissions instead of your own. Enables least-privilege — give CloudFormation exactly the permissions it needs without granting users broad access.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Drift detection</strong>: compare the actual state of deployed resources to the template. Identifies manual changes made outside of CloudFormation.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Deploy identical infrastructure across 10 accounts and 3 regions" → CloudFormation StackSets. "Preview changes before deploying" → Change Sets. "Provision and delete a dev environment daily" → CloudFormation stack create/delete. CloudFormation is free — you pay only for the resources it provisions.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SSM</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Systems Manager — Session Manager & Other Services <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Manage EC2 at scale — shell access, patching, inventory, run commands, all without SSH</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Systems Manager (SSM) is a suite of tools for managing and operating EC2 instances and on-premises servers at scale. The SSM Agent runs on each managed instance and communicates with the SSM service — no SSH or bastion needed.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Session Manager</strong>: secure shell access to EC2 instances through the browser or CLI — no SSH keys, no port 22 open, no bastion host, no public IP required. All sessions are logged to S3/CloudWatch for audit. IAM controls who can start sessions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Run Command</strong>: execute commands or scripts across hundreds of instances simultaneously — without SSH. Use for installing software, applying patches, collecting diagnostics. Results are tracked per instance.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Patch Manager</strong>: automate OS and application patching across your fleet. Define patch baselines (which patches to approve) and maintenance windows (when to apply). Compliance reports show which instances are missing patches.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Automation</strong>: define runbooks (automation documents) for common operational tasks — restart instances, create AMIs, remediate Config findings, rotate secrets. Triggered manually, by EventBridge, or by Config remediation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Inventory</strong>: collect metadata from managed instances — installed software, network config, Windows updates, running services. Query centrally to understand your fleet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Parameter Store</strong>: covered in the Security module — hierarchical config/secrets storage. Part of the SSM family.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Shell access to private EC2 without bastion/SSH" → Session Manager. "Patch 500 instances on a schedule" → Patch Manager + Maintenance Window. "Run a script on all prod instances at once" → Run Command. SSM Agent + IAM instance role is the prerequisite for all SSM features. Works on on-premises servers too.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ COMPUTE & DATA INTEGRATION ══════════════ -->
+    <div id="compute" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Compute, Edge & Data Integration</div>
+        <div class="page-title">Batch, Outposts & AppFlow</div>
+        <div class="page-desc">Managed batch processing, on-premises AWS infrastructure, and no-code SaaS data integration.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">BAT</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Batch <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Fully managed batch processing — run hundreds of thousands of jobs without managing infrastructure</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Batch plans, schedules, and executes batch computing workloads across a dynamically provisioned fleet of EC2 instances or Fargate tasks. You submit jobs (Docker containers) and Batch handles queuing, scheduling, and compute provisioning.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Jobs are Docker containers. Batch provisions the right number and type of EC2 instances (or Fargate tasks) based on the job queue depth and resource requirements you define.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Batch vs Lambda</strong>: Lambda has a 15-minute timeout and limited resources (10 GB RAM). Batch jobs have <strong>no time limit</strong> and can use any EC2 instance type (including GPU). Use Batch for long-running, resource-heavy workloads. Use Lambda for short event-driven functions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports Spot Instances for massive cost savings on fault-tolerant batch workloads.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Run a containerized job that takes 2 hours and needs 64 GB RAM" → AWS Batch (Lambda max 15 min / 10 GB). "Process 10,000 files in parallel" → Batch (auto-provisions the fleet). Batch = no time limit, any instance type, managed queuing. Lambda = 15-min limit, serverless, event-driven.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">OUT</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Outposts <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">AWS infrastructure rack installed in your own data centre — same APIs, local processing</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Outposts is a fully managed service that extends AWS infrastructure, APIs, and tools to your on-premises data centre or co-location facility. AWS delivers, installs, and maintains physical racks of AWS compute and storage in your building.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Run EC2, EBS, S3 (S3 on Outposts), ECS, EKS, RDS, and EMR locally — using the exact same AWS APIs and tools you use in the cloud.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: ultra-low latency (data must stay local), data residency requirements (data cannot leave a specific country/facility), local data processing before sending results to the cloud.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Outposts connects back to the parent AWS region for management, monitoring, and access to other AWS services.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Run AWS services on-premises with the same APIs" → AWS Outposts. "Data residency — data cannot leave the building" → Outposts (process locally). Don't confuse with Snow Family (offline data transfer) or Local Zones (AWS-managed micro data centres near cities).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">APF</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon AppFlow <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">No-code data integration between SaaS apps and AWS services</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon AppFlow is a fully managed integration service that transfers data securely between SaaS applications (Salesforce, Slack, ServiceNow, Google Analytics, SAP, Zendesk, etc.) and AWS services (S3, Redshift, EventBridge) — without writing code or managing servers.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports scheduled transfers (hourly/daily), event-driven triggers (new Salesforce record → S3), or on-demand runs. Includes built-in data transformation (filtering, field mapping, validation, masking PII).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Traffic goes over the AWS private network (not the internet) when transferring between SaaS connectors and AWS — via PrivateLink.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Transfer Salesforce data to S3 or Redshift without code" → AppFlow. "Integrate SaaS applications with AWS" → AppFlow. It's the no-code ETL bridge between SaaS and AWS.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ MESSAGING & ENGAGEMENT ══════════════ -->
+    <div id="messaging" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Customer Communication</div>
+        <div class="page-title">SES & Pinpoint</div>
+        <div class="page-desc">Send transactional and marketing emails at scale — two services with different focuses.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SES</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon SES — Simple Email Service <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">High-volume transactional email — send and receive emails using API or SMTP</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon SES is a cloud-based email sending and receiving service designed for transactional, notification, and marketing emails at scale. It provides raw email infrastructure — you handle the content, audience, and logic.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Send via <strong>SMTP interface</strong> (drop-in replacement for any SMTP server) or the <strong>SES API</strong> (programmatic sending from Lambda, EC2, etc.).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can also <strong>receive emails</strong> — process incoming email with rules (save to S3, trigger Lambda, forward to SNS).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: order confirmations, password resets, system alerts, marketing newsletters, invoice delivery.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Send transactional emails from your application" → SES. "Receive and process incoming emails" → SES (receive rules). SES is raw email infrastructure. For marketing campaigns with audience management → Pinpoint.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">PIN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Pinpoint <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Multi-channel marketing — campaigns, segments, analytics across email, SMS, push, and voice</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Pinpoint is a multi-channel outbound communication and marketing service. Unlike SES (raw email infrastructure), Pinpoint provides <strong>campaign management, audience segmentation, message templates, A/B testing, and engagement analytics</strong> — it's a marketing platform, not just an email sender.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Channels: <strong>Email, SMS, Push Notifications, Voice, In-App</strong>. All managed from one service. SES only handles email.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Built-in audience segmentation (create segments based on user attributes/events), campaign scheduling, and delivery analytics (open rates, click rates, conversions).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>SES = developer email infrastructure (API, SMTP, raw sending). Pinpoint = marketer tool (campaigns, segments, multi-channel, analytics). "Send a targeted push notification to Android users who haven't opened the app in 30 days" → Pinpoint. "Send a password reset email from Lambda" → SES.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ COST & OPERATIONS ══════════════ -->
+    <div id="cost" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Cost Management & Scheduling</div>
+        <div class="page-title">Cost Explorer, Anomaly Detection & Instance Scheduler</div>
+        <div class="page-desc">Visualize spending, detect unusual charges, and automatically stop/start instances to save money.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">CEX</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Cost Explorer <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Visualize, analyze, and forecast your AWS spending over time</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Cost Explorer is a free tool in the AWS console that lets you visualize your AWS costs and usage with interactive graphs. Filter and group spending by service, account, region, tag, instance type, or any combination — to understand where money is going.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>View costs at daily or monthly granularity. Historical data available for up to <strong>12 months</strong>. Forecast future spending up to <strong>12 months ahead</strong> based on usage trends.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RI/Savings Plan recommendations</strong>: Cost Explorer recommends optimal Reserved Instance or Savings Plan purchases based on your usage patterns to maximize savings.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Right-sizing recommendations</strong>: identifies EC2 instances that are over-provisioned and recommends smaller instance types.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Visualize AWS costs by service and forecast next quarter's spending" → Cost Explorer. "Get RI purchase recommendations" → Cost Explorer. "Detect unusual spending" → Cost Anomaly Detection (separate service — below).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">ANM</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Cost Anomaly Detection <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">ML-powered — automatically detect unexpected spending spikes</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Cost Anomaly Detection uses machine learning to continuously monitor your spending patterns and automatically detect unusual cost increases — accidental resource over-provisioning, misconfigured services, or unexpected usage spikes. No manual threshold setting required.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Create monitors by service, account, cost category, or cost allocation tag. Set alert thresholds (e.g. notify me if anomaly impact exceeds $100).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Notifications via SNS or email. Root cause analysis identifies which service/account/usage type caused the anomaly.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Automatically detect and alert on unexpected AWS spending increases" → Cost Anomaly Detection. It's ML-based — learns your normal patterns, no manual thresholds to maintain. Separate from Cost Explorer (which is for visualization and forecasting).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SCH</div>
+          <div class="concept-meta">
+            <div class="concept-title">Instance Scheduler on AWS <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Automatically stop and start EC2 and RDS instances on a schedule to reduce costs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Instance Scheduler is an AWS Solution (CloudFormation-deployed) that automatically stops and starts EC2 instances and RDS databases based on a defined schedule — e.g. run dev instances only during business hours (8am–6pm weekdays), stop them overnight and weekends.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Deployed via a CloudFormation template. Runs as a Lambda function on a schedule. Instances are tagged (e.g. <code>Schedule=office-hours</code>) and the scheduler matches tags to schedule definitions stored in DynamoDB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Potential savings: ~65% on dev/test instances that only need to run during business hours.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Stop dev/test EC2 instances outside business hours to save money" → Instance Scheduler on AWS. It uses tags to identify which instances to schedule. For single instances, EventBridge Scheduler → Lambda (stop/start) also works.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ DEVELOPER & MIGRATION ══════════════ -->
+    <div id="dev" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Developer Tools & Migration</div>
+        <div class="page-title">Amplify & AWS Migration Service</div>
+        <div class="page-desc">Full-stack app development for frontend/mobile developers and database migration.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">AMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Amplify <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Full-stack development platform for web and mobile — frontend hosting + backend services</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Amplify is a set of tools and services for building full-stack web and mobile applications. It lets frontend developers build AWS-powered backends without deep AWS knowledge — authentication, APIs, storage, and hosting with minimal configuration.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Amplify Hosting</strong>: CI/CD for static sites and SSR (server-side rendered) web apps. Connect a Git repo (GitHub, GitLab, Bitbucket), push code, and Amplify builds and deploys automatically. Like Vercel/Netlify but on AWS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Amplify Backend</strong>: provision AWS backend resources (Cognito auth, AppSync GraphQL API, S3 storage, DynamoDB, Lambda functions) from the frontend code using a CLI or visual builder.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports React, Next.js, Vue, Angular, Flutter, React Native, iOS, Android.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Full-stack web app with CI/CD hosting + Cognito + AppSync backend — simplest path for frontend developers" → Amplify. Think of Amplify as the "App Runner of full-stack" — highest abstraction, least ops. Don't confuse with Elastic Beanstalk (server-based app deployment) or App Runner (container/API deployment).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">DMS</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Database Migration Service (DMS) <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Migrate databases to AWS with minimal downtime — supports homogeneous and heterogeneous migrations</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS DMS migrates databases to AWS quickly and securely. The source database remains fully operational during migration — minimal downtime. DMS handles initial data load and then continuous replication of ongoing changes (CDC — Change Data Capture) until you cut over.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Homogeneous migration</strong> (same engine → same engine): Oracle → RDS Oracle, MySQL → Aurora MySQL. Straightforward — DMS handles replication directly.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Heterogeneous migration</strong> (different engine → different engine): Oracle → Aurora PostgreSQL, SQL Server → Aurora MySQL. Requires <strong>AWS Schema Conversion Tool (SCT)</strong> first to convert the schema and stored procedures, then DMS to migrate the data.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Sources</strong>: on-premises databases, EC2-hosted databases, RDS, Aurora, S3, MongoDB, DocumentDB. <strong>Targets</strong>: RDS, Aurora, DynamoDB, Redshift, S3, OpenSearch, Kinesis Data Streams, DocumentDB, Neptune.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Continuous replication (CDC)</strong>: after the initial full load, DMS keeps replicating changes from source to target in near-real-time. Used for ongoing data synchronization or live migration with minimal cutover window.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DMS runs on a <strong>replication instance</strong> (EC2 under the hood) — you choose the instance size based on data volume and change rate.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Migrate Oracle on-premises to Aurora PostgreSQL" → SCT (schema conversion) + DMS (data migration). "Migrate MySQL on-premises to RDS MySQL with minimal downtime" → DMS only (homogeneous, no SCT needed). "Continuous data replication from on-premises DB to S3" → DMS with CDC. DMS is the standard answer for any "migrate a database to AWS" question.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ QUICK REFERENCE ══════════════ -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Quick Reference Table</div>
+        <div class="page-desc">Every service in this module — one-line summary and exam trigger.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">REF</div>
+          <div class="concept-meta">
+            <div class="concept-title">Service → One-Liner → Exam Trigger <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Fast lookup for every service in this module</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Service</th><th>What it does</th><th>Exam trigger</th></tr>
+            <tr><td class="label">CloudFormation</td><td>Declarative IaC — provision entire AWS environments from a YAML/JSON template</td><td>"infrastructure as code", "deploy across accounts/regions" (StackSets), "preview changes" (Change Sets)</td></tr>
+            <tr><td class="label">SSM Session Manager</td><td>Secure shell to EC2 without SSH, port 22, bastion, or public IP</td><td>"access private EC2 without bastion", "audit shell sessions"</td></tr>
+            <tr><td class="label">SSM Patch Manager</td><td>Automated OS/app patching across EC2 fleet with compliance reporting</td><td>"patch 500 servers on schedule", "patch compliance"</td></tr>
+            <tr><td class="label">SSM Run Command</td><td>Execute commands on multiple instances simultaneously without SSH</td><td>"run script on all instances", "install agent fleet-wide"</td></tr>
+            <tr><td class="label">SSM Automation</td><td>Runbooks for operational tasks — triggered manually or by EventBridge/Config</td><td>"automated remediation", "create AMI on schedule"</td></tr>
+            <tr><td class="label">AWS Batch</td><td>Managed batch job scheduling — Docker containers, no time limit, auto-provisions compute</td><td>"job > 15 min" (Lambda limit), "batch processing", "GPU job"</td></tr>
+            <tr><td class="label">AWS Outposts</td><td>AWS-managed racks installed in your data centre — same APIs locally</td><td>"run AWS on-premises", "data residency", "ultra-low latency to local systems"</td></tr>
+            <tr><td class="label">Amazon AppFlow</td><td>No-code SaaS-to-AWS data integration (Salesforce, Slack, SAP → S3/Redshift)</td><td>"transfer Salesforce data to S3", "SaaS integration without code"</td></tr>
+            <tr><td class="label">Amazon SES</td><td>Cloud email infrastructure — send/receive email via API or SMTP</td><td>"send transactional emails", "SMTP replacement", "receive and process email"</td></tr>
+            <tr><td class="label">Amazon Pinpoint</td><td>Multi-channel marketing — campaigns, segments, analytics across email/SMS/push/voice</td><td>"marketing campaigns", "audience segmentation", "push notifications", "multi-channel"</td></tr>
+            <tr><td class="label">Cost Explorer</td><td>Visualize and forecast AWS spending, RI/Savings Plan recommendations</td><td>"visualize costs", "forecast spending", "RI recommendations"</td></tr>
+            <tr><td class="label">Cost Anomaly Detection</td><td>ML-based detection of unexpected spending increases</td><td>"detect unusual spending", "alert on cost spikes"</td></tr>
+            <tr><td class="label">Instance Scheduler</td><td>Auto stop/start EC2 and RDS on a schedule — uses tags + DynamoDB + Lambda</td><td>"stop dev instances at night", "save on non-production"</td></tr>
+            <tr><td class="label">AWS Amplify</td><td>Full-stack web/mobile platform — CI/CD hosting + Cognito/AppSync/DynamoDB backend</td><td>"frontend developer builds full-stack app", "CI/CD for React/Next.js"</td></tr>
+            <tr><td class="label">AWS DMS</td><td>Migrate databases to AWS with minimal downtime — full load + continuous replication (CDC)</td><td>"migrate database", "Oracle to Aurora", "minimal downtime migration"</td></tr>
+            <tr><td class="label">AWS SCT</td><td>Convert schema between different database engines (used before DMS for heterogeneous migrations)</td><td>"Oracle to PostgreSQL schema", "convert stored procedures"</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Easy-to-Confuse Pairs <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The pairs the exam uses as distractors in this module</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SES vs Pinpoint</strong>: SES = raw email infrastructure (API/SMTP, developer tool). Pinpoint = marketing platform (campaigns, segments, multi-channel, analytics). "Send a password reset" → SES. "Send a promo campaign to inactive users" → Pinpoint.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Batch vs Lambda</strong>: Batch = no time limit, any instance type, managed queuing, Docker containers. Lambda = 15-min max, 10 GB RAM max, event-driven, serverless. "Long-running job" → Batch. "Quick event handler" → Lambda.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cost Explorer vs Cost Anomaly Detection</strong>: Cost Explorer = visualization and forecasting (you look at it). Anomaly Detection = ML alerts (it tells you when something's wrong). They complement each other.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Amplify vs Elastic Beanstalk vs App Runner</strong>: Amplify = frontend/mobile full-stack (React, Next.js + backend). Beanstalk = traditional server apps (Java, .NET, Node on EC2). App Runner = container/API deployment. Different audiences, different abstraction levels.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DMS vs MGN (Application Migration Service)</strong>: DMS = database migration (data + schema). MGN = server migration (entire EC2/VM lift-and-shift). "Migrate a database" → DMS. "Migrate an entire server/OS to EC2" → MGN.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Outposts vs Snow Family vs Local Zones</strong>: Outposts = permanent AWS rack in your data centre (long-term on-prem processing). Snow = portable offline data transfer devices (large data migration). Local Zones = AWS mini-regions near cities (low-latency edge for specific metros).</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

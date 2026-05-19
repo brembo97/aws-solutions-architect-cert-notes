@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Databases — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2330;
+    --border: #30363d;
+    --border-accent: #3d4a5a;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --accent-blue: #58a6ff;
+    --accent-teal: #39d0a0;
+    --accent-amber: #f0a742;
+    --accent-red: #ff7b72;
+    --accent-purple: #bc8cff;
+    --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; display: flex; flex-direction: column; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88, 166, 255, 0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240, 167, 66, 0.07); border: 1px solid rgba(240, 167, 66, 0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255, 123, 114, 0.07); border: 1px solid rgba(255, 123, 114, 0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Databases</h1>
+    </div>
+
+    <div class="nav-section-label">Module 1</div>
+    <a class="nav-item active" onclick="show('rds')">
+      <span class="nav-dot" style="background:#58a6ff"></span> RDS
+    </a>
+    <a class="nav-item" onclick="show('rds-ha')">
+      <span class="nav-dot" style="background:#39d0a0"></span> RDS HA & Backups
+    </a>
+    <a class="nav-item" onclick="show('rds-sec')">
+      <span class="nav-dot" style="background:#ff7b72"></span> RDS Security & Proxy
+    </a>
+
+    <div class="nav-section-label">Module 2</div>
+    <a class="nav-item" onclick="show('aurora')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Aurora
+    </a>
+    <a class="nav-item" onclick="show('aurora-adv')">
+      <span class="nav-dot" style="background:#db6eb0"></span> Aurora Advanced
+    </a>
+
+    <div class="nav-section-label">Module 3</div>
+    <a class="nav-item" onclick="show('elasticache')">
+      <span class="nav-dot" style="background:#f0a742"></span> ElastiCache
+    </a>
+
+    <div class="nav-section-label">Module 4</div>
+    <a class="nav-item" onclick="show('dynamodb')">
+      <span class="nav-dot" style="background:#56d364"></span> DynamoDB
+    </a>
+    <a class="nav-item" onclick="show('dynamodb-adv')">
+      <span class="nav-dot" style="background:#39d0a0"></span> DynamoDB Advanced
+    </a>
+
+    <div class="nav-section-label">Module 5</div>
+    <a class="nav-item" onclick="show('otherdbs')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Other Databases
+    </a>
+    <a class="nav-item" onclick="show('ports')">
+      <span class="nav-dot" style="background:#ff7b72"></span> DB Ports Reference
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ═══════════════════════════ RDS ═══════════════════════════ -->
+    <div id="rds" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Relational Database Service</div>
+        <div class="page-title">Amazon RDS</div>
+        <div class="page-desc">Managed relational databases in the cloud — engines, features, and when RDS is the right choice.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">RDS</div>
+          <div class="concept-meta">
+            <div class="concept-title">RDS Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managed relational DB service — AWS handles patching, backups, and scaling</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>RDS (Relational Database Service) is a managed service that makes it easy to set up, operate, and scale relational databases in the cloud. AWS handles OS patching, backups, failover, and hardware provisioning — you manage the schema and queries.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported engines: <strong>MySQL, PostgreSQL, MariaDB, Oracle, Microsoft SQL Server, and Amazon Aurora</strong> (Aurora is RDS-compatible but architecturally different).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RDS is <strong>not serverless</strong> (except Aurora Serverless) — you provision instance types and storage upfront. You pay for the instance whether it's idle or busy.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Storage is backed by EBS (gp2, gp3, or io1). <strong>Storage auto-scaling</strong> can be enabled — RDS increases storage automatically when free space is low, up to a configured max.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You cannot SSH into an RDS instance — it is a managed service. AWS controls the underlying OS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RDS runs inside your VPC. Access is controlled by Security Groups, and it should <strong>not</strong> be publicly accessible in production.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RDS supports <strong>Multi-AZ</strong> for high availability and <strong>Read Replicas</strong> for read scaling — these are different features with different purposes.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>RDS is "managed" but not "serverless" — you still choose instance sizes. The key advantage over self-managed EC2 databases is that AWS handles patching and backups. If a question asks why to use RDS over running a database on EC2, the answer is reduced operational overhead, not performance.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">REP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Read Replicas vs Multi-AZ <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The most-tested RDS comparison on the exam</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Read Replicas and Multi-AZ serve completely different purposes and are frequently confused on the exam. Understanding the difference is critical.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Read Replicas</th><th>Multi-AZ</th></tr>
+            <tr><td class="label">Purpose</td><td>Scale read traffic — offload SELECT queries from the primary</td><td>High availability — automatic failover if primary fails</td></tr>
+            <tr><td class="label">Replication</td><td>Asynchronous — slight replication lag possible</td><td>Synchronous — standby is always in sync</td></tr>
+            <tr><td class="label">Standby accepts traffic?</td><td>Yes — each replica has its own DNS endpoint and can be read from</td><td>No — standby is passive, only used on failover</td></tr>
+            <tr><td class="label">Failover?</td><td>Manual — you must promote a replica to primary if needed</td><td>Automatic — DNS CNAME flips to standby within 1–2 min</td></tr>
+            <tr><td class="label">Cross-region?</td><td>Yes — replicas can be in different regions</td><td>Same region only (different AZ)</td></tr>
+            <tr><td class="label">Cost</td><td>Billed as a separate DB instance</td><td>Billed as standby instance (same price as primary)</td></tr>
+            <tr><td class="label">Use case</td><td>Analytics, reporting, read-heavy apps</td><td>Production databases requiring HA and no data loss</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>You can have <strong>up to 5 Read Replicas</strong> for MySQL, MariaDB, PostgreSQL. Each has its own DNS endpoint.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Read Replicas can be <strong>promoted to standalone databases</strong> — they then break replication and become independent.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Network cost: Read Replica replication within the same region is <strong>free</strong>. Cross-region replication incurs data transfer costs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multi-AZ failover is triggered by: primary instance failure, AZ outage, DB instance class change, or OS patching.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Improve read performance" → Read Replica. "Improve availability / disaster recovery" → Multi-AZ. These are the two most common scenario questions for RDS. Multi-AZ standby cannot be read from — it is purely for failover. If the exam says "zero downtime during failover" → Multi-AZ.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CST</div>
+          <div class="concept-meta">
+            <div class="concept-title">RDS Custom <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Full OS + database access for Oracle and SQL Server</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>RDS Custom gives you access to the underlying OS and database settings — something not possible with standard RDS. It is only available for <strong>Oracle</strong> and <strong>Microsoft SQL Server</strong>.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Allows SSH/SSM access to the underlying EC2 instance running the database.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: legacy enterprise apps that require specific OS configurations, custom database patches, or direct file system access.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You must <strong>deactivate Automation Mode</strong> before performing customizations — otherwise RDS may revert your changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported only for Oracle and SQL Server — not available for MySQL, PostgreSQL, or MariaDB.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>If the question mentions needing OS-level access to a managed database, or custom Oracle/SQL Server configurations → RDS Custom. Standard RDS blocks all OS access.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ RDS HA & BACKUPS ═══════════════════════════ -->
+    <div id="rds-ha" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — RDS</div>
+        <div class="page-title">RDS High Availability & Backups</div>
+        <div class="page-desc">Automated backups, snapshots, and how RDS handles disaster recovery.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">BAK</div>
+          <div class="concept-meta">
+            <div class="concept-title">RDS Backups <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Automated backups vs manual snapshots — key differences</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>Automated Backups</th><th>Manual Snapshots</th></tr>
+            <tr><td class="label">Trigger</td><td>Automatic — daily during backup window</td><td>Manual — user-initiated anytime</td></tr>
+            <tr><td class="label">Retention</td><td>1–35 days (configurable). Deleted when DB is deleted.</td><td>Kept indefinitely until you delete them. Survive DB deletion.</td></tr>
+            <tr><td class="label">Point-in-time recovery</td><td>Yes — restore to any second within the retention period</td><td>No — only restore to the snapshot point</td></tr>
+            <tr><td class="label">Transaction logs</td><td>Backed up every 5 minutes — enables PITR</td><td>Not included</td></tr>
+            <tr><td class="label">Cost</td><td>Free up to the DB storage size. Billed beyond that.</td><td>Billed per GB of snapshot storage</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Restoring an RDS backup always <strong>creates a new DB instance</strong> — you cannot restore in-place.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For long-term retention (compliance), use <strong>manual snapshots</strong> — automated backups are purged after the retention window.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Snapshots can be <strong>copied to other regions</strong> and shared with other AWS accounts — useful for cross-region DR.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RDS supports <strong>automated backup restoration to a different VPC</strong> — not just the same VPC.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Recover to any point in the last 7 days" → Automated backups with PITR. "Preserve a backup for 3 years for compliance" → Manual snapshot (automated backups are deleted after max 35 days). Restoring always creates a NEW DB instance — you can't overwrite the existing one.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">MON</div>
+          <div class="concept-meta">
+            <div class="concept-title">RDS Monitoring <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">CloudWatch metrics, Enhanced Monitoring, and Performance Insights</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>RDS integrates with multiple monitoring layers. Understanding what each one monitors and at what granularity is important for both operations and exam questions.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudWatch metrics</strong>: hypervisor-level metrics — CPU, storage, network. Collected every 1 minute. Does not show per-process data.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Enhanced Monitoring</strong>: OS-level metrics from an agent running on the DB instance. Granularity down to 1 second. Shows individual process CPU and memory usage.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Performance Insights</strong>: database-level query performance analysis. Shows which SQL queries are consuming the most load. Retention up to 2 years.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Key CloudWatch alarms to set: <code>FreeStorageSpace</code> (low disk), <code>CPUUtilization</code> (high CPU), <code>DatabaseConnections</code> (connection pool exhaustion).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>CloudWatch = hypervisor-level (no per-process). Enhanced Monitoring = OS-level (per-process). Performance Insights = SQL query-level. If the question asks "how to find which queries are slowing down the database" → Performance Insights.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ RDS SECURITY & PROXY ═══════════════════════════ -->
+    <div id="rds-sec" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — RDS</div>
+        <div class="page-title">RDS Security & RDS Proxy</div>
+        <div class="page-desc">Encryption, IAM authentication, network isolation, and the connection pooling proxy layer.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SEC</div>
+          <div class="concept-meta">
+            <div class="concept-title">RDS Security <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Encryption at rest, in transit, IAM auth, and network controls</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Encryption at rest</strong>: uses AWS KMS (AES-256). Must be enabled at launch — cannot enable encryption on an existing unencrypted DB. Workaround: snapshot → copy with encryption → restore from encrypted snapshot.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Encryption in transit</strong>: SSL/TLS between application and RDS. Enforced by setting <code>rds.force_ssl=1</code> parameter (PostgreSQL) or requiring SSL in MySQL grants.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>IAM Database Authentication</strong>: supported for MySQL and PostgreSQL. Authenticates using an IAM-generated token instead of a password. Token is valid for 15 minutes. No password stored in the DB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Network isolation</strong>: deploy RDS in a private subnet with no public access. Use Security Groups to restrict access to specific application subnets or EC2 instances.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Secrets Manager</strong>: best practice for storing and rotating DB credentials automatically. RDS integrates natively — credentials auto-rotate without app changes.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"How to encrypt an existing unencrypted RDS database?" → Snapshot → copy snapshot with encryption enabled → restore. Cannot enable encryption in-place — same constraint as EBS. IAM Database Auth works only for MySQL and PostgreSQL, not Oracle or SQL Server.</div>
+          <div class="warn-box"><strong>SECURITY WARNING</strong>Never make an RDS instance publicly accessible in production. Place it in a private subnet, and only allow inbound traffic from the application layer's Security Group (not 0.0.0.0/0).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">PXY</div>
+          <div class="concept-meta">
+            <div class="concept-title">RDS Proxy <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Managed connection pooler — critical for Lambda + RDS architectures</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>RDS Proxy sits between your application and RDS, pooling and sharing database connections. It prevents connection exhaustion when many short-lived clients (especially Lambda functions) connect to the database simultaneously.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Connection pooling</strong>: instead of each Lambda invocation opening a new DB connection, Proxy maintains a warm pool. Reduces DB connection overhead by up to 66%.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RDS Proxy is <strong>fully managed, serverless, and auto-scaling</strong> — no instance to provision.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports <strong>failover time reduction</strong>: during Multi-AZ failover, Proxy queues connections and reconnects automatically. Failover time drops from ~60s to ~66% less.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Enforces <strong>IAM authentication</strong> at the proxy layer — stores credentials in Secrets Manager. Apps authenticate to the Proxy via IAM, not with raw DB passwords.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>RDS Proxy is <strong>VPC-only</strong> — it is never publicly accessible.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports: MySQL, PostgreSQL, MariaDB, Microsoft SQL Server, and Aurora (MySQL + PostgreSQL compatible).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>The canonical RDS Proxy exam scenario is Lambda + RDS. Lambda can spawn thousands of concurrent invocations, each opening a DB connection — this exhausts connection limits quickly. RDS Proxy solves this. If you see "Lambda connecting to RDS" and a problem with "too many connections" → RDS Proxy.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ AURORA ═══════════════════════════ -->
+    <div id="aurora" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Aurora</div>
+        <div class="page-title">Amazon Aurora</div>
+        <div class="page-desc">AWS's cloud-native relational database — faster, more available, and more scalable than standard RDS engines.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">AUR</div>
+          <div class="concept-meta">
+            <div class="concept-title">Aurora Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">AWS-proprietary engine compatible with MySQL and PostgreSQL</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Aurora is AWS's proprietary cloud-native relational database. It's drop-in compatible with MySQL and PostgreSQL drivers, but internally uses a distributed, fault-tolerant architecture that delivers significantly better performance and availability than standard RDS.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Compatible with <strong>MySQL 5x faster</strong> and <strong>PostgreSQL 3x faster</strong> than standard RDS engines on equivalent hardware.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Storage auto-scales</strong> from 10 GB up to <strong>128 TB</strong> in 10 GB increments automatically — you never provision storage upfront.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Storage is <strong>replicated 6 times across 3 AZs</strong>. Tolerates: up to 2 AZ failures for writes, up to 3 AZ failures for reads.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Up to <strong>15 Read Replicas</strong> (vs 5 for standard RDS). Replicas use the shared storage layer — replication lag is typically under 10ms.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Failover is automatic and takes <strong>less than 30 seconds</strong>. Aurora promotes a replica to primary without any data loss.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Costs approximately <strong>20% more than standard RDS</strong>, but the performance and availability improvements typically justify the cost.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Aurora storage is NOT the same as EBS — it's a custom distributed shared storage layer. Key numbers: 6 copies across 3 AZs, up to 128 TB, up to 15 replicas, failover < 30 seconds. When the exam says "highest availability relational database" → Aurora.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">END</div>
+          <div class="concept-meta">
+            <div class="concept-title">Aurora Endpoints <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Writer, reader, custom, and instance endpoints</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Aurora provides multiple endpoint types so you can direct different workloads to the appropriate instances without hardcoding individual instance addresses.</p>
+          <table class="compare-table">
+            <tr><th>Endpoint</th><th>Points to</th><th>Use case</th></tr>
+            <tr><td class="label">Writer Endpoint</td><td>Always points to the current primary (auto-updates on failover)</td><td>All writes (INSERT, UPDATE, DELETE)</td></tr>
+            <tr><td class="label">Reader Endpoint</td><td>Load-balances across all available Read Replicas</td><td>Read-heavy workloads — single DNS, distributes queries</td></tr>
+            <tr><td class="label">Custom Endpoint</td><td>A subset of instances you define (e.g., larger instances only)</td><td>Analytical queries needing specific instance sizes</td></tr>
+            <tr><td class="label">Instance Endpoint</td><td>One specific DB instance</td><td>Diagnostics, direct connection to a specific node</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Application code should use Writer Endpoint (not a specific instance endpoint) so that failovers are transparent. Reader Endpoint provides built-in load balancing across replicas — your app doesn't need to know how many replicas exist.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SRV</div>
+          <div class="concept-meta">
+            <div class="concept-title">Aurora Serverless <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Auto-scaling capacity — ideal for intermittent or unpredictable workloads</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Aurora Serverless automatically starts up, shuts down, and scales compute capacity based on your application's needs. You only pay for the database storage and the compute seconds actually consumed.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Scales by adding or removing <strong>Aurora Capacity Units (ACUs)</strong>. Each ACU is ~2 GB of memory plus proportional CPU and networking.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Can <strong>scale to zero</strong> when not in use (v2 keeps a minimum of 0.5 ACU). Ideal for dev/test, infrequent workloads, and new apps with unpredictable load.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Aurora Serverless <strong>v2</strong> scales in fine-grained increments (0.5 ACU) and much faster than v1 — suitable for production workloads.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Accessed via the <strong>Data API</strong> — an HTTP endpoint that eliminates the need for persistent DB connections (great for Lambda).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Unpredictable or intermittent database workload" → Aurora Serverless. "Variable traffic with cost optimization" → Aurora Serverless. If the question mentions the Data API or accessing Aurora from Lambda without connection management → Aurora Serverless.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ AURORA ADVANCED ═══════════════════════════ -->
+    <div id="aurora-adv" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Aurora</div>
+        <div class="page-title">Aurora Advanced Concepts</div>
+        <div class="page-desc">Global Database, Multi-Master, cloning, and Aurora-specific backups and security.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">GLB</div>
+          <div class="concept-meta">
+            <div class="concept-title">Aurora Global Database <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">One primary region + up to 5 secondary regions with ~1 second lag</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Aurora Global Database spans multiple AWS regions, with a primary region for reads/writes and up to 5 secondary regions that receive replicated data. Designed for globally distributed applications and cross-region disaster recovery.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Replication lag to secondary regions is typically <strong>under 1 second</strong> (storage-level replication, not application-level).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each secondary region can have up to <strong>16 Read Replicas</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Cross-region failover (promoting a secondary to primary) takes <strong>less than 1 minute</strong> with an RTO of under 1 minute.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Useful for: globally distributed apps needing low-latency local reads, GDPR-compliant data residency, and cross-region DR.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Cross-region disaster recovery with RPO < 1 second and RTO < 1 minute for a relational database" → Aurora Global Database. Standard RDS Multi-AZ does not span regions — it is same-region only.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">CLN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Aurora Cloning <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Fast, space-efficient database clone — copy-on-write protocol</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Aurora cloning creates a new DB cluster that shares the same underlying storage as the source, using a copy-on-write protocol. It is much faster than restoring a snapshot because no data is copied initially.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>The clone starts immediately and shares the source's data pages. Only modified pages are duplicated going forward.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Creates a <strong>separate, isolated cluster</strong> — changes to the clone don't affect the source, and vice versa.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use case: create a production-identical staging or test environment without waiting for a full snapshot restore.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Create a copy of production database for testing without impacting production and without waiting a long time" → Aurora Cloning. Much faster than snapshot + restore for large databases.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">BAK</div>
+          <div class="concept-meta">
+            <div class="concept-title">Aurora Backups & Security <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Continuous backups, backtrack, and security model</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Aurora backups are <strong>continuous and automatic</strong> — stored in S3. Cannot be disabled. Retention window: 1–35 days.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Backtrack</strong>: rewind an Aurora database to a specific point in the past without restoring from a snapshot. Available for Aurora MySQL only. Max backtrack window: 72 hours.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Encryption: same as RDS — KMS at rest, TLS in transit. Must be enabled at creation. Encrypt existing unencrypted cluster via snapshot copy.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports IAM Database Authentication (MySQL and PostgreSQL modes).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Aurora Backtrack ≠ restoring from backup. Backtrack rewinds the live cluster in-place — no new cluster is created. "Undo an accidental DELETE without creating a new cluster" → Backtrack (Aurora MySQL only, within 72 hours).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ ELASTICACHE ═══════════════════════════ -->
+    <div id="elasticache" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — In-Memory Caching</div>
+        <div class="page-title">Amazon ElastiCache</div>
+        <div class="page-desc">Managed Redis and Memcached — sub-millisecond latency caching for databases and applications.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">ELC</div>
+          <div class="concept-meta">
+            <div class="concept-title">ElastiCache Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managed in-memory data store — reduces database load dramatically</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ElastiCache provides managed Redis or Memcached clusters in AWS. It sits in front of a database (typically RDS) and serves frequently-read data from memory, reducing database load and response latency from milliseconds to microseconds.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS manages OS patching, node replacements, monitoring, backups (Redis), and cluster scaling.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Using ElastiCache requires <strong>application code changes</strong> — the app must be written to check the cache before querying the DB, and to invalidate cache entries when data changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common use cases: database query caching, session stores, leaderboards, real-time analytics, rate limiting.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Redis vs Memcached <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The most-tested ElastiCache comparison</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Feature</th><th>Redis</th><th>Memcached</th></tr>
+            <tr><td class="label">Data structures</td><td>Rich: strings, hashes, lists, sets, sorted sets, bitmaps, streams</td><td>Simple key-value only</td></tr>
+            <tr><td class="label">Persistence</td><td>Yes — snapshots (RDB) and append-only file (AOF)</td><td>No persistence — data is lost on restart</td></tr>
+            <tr><td class="label">Multi-AZ / failover</td><td>Yes — automatic failover with a standby replica</td><td>No — no replication or failover</td></tr>
+            <tr><td class="label">Read Replicas</td><td>Yes — up to 5 replicas per shard</td><td>No</td></tr>
+            <tr><td class="label">Backup / restore</td><td>Yes</td><td>No</td></tr>
+            <tr><td class="label">Pub/Sub messaging</td><td>Yes</td><td>No</td></tr>
+            <tr><td class="label">Transactions</td><td>Yes (MULTI/EXEC)</td><td>No</td></tr>
+            <tr><td class="label">Multi-threading</td><td>Single-threaded (mostly)</td><td>Multi-threaded — scales better with multiple cores</td></tr>
+            <tr><td class="label">Best for</td><td>Sessions, leaderboards, pub/sub, geospatial, ML feature stores — any use case requiring persistence, HA, or complex data types</td><td>Simple, large-scale caching with multiple CPU cores and no need for persistence</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>If the exam question requires ANY of the following → choose Redis: persistence, replication, Multi-AZ, backups, sorted sets (leaderboards), pub/sub, Lua scripting, Streams, geospatial. Memcached = pure horizontal scale, simple cache, no durability. In practice, Redis is almost always the right answer.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">PAT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Caching Patterns <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Lazy loading, write-through, and session stores</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Pattern</th><th>How it works</th><th>Pros</th><th>Cons</th></tr>
+            <tr><td class="label">Lazy Loading (Cache-Aside)</td><td>Check cache first. On miss, fetch from DB and populate cache. On hit, return cached data.</td><td>Only caches requested data. Cache failures don't break the app.</td><td>Cache miss = 3 round trips (cache, DB, write to cache). Stale data possible.</td></tr>
+            <tr><td class="label">Write-Through</td><td>Write to DB and cache simultaneously on every write.</td><td>Cache always up to date. No stale reads.</td><td>Write penalty. Cache fills with data that may never be read (write-heavy apps).</td></tr>
+            <tr><td class="label">Session Store</td><td>Store user session data in Redis instead of the web server. Each request reads/writes the session from Redis.</td><td>Stateless web tier — any server can handle any request. Survives server restarts.</td><td>Adds latency to every request. Redis becomes a critical dependency.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>TTL (Time to Live)</strong>: set expiry on cached keys to prevent stale data. Short TTL = more DB reads but fresher data. Long TTL = fewer DB reads but potential staleness.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ElastiCache for <strong>session management</strong>: when users hit different web servers on each request, sessions stored in Redis ensure consistent experience.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Application has stateless web tier and sessions need to persist across servers" → ElastiCache session store. "Reduce RDS database load from repeated reads" → Lazy Loading caching pattern in front of RDS.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ DYNAMODB ═══════════════════════════ -->
+    <div id="dynamodb" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — NoSQL</div>
+        <div class="page-title">Amazon DynamoDB</div>
+        <div class="page-desc">Fully managed, serverless NoSQL key-value and document database with single-digit millisecond performance at any scale.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">DDB</div>
+          <div class="concept-meta">
+            <div class="concept-title">DynamoDB Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Serverless NoSQL — scales to trillions of rows with consistent performance</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>DynamoDB is a fully managed, serverless, key-value and document NoSQL database. AWS handles all infrastructure, replication, and scaling — there are no servers to manage, no storage to provision, and no connection limits to worry about.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data is <strong>automatically replicated across 3 AZs</strong> within a region — highly available by default.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Scales horizontally to handle millions of requests per second and trillions of items with consistent <strong>single-digit millisecond latency</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Tables store <strong>items</strong> (rows) with <strong>attributes</strong> (columns). Schema-less — each item can have different attributes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Primary key options: <strong>Partition Key (hash key)</strong> alone, or <strong>Partition Key + Sort Key (range key)</strong> composite. Must be defined at table creation and cannot be changed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Maximum item size: <strong>400 KB</strong>. Not suitable for storing large binary objects (use S3 instead).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Integrates natively with <strong>Lambda</strong>, <strong>API Gateway</strong>, <strong>AppSync</strong>, and <strong>IAM</strong> — a natural fit for serverless architectures.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>DynamoDB is the go-to answer for: serverless applications, mobile backends, gaming leaderboards, IoT event data, session storage at scale, and any workload needing single-digit ms latency without operational overhead. It is NOT a relational DB — no joins, no SQL.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CAP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Capacity Modes <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Provisioned vs On-Demand — throughput models and when to use each</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>Provisioned Mode</th><th>On-Demand Mode</th></tr>
+            <tr><td class="label">How capacity is set</td><td>You provision RCU (Read Capacity Units) and WCU (Write Capacity Units) per table. Optional Auto Scaling adjusts within set limits.</td><td>DynamoDB scales automatically. No capacity planning needed.</td></tr>
+            <tr><td class="label">Cost model</td><td>Pay per provisioned RCU/WCU per hour (cheaper at steady, predictable load)</td><td>Pay per request. More expensive per operation but no waste.</td></tr>
+            <tr><td class="label">Throttling</td><td>If you exceed provisioned capacity → <code>ProvisionedThroughputExceededException</code></td><td>No throttling — scales instantly to any request rate</td></tr>
+            <tr><td class="label">Best for</td><td>Predictable, steady-state workloads. Cost optimization at high volume.</td><td>New tables with unknown traffic. Spiky or unpredictable workloads. Infrequent access.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>1 WCU</strong> = 1 write/second for items up to 1 KB. For larger items: WCU = item size rounded up to nearest KB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>1 RCU</strong> = 1 strongly consistent read/second (or 2 eventually consistent reads/second) for items up to 4 KB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>You can switch between Provisioned and On-Demand modes up to <strong>twice per day</strong>.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Unknown or unpredictable traffic" → On-Demand. "Steady, predictable traffic and cost optimization" → Provisioned with Auto Scaling. "Traffic spikes that exceed provisioned limits" → switch to On-Demand or increase provisioned capacity.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">IDX</div>
+          <div class="concept-meta">
+            <div class="concept-title">DynamoDB Indexes <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">GSI and LSI — querying DynamoDB beyond the primary key</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>DynamoDB only supports efficient queries on the primary key by default. Indexes let you query on other attributes — but the two types have important differences.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Local Secondary Index (LSI)</th><th>Global Secondary Index (GSI)</th></tr>
+            <tr><td class="label">Partition key</td><td>Same as base table</td><td>Can be any attribute (different partition key)</td></tr>
+            <tr><td class="label">Sort key</td><td>Different sort key</td><td>Optional different sort key</td></tr>
+            <tr><td class="label">When created</td><td>At table creation only — cannot add later</td><td>At any time — add/delete after table creation</td></tr>
+            <tr><td class="label">Consistency</td><td>Strongly consistent reads supported</td><td>Eventually consistent reads only</td></tr>
+            <tr><td class="label">Capacity</td><td>Shares the base table's RCU/WCU</td><td>Has its own separate RCU/WCU provisioning</td></tr>
+            <tr><td class="label">Max per table</td><td>5 LSIs</td><td>20 GSIs</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>LSI must be created at table creation — you cannot add one later. GSI can be added at any time. If the question asks "how to query DynamoDB on a non-primary key attribute" → GSI. If "strongly consistent reads on secondary index" → must use LSI (GSIs don't support strong consistency).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ DYNAMODB ADVANCED ═══════════════════════════ -->
+    <div id="dynamodb-adv" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — DynamoDB</div>
+        <div class="page-title">DynamoDB Advanced Features</div>
+        <div class="page-desc">DAX, Streams, TTL, Global Tables, backups — the features that appear in advanced exam scenarios.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">DAX</div>
+          <div class="concept-meta">
+            <div class="concept-title">DynamoDB Accelerator (DAX) <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">In-memory cache built specifically for DynamoDB — microsecond latency</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>DAX is a fully managed, DynamoDB-compatible in-memory cache. It sits transparently between your application and DynamoDB — no application code changes needed beyond pointing to the DAX cluster endpoint instead of DynamoDB directly.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Reduces DynamoDB read latency from <strong>milliseconds to microseconds</strong> (up to 10x improvement).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DAX is DynamoDB-specific — unlike ElastiCache, it only works with DynamoDB. ElastiCache can cache results from any database.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default cache TTL: <strong>5 minutes</strong>. Can be configured per request.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>DAX handles cache invalidation automatically — but only for item-level reads. If you have complex query caching needs, use ElastiCache instead.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multi-AZ with replication — handles node failures automatically.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>DAX vs ElastiCache for DynamoDB: DAX is a simpler, native drop-in cache for DynamoDB individual item reads (GetItem, Query, Scan). ElastiCache is more flexible and can cache aggregated query results or complex computations. "Reduce DynamoDB latency with minimal code change" → DAX.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">STR</div>
+          <div class="concept-meta">
+            <div class="concept-title">DynamoDB Streams <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Ordered change log — triggers Lambda or replication on table changes</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>DynamoDB Streams captures a time-ordered sequence of item-level modifications (create, update, delete) in a DynamoDB table. Records are retained for <strong>24 hours</strong>.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each stream record contains: the type of modification, a timestamp, and optionally the before/after images of the item.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>View types: <code>KEYS_ONLY</code>, <code>NEW_IMAGE</code>, <code>OLD_IMAGE</code>, <code>NEW_AND_OLD_IMAGES</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Common use cases: <strong>trigger Lambda on data changes</strong>, cross-region replication, audit trails, real-time analytics pipelines, search index updates (Elasticsearch sync).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Streams are consumed by Lambda using an <strong>event source mapping</strong> — Lambda polls the stream and processes records in batches.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Trigger an action every time a DynamoDB item is modified" → DynamoDB Streams + Lambda. "Replicate a DynamoDB table to another region" → DynamoDB Streams or Global Tables. Stream records are available for 24 hours — not long-term storage.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">GTT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Global Tables & TTL <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Multi-region active-active replication and automatic item expiry</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Global Tables</strong>: fully managed multi-region, multi-active replication. Reads and writes can be performed in any region — all replicas sync within typically <strong>under 1 second</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Global Tables require DynamoDB Streams to be enabled — it uses streams internally to propagate changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Conflict resolution: <strong>last-writer-wins</strong> based on timestamps. Applications should avoid writing to the same item from multiple regions simultaneously.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>TTL (Time to Live)</strong>: define a Unix timestamp attribute on items. DynamoDB automatically deletes expired items within <strong>48 hours</strong> of expiration — at no cost.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>TTL is not instant — items expire within 48 hours, not immediately. Filter expired items in your queries if exactness matters.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"DynamoDB available in multiple regions with low-latency reads and writes globally" → Global Tables. "Automatically delete session data after 30 minutes" → TTL attribute. TTL deletions do not consume WCUs — they are free.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">BAK</div>
+          <div class="concept-meta">
+            <div class="concept-title">DynamoDB Backups <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">PITR and on-demand backups — no performance impact</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Point-in-Time Recovery (PITR)</strong>: enables recovery to any second in the last <strong>35 days</strong>. Must be explicitly enabled. Restores to a new table.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>On-demand backups</strong>: full backup at any time, retained indefinitely until deleted. No impact on performance or availability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Backups <strong>do not consume RCU/WCU</strong> — zero performance impact on the table.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Restores always create a new DynamoDB table — not an in-place restore.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>PITR must be explicitly enabled on each table — it is not on by default. "Restore DynamoDB table to a specific point in time from the last month" → PITR. "Long-term backup for compliance" → On-demand backup (indefinite retention).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ OTHER DATABASES ═══════════════════════════ -->
+    <div id="otherdbs" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Specialty Databases</div>
+        <div class="page-title">Other AWS Databases</div>
+        <div class="page-desc">Purpose-built databases for specific data models — DocumentDB, Neptune, Keyspaces, and Timestream.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">DOC</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon DocumentDB <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">MongoDB-compatible document database — Aurora architecture, JSON documents</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>DocumentDB is AWS's fully managed document database compatible with MongoDB. Like Aurora is to MySQL/PostgreSQL, DocumentDB is to MongoDB — it uses the Aurora-style distributed storage architecture under the hood.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Compatible with <strong>MongoDB drivers, tools, and queries</strong> — existing MongoDB apps can migrate with minimal changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Stores JSON documents. Supports flexible schemas, rich queries, and nested data structures.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Storage auto-scales up to <strong>64 TB</strong>. Data replicated <strong>3 times across 3 AZs</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports up to <strong>15 read replicas</strong>. Automatic failover in under 30 seconds.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: content management systems, catalogs, user profiles, applications migrating from MongoDB.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"MongoDB workload on AWS" or "migrate MongoDB to managed AWS service" → DocumentDB. It is NOT DynamoDB — DocumentDB is MongoDB-compatible, DynamoDB is a key-value/document store with a completely different API.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">NEP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Neptune <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Fully managed graph database — optimized for connected data</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Neptune is a fully managed graph database service. It stores data as nodes and edges (relationships), making it exceptionally fast at traversing complex relationships that would be expensive in a relational database.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports two graph query languages: <strong>Gremlin</strong> (Property Graph / TinkerPop) and <strong>SPARQL</strong> (RDF / W3C standard).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Storage: up to <strong>64 TB</strong>, replicated <strong>6 times across 3 AZs</strong>. Up to 15 read replicas.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Optimized for queries with many hops through relationships — e.g. "find all friends of friends who also follow X".</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: <strong>social networks</strong>, recommendation engines, fraud detection, knowledge graphs, network/IT topology, life sciences (drug interactions).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports <strong>Neptune Streams</strong> for change data capture (similar to DynamoDB Streams).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>If the exam mentions graph data, relationships between entities, social networks, or recommendation engines → Neptune. Trigger phrases: "highly connected datasets", "graph traversal", "fraud detection using relationships", "social graph".</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">KSP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Keyspaces (for Apache Cassandra) <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Managed Cassandra-compatible wide-column database</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon Keyspaces is a fully managed, serverless, wide-column database compatible with Apache Cassandra. Existing Cassandra applications can migrate using the Cassandra Query Language (CQL) with minimal changes.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Uses <strong>CQL (Cassandra Query Language)</strong> — compatible with existing Cassandra drivers and tools.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Serverless — tables scale up and down automatically based on traffic. No cluster management.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Data replicated <strong>3 times across multiple AZs</strong>. Single-digit millisecond latency at any scale.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports On-Demand and Provisioned capacity modes (like DynamoDB).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: IoT device data, time-series data, high-velocity industrial telemetry, any Cassandra migration to AWS.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Migrate Apache Cassandra workload to AWS" or "managed Cassandra" → Amazon Keyspaces. Key differentiator from DynamoDB: Keyspaces uses CQL and is designed for Cassandra migrations. DynamoDB uses its own API.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">TMS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon Timestream <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Serverless time-series database — IoT and operational metrics</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Timestream is a fully managed, serverless time-series database optimized for storing and analyzing data that changes over time — sensor readings, metrics, events. It automatically stores recent data in memory and moves older data to cheaper magnetic storage.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Purpose-built for <strong>time-series data</strong> — timestamps are first-class citizens. Faster and cheaper than storing time-series in a relational DB or DynamoDB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Storage tiering</strong>: in-memory tier for recent data (hot), magnetic tier for historical data (cold). Automatic lifecycle policies move data between tiers.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Built-in <strong>time-series analytics functions</strong>: smoothing, approximation, interpolation — no need to write these yourself.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Stores and analyzes <strong>trillions of events per day</strong>. Scales automatically — no cluster management.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: IoT telemetry, application metrics (DevOps), industrial equipment monitoring, financial tick data, clickstream analytics.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Integrates with: Amazon QuickSight (visualization), Apache Kafka, Kinesis, IoT Core, Grafana.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Store IoT sensor data over time" or "analyze metrics that change over time" → Timestream. The key trigger is time-series data — measurements timestamped over a period. Much more efficient than DynamoDB for this pattern.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ PORTS REFERENCE ═══════════════════════════ -->
+    <div id="ports" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Database Ports to Know</div>
+        <div class="page-desc">Every database port number that appears on AWS certification exams — memorize these.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">PRT</div>
+          <div class="concept-meta">
+            <div class="concept-title">Database Port Numbers <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Ports required for Security Group rules and exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Port</th><th>Service</th><th>Notes</th></tr>
+            <tr><td class="label">3306</td><td>MySQL / MariaDB / Aurora MySQL</td><td>All MySQL-compatible engines share port 3306</td></tr>
+            <tr><td class="label">5432</td><td>PostgreSQL / Aurora PostgreSQL</td><td>All PostgreSQL-compatible engines share port 5432</td></tr>
+            <tr><td class="label">1433</td><td>Microsoft SQL Server</td><td>Default SQL Server port — RDS Custom and standard RDS SQL Server</td></tr>
+            <tr><td class="label">1521</td><td>Oracle RDS</td><td>Oracle Database default listener port</td></tr>
+            <tr><td class="label">6379</td><td>Redis / ElastiCache for Redis</td><td>Also used by ElastiCache Serverless for Redis</td></tr>
+            <tr><td class="label">11211</td><td>Memcached / ElastiCache for Memcached</td><td>Default Memcached port</td></tr>
+            <tr><td class="label">27017</td><td>MongoDB / Amazon DocumentDB</td><td>DocumentDB uses the MongoDB wire protocol on this port</td></tr>
+            <tr><td class="label">8182</td><td>Amazon Neptune (HTTP)</td><td>Gremlin WebSocket and SPARQL HTTPS REST endpoint</td></tr>
+            <tr><td class="label">9042</td><td>Apache Cassandra / Amazon Keyspaces</td><td>CQL native transport protocol port</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>The exam tests Security Group configurations for multi-tier architectures. A common question: "What port must the application Security Group allow outbound to the RDS Security Group?" — answer depends on the engine. MySQL → 3306, PostgreSQL → 5432, SQL Server → 1433, Oracle → 1521.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Database Service Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Pick the right database for any exam scenario</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario keywords</th><th>Answer</th></tr>
+            <tr><td>"Relational DB, managed, MySQL/Postgres/SQL Server/Oracle"</td><td class="label">Amazon RDS</td></tr>
+            <tr><td>"Highest availability relational DB, 6 copies across 3 AZs"</td><td class="label">Aurora</td></tr>
+            <tr><td>"MySQL 5x faster, PostgreSQL 3x faster, auto-scaling storage"</td><td class="label">Aurora</td></tr>
+            <tr><td>"Cross-region DR for relational DB, RPO seconds"</td><td class="label">Aurora Global Database</td></tr>
+            <tr><td>"Relational DB, variable/unpredictable traffic, serverless"</td><td class="label">Aurora Serverless</td></tr>
+            <tr><td>"In-memory cache, reduce DB load, sub-millisecond reads"</td><td class="label">ElastiCache (Redis or Memcached)</td></tr>
+            <tr><td>"Cache with persistence, Multi-AZ, sorted sets, pub/sub"</td><td class="label">ElastiCache for Redis</td></tr>
+            <tr><td>"Pure cache, multi-threaded, no persistence needed"</td><td class="label">ElastiCache for Memcached</td></tr>
+            <tr><td>"Serverless NoSQL, single-digit ms, key-value, scale to millions RPS"</td><td class="label">DynamoDB</td></tr>
+            <tr><td>"DynamoDB microsecond latency"</td><td class="label">DynamoDB + DAX</td></tr>
+            <tr><td>"MongoDB on AWS, document database"</td><td class="label">DocumentDB</td></tr>
+            <tr><td>"Graph database, social network, fraud detection, relationships"</td><td class="label">Neptune</td></tr>
+            <tr><td>"Apache Cassandra on AWS, CQL"</td><td class="label">Amazon Keyspaces</td></tr>
+            <tr><td>"IoT metrics, sensor data over time, time-series"</td><td class="label">Timestream</td></tr>
+            <tr><td>"Lambda + RDS, too many connections"</td><td class="label">RDS Proxy</td></tr>
+            <tr><td>"OS access to managed RDS, Oracle BYOL"</td><td class="label">RDS Custom</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

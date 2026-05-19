@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Networking & VPC — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .diagram-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; padding: 1.25rem; }
+  .diagram-label { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .diagram-card svg { width: 100%; height: auto; display: block; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Networking & VPC</h1>
+    </div>
+    <div class="nav-section-label">Foundations</div>
+    <a class="nav-item active" onclick="show('vpc-fundamentals')"><span class="nav-dot" style="background:#58a6ff"></span> VPC, CIDR & Subnets</a>
+    <a class="nav-item" onclick="show('internet-access')"><span class="nav-dot" style="background:#39d0a0"></span> Internet Access</a>
+    <div class="nav-section-label">Security</div>
+    <a class="nav-item" onclick="show('nacl-sg')"><span class="nav-dot" style="background:#ff7b72"></span> NACLs & Security Groups</a>
+    <div class="nav-section-label">Connectivity</div>
+    <a class="nav-item" onclick="show('peering-endpoints')"><span class="nav-dot" style="background:#bc8cff"></span> Peering & Endpoints</a>
+    <a class="nav-item" onclick="show('hybrid')"><span class="nav-dot" style="background:#f0a742"></span> Hybrid — VPN & DX</a>
+    <a class="nav-item" onclick="show('transit')"><span class="nav-dot" style="background:#56d364"></span> Transit Gateway</a>
+    <div class="nav-section-label">Advanced</div>
+    <a class="nav-item" onclick="show('monitoring')"><span class="nav-dot" style="background:#db6eb0"></span> Flow Logs & Mirroring</a>
+    <a class="nav-item" onclick="show('ipv6')"><span class="nav-dot" style="background:#58a6ff"></span> IPv6 & Egress-Only IGW</a>
+    <a class="nav-item" onclick="show('firewall')"><span class="nav-dot" style="background:#ff7b72"></span> Network Firewall</a>
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('costs')"><span class="nav-dot" style="background:#39d0a0"></span> Networking Costs</a>
+    <a class="nav-item" onclick="show('cheatsheet')"><span class="nav-dot" style="background:#f0a742"></span> Cheat Sheet</a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ VPC FUNDAMENTALS ══════════════ -->
+    <div id="vpc-fundamentals" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Foundations</div>
+        <div class="page-title">VPC, CIDR & Subnets</div>
+        <div class="page-desc">The building blocks: IP addressing, Virtual Private Clouds, subnets, and the default VPC that every account starts with.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">CID</div>
+          <div class="concept-meta">
+            <div class="concept-title">CIDR & IP Addressing <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">How IP ranges work in AWS — private vs public, CIDR notation, and reserved addresses</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CIDR (Classless Inter-Domain Routing) notation defines a block of IP addresses. Understanding CIDR is essential because every VPC, subnet, Security Group rule, and NACL rule uses CIDR blocks.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Format: <code>10.0.0.0/16</code> — the <strong>/16</strong> is the prefix length (how many bits are the network part). The remaining bits are for hosts. <code>/16</code> = 65,536 IPs. <code>/24</code> = 256 IPs. <code>/28</code> = 16 IPs (minimum allowed in AWS). <code>/32</code> = 1 IP (single host).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Private IP ranges</strong> (RFC 1918): <code>10.0.0.0/8</code> (10.0.0.0 – 10.255.255.255), <code>172.16.0.0/12</code> (172.16.0.0 – 172.31.255.255), <code>192.168.0.0/16</code> (192.168.0.0 – 192.168.255.255). VPC CIDRs must fall within these ranges.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>VPC CIDR range</strong>: minimum <code>/28</code> (16 IPs), maximum <code>/16</code> (65,536 IPs). You can add up to 5 secondary CIDRs to a VPC after creation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>5 reserved IPs per subnet</strong>: AWS reserves the first 4 and last 1 address in every subnet. Example in <code>10.0.0.0/24</code>: .0 = network, .1 = VPC router, .2 = DNS, .3 = future use, .255 = broadcast. A <code>/24</code> subnet has 251 usable IPs, not 256.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Quick CIDR math: /16 = 65,536 IPs, /24 = 256 IPs, /28 = 16 IPs (minus 5 reserved = 11 usable). The exam often asks "how many usable IPs in a /24 subnet?" → 251 (not 256). CIDRs must not overlap between VPCs you want to peer. <code>0.0.0.0/0</code> = all IPs (used in route tables and SG rules for "anywhere").</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">VPC</div>
+          <div class="concept-meta">
+            <div class="concept-title">VPC Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Your own isolated virtual network inside AWS — the foundation of all networking</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A VPC (Virtual Private Cloud) is a logically isolated section of the AWS cloud where you define your own network — IP ranges, subnets, route tables, gateways, and security rules. Every resource you launch (EC2, RDS, Lambda in VPC) lives inside a VPC.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>VPCs are <strong>regional</strong> — a VPC exists in one AWS region and spans all AZs in that region. Subnets are AZ-specific.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Max <strong>5 VPCs per region</strong> (soft limit, can be increased). Each VPC has a primary CIDR block + up to 4 secondary CIDRs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>VPCs have <strong>DNS resolution</strong> (enabled by default) and <strong>DNS hostnames</strong> (disabled by default in custom VPCs). Enable DNS hostnames to get public DNS names for EC2 instances with public IPs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Default VPC</strong>: every account has one per region. CIDR <code>172.31.0.0/16</code>. Has an Internet Gateway, a default route table routing <code>0.0.0.0/0</code> to the IGW, and public subnets in every AZ (instances get public IPs by default). <strong>Do not delete it</strong> — some AWS services require it.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Custom VPC</strong>: you create it. No IGW by default. No public IPs by default. You control everything — CIDR, subnets, route tables, gateways.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Default VPC = public subnets, IGW attached, instances get public IPs. Custom VPC = private by default, no IGW, no public IPs. "Instance launched in a VPC has no internet access" → check: is there an IGW? Is the route table routing 0.0.0.0/0 to it? Does the instance have a public IP?</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">SUB</div>
+          <div class="concept-meta">
+            <div class="concept-title">Subnets <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Sub-ranges of VPC CIDR, each in one AZ — public vs private</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A subnet is a range of IP addresses within a VPC, confined to a single Availability Zone. Subnets are where you actually place resources. Whether a subnet is "public" or "private" depends on its route table — not a property of the subnet itself.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Public subnet</strong>: has a route table entry sending <code>0.0.0.0/0</code> to an Internet Gateway. Instances with public IPs in this subnet can reach and be reached from the internet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Private subnet</strong>: no route to an IGW. Instances cannot be reached from the internet directly. Outbound internet access (if needed) goes through a NAT Gateway in a public subnet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each subnet is associated with <strong>exactly one route table</strong> and <strong>exactly one NACL</strong>. If not explicitly associated, it uses the VPC's main route table and default NACL.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>A subnet can only be in one AZ — it cannot span multiple AZs. Best practice: create at least 2 subnets per tier (public + private) across 2+ AZs for high availability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Auto-assign public IPv4</strong>: a subnet-level setting. When enabled, instances launched in this subnet automatically get a public IPv4. Typically enabled for public subnets, disabled for private subnets.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"What makes a subnet public?" → a route to an IGW (0.0.0.0/0 → IGW) in its route table, NOT a label. A subnet with no internet route is private regardless of its name. Remember: 5 IPs reserved per subnet (first 4 + last 1).</div>
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-label">▸ Diagram — VPC Architecture Overview</div>
+        <svg viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <!-- Internet -->
+          <rect x="310" y="8" width="160" height="36" rx="18" fill="#ff7b7218" stroke="#ff7b72" stroke-width="1"/>
+          <text x="390" y="31" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="500">Internet</text>
+          <!-- IGW -->
+          <rect x="330" y="62" width="120" height="32" rx="6" fill="#f0a74218" stroke="#f0a742" stroke-width="1"/>
+          <text x="390" y="83" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="11">IGW</text>
+          <line x1="390" y1="44" x2="390" y2="62" stroke="#7d8590" stroke-width="1" stroke-dasharray="4,3"/>
+          <!-- VPC box -->
+          <rect x="30" y="110" width="720" height="295" rx="10" fill="#161b22" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="50" y="134" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="500">VPC  10.0.0.0/16</text>
+          <!-- AZ-A -->
+          <rect x="50" y="148" width="330" height="240" rx="8" fill="#1c233066" stroke="#30363d" stroke-width="1"/>
+          <text x="70" y="170" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="10">AZ-A (us-east-1a)</text>
+          <!-- Public Subnet A -->
+          <rect x="70" y="182" width="290" height="84" rx="6" fill="#39d0a008" stroke="#39d0a0" stroke-width="1"/>
+          <text x="84" y="200" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="10">Public Subnet  10.0.1.0/24</text>
+          <rect x="90" y="212" width="100" height="38" rx="5" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="140" y="236" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 (Web)</text>
+          <rect x="220" y="212" width="120" height="38" rx="5" fill="#161b22" stroke="#f0a742" stroke-width="1"/>
+          <text x="280" y="236" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Sans,sans-serif" font-size="11">NAT Gateway</text>
+          <!-- Private Subnet A -->
+          <rect x="70" y="280" width="290" height="84" rx="6" fill="#bc8cff08" stroke="#bc8cff" stroke-width="1"/>
+          <text x="84" y="298" fill="#bc8cff" font-family="IBM Plex Mono,monospace" font-size="10">Private Subnet  10.0.3.0/24</text>
+          <rect x="90" y="310" width="100" height="38" rx="5" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="140" y="334" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 (App)</text>
+          <rect x="220" y="310" width="100" height="38" rx="5" fill="#161b22" stroke="#56d364" stroke-width="1"/>
+          <text x="270" y="334" text-anchor="middle" fill="#56d364" font-family="IBM Plex Sans,sans-serif" font-size="11">RDS</text>
+          <!-- AZ-B -->
+          <rect x="400" y="148" width="330" height="240" rx="8" fill="#1c233066" stroke="#30363d" stroke-width="1"/>
+          <text x="420" y="170" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="10">AZ-B (us-east-1b)</text>
+          <!-- Public Subnet B -->
+          <rect x="420" y="182" width="290" height="84" rx="6" fill="#39d0a008" stroke="#39d0a0" stroke-width="1"/>
+          <text x="434" y="200" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="10">Public Subnet  10.0.2.0/24</text>
+          <rect x="440" y="212" width="100" height="38" rx="5" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="490" y="236" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 (Web)</text>
+          <rect x="570" y="212" width="120" height="38" rx="5" fill="#161b22" stroke="#f0a742" stroke-width="1"/>
+          <text x="630" y="236" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Sans,sans-serif" font-size="11">NAT Gateway</text>
+          <!-- Private Subnet B -->
+          <rect x="420" y="280" width="290" height="84" rx="6" fill="#bc8cff08" stroke="#bc8cff" stroke-width="1"/>
+          <text x="434" y="298" fill="#bc8cff" font-family="IBM Plex Mono,monospace" font-size="10">Private Subnet  10.0.4.0/24</text>
+          <rect x="440" y="310" width="100" height="38" rx="5" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="490" y="334" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 (App)</text>
+          <rect x="570" y="310" width="100" height="38" rx="5" fill="#161b22" stroke="#56d364" stroke-width="1"/>
+          <text x="620" y="334" text-anchor="middle" fill="#56d364" font-family="IBM Plex Sans,sans-serif" font-size="11">RDS (SB)</text>
+          <!-- Arrows IGW to public subnets -->
+          <line x1="360" y1="94" x2="215" y2="182" stroke="#7d8590" stroke-width="1" marker-end="url(#arrowG)"/>
+          <line x1="420" y1="94" x2="565" y2="182" stroke="#7d8590" stroke-width="1" marker-end="url(#arrowG)"/>
+          <!-- Route table annotations -->
+          <text x="160" y="274" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">RT: 0.0.0.0/0 → IGW</text>
+          <text x="540" y="274" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">RT: 0.0.0.0/0 → IGW</text>
+          <text x="180" y="372" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">RT: 0.0.0.0/0 → NAT GW</text>
+          <text x="530" y="372" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">RT: 0.0.0.0/0 → NAT GW</text>
+          <defs><marker id="arrowG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7d8590"/></marker></defs>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ══════════════ INTERNET ACCESS ══════════════ -->
+    <div id="internet-access" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Internet Access</div>
+        <div class="page-title">IGW, Route Tables, Bastion Hosts & NAT</div>
+        <div class="page-desc">How traffic reaches the internet — and how private instances access the internet without being directly reachable.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">IGW</div>
+          <div class="concept-meta">
+            <div class="concept-title">Internet Gateway & Route Tables <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The gateway between your VPC and the public internet</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>An Internet Gateway (IGW) is a horizontally scaled, redundant, highly available VPC component that allows communication between your VPC and the internet. It performs NAT for instances with public IPv4 addresses.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>One IGW per VPC</strong>. An IGW cannot be attached to multiple VPCs. A VPC can have only one IGW.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For internet access you need: (1) an IGW attached to the VPC, (2) a route table entry <code>0.0.0.0/0 → IGW</code> on the subnet, (3) a public IPv4 or Elastic IP on the instance, (4) Security Group allowing the traffic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Route Tables</strong>: each subnet is associated with one route table. Route tables contain rules (routes) that determine where network traffic is directed. Most specific route wins (longest prefix match). The <strong>local</strong> route (<code>VPC CIDR → local</code>) enables all subnets within the VPC to communicate — it cannot be removed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Best practice: create separate route tables for public subnets (routes to IGW) and private subnets (routes to NAT Gateway or no internet route). Do not use the main route table for public routing.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"EC2 has a public IP but cannot reach the internet" → check 4 things: (1) IGW attached? (2) Route table has 0.0.0.0/0 → IGW? (3) SG allows outbound? (4) NACL allows traffic? Missing any one = no internet. The local route is automatic and ensures intra-VPC communication.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">BST</div>
+          <div class="concept-meta">
+            <div class="concept-title">Bastion Hosts <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Jump box for SSH/RDP access to instances in private subnets</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>A Bastion Host (jump box) is an EC2 instance in a public subnet that you SSH into, and from there SSH into instances in private subnets. It is the only entry point for administrative access to your private infrastructure.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Bastion SG: allow inbound SSH (port 22) <strong>only from your corporate IP or specific CIDR range</strong> — never 0.0.0.0/0 in production.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Private instance SG: allow inbound SSH <strong>only from the Bastion's Security Group or private IP</strong> — not from the internet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Modern alternative: <strong>AWS Systems Manager Session Manager</strong> — provides shell access to private instances without needing a bastion host, SSH keys, or port 22 open. Runs via SSM Agent + IAM role. No public IP needed on the target. Preferred for new architectures.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"SSH into private instances without a bastion" → SSM Session Manager (no port 22, no bastion, no public IP). "Traditional jump box" → Bastion in public subnet. The exam increasingly favors Session Manager over bastion hosts for security reasons.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">NAT</div>
+          <div class="concept-meta">
+            <div class="concept-title">NAT Gateway vs NAT Instance <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Allow private instances to reach the internet for updates — without being reachable from the internet</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>NAT (Network Address Translation) lets instances in private subnets initiate outbound internet connections (software updates, API calls) while preventing inbound connections from the internet. NAT Gateway is the managed solution; NAT Instance is the legacy self-managed approach.</p>
+          <table class="compare-table">
+            <tr><th></th><th>NAT Gateway (managed)</th><th>NAT Instance (legacy)</th></tr>
+            <tr><td class="label">Managed by</td><td>AWS — fully managed, HA within AZ</td><td>You — an EC2 instance you manage and patch</td></tr>
+            <tr><td class="label">Bandwidth</td><td>Up to 100 Gbps (auto-scales)</td><td>Depends on EC2 instance type</td></tr>
+            <tr><td class="label">Availability</td><td>Redundant within one AZ. Deploy one per AZ for multi-AZ HA.</td><td>Single instance — you manage failover with scripts</td></tr>
+            <tr><td class="label">Security Groups</td><td>Not associated with SGs. Managed by AWS.</td><td>Must manage SGs manually. Must disable Source/Dest Check.</td></tr>
+            <tr><td class="label">Elastic IP</td><td>Assigned at creation, cannot change</td><td>Can use EIP, can be detached/attached</td></tr>
+            <tr><td class="label">Cost</td><td>~$0.045/hr + data processing ($0.045/GB)</td><td>EC2 instance cost (can be cheaper with small instance types)</td></tr>
+            <tr><td class="label">Use case</td><td>All new architectures — always prefer NAT Gateway</td><td>Legacy. Only use for extreme cost optimization.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>NAT Gateway is placed in a <strong>public subnet</strong> (needs IGW access). Private subnet route table: <code>0.0.0.0/0 → NAT Gateway</code>. Traffic flow: Private instance → NAT Gateway (public subnet) → IGW → internet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>NAT Gateway is AZ-specific</strong>. For HA: deploy one NAT Gateway per AZ, each in a public subnet of that AZ, with the corresponding private subnet routing through its own AZ's NAT GW.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Regional NAT Gateway</strong>: AWS now supports a single NAT Gateway that can serve multiple AZs — but for maximum HA, one per AZ is still recommended.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Private instances need internet for OS updates but must not be reachable from the internet" → NAT Gateway in public subnet. Always prefer NAT Gateway over NAT Instance. NAT Instance requires disabling Source/Dest Check — this is a classic exam detail. For HA: one NAT Gateway per AZ.</div>
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-label">▸ Diagram — Internet Access: Public vs Private Subnet Traffic Flow</div>
+        <svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <defs>
+            <marker id="arwG2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#39d0a0"/></marker>
+            <marker id="arwR2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ff7b72"/></marker>
+            <marker id="arwM2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7d8590"/></marker>
+          </defs>
+          <!-- Internet cloud -->
+          <rect x="600" y="20" width="150" height="40" rx="20" fill="#ff7b7215" stroke="#ff7b72" stroke-width="1"/>
+          <text x="675" y="45" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="11">Internet</text>
+          <!-- IGW -->
+          <rect x="610" y="90" width="130" height="34" rx="6" fill="#f0a74215" stroke="#f0a742" stroke-width="1"/>
+          <text x="675" y="112" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="11">Internet Gateway</text>
+          <line x1="675" y1="60" x2="675" y2="90" stroke="#7d8590" stroke-width="1" stroke-dasharray="4,3"/>
+          <!-- PUBLIC PATH (top) -->
+          <text x="30" y="26" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600">PUBLIC SUBNET PATH</text>
+          <rect x="30" y="38" width="140" height="40" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="100" y="63" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 (Public IP)</text>
+          <text x="100" y="90" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">10.0.1.10 + 54.x.x.x</text>
+          <!-- Arrow: Public EC2 → IGW -->
+          <line x1="170" y1="58" x2="608" y2="104" stroke="#39d0a0" stroke-width="1.5" marker-end="url(#arwG2)"/>
+          <text x="380" y="68" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">Direct: 0.0.0.0/0 → IGW</text>
+          <!-- Arrow: Internet → Public EC2 (bidirectional) -->
+          <line x1="608" y1="114" x2="170" y2="68" stroke="#39d0a0" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arwG2)"/>
+          <text x="380" y="100" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">↕ Bidirectional</text>
+          <!-- PRIVATE PATH (bottom) -->
+          <text x="30" y="156" fill="#bc8cff" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600">PRIVATE SUBNET PATH</text>
+          <rect x="30" y="168" width="140" height="40" rx="6" fill="#161b22" stroke="#bc8cff" stroke-width="1"/>
+          <text x="100" y="193" text-anchor="middle" fill="#bc8cff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 (Private only)</text>
+          <text x="100" y="220" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">10.0.3.10 (no public IP)</text>
+          <!-- NAT Gateway -->
+          <rect x="300" y="168" width="140" height="40" rx="6" fill="#f0a74215" stroke="#f0a742" stroke-width="1"/>
+          <text x="370" y="193" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Sans,sans-serif" font-size="11">NAT Gateway</text>
+          <text x="370" y="220" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">(in public subnet)</text>
+          <!-- Arrow: Private EC2 → NAT -->
+          <line x1="170" y1="188" x2="298" y2="188" stroke="#39d0a0" stroke-width="1.5" marker-end="url(#arwG2)"/>
+          <text x="234" y="182" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">0.0.0.0/0 → NAT</text>
+          <!-- Arrow: NAT → IGW -->
+          <line x1="440" y1="188" x2="608" y2="118" stroke="#39d0a0" stroke-width="1.5" marker-end="url(#arwG2)"/>
+          <text x="540" y="148" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">→ IGW → Internet</text>
+          <!-- BLOCKED inbound -->
+          <rect x="30" y="260" width="540" height="36" rx="6" fill="#ff7b7208" stroke="#ff7b72" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="300" y="283" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="11">✕ Internet → Private EC2: BLOCKED (no public IP, no inbound route)</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ══════════════ NACL & SECURITY GROUPS ══════════════ -->
+    <div id="nacl-sg" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Network Security</div>
+        <div class="page-title">NACLs & Security Groups</div>
+        <div class="page-desc">Two firewall layers — stateful vs stateless, allow vs deny, instance-level vs subnet-level. The most-tested networking comparison.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Security Groups vs NACLs <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">The #1 most-tested VPC comparison on every AWS exam</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>Security Group</th><th>Network ACL (NACL)</th></tr>
+            <tr><td class="label">Operates at</td><td>Instance level (ENI)</td><td>Subnet level</td></tr>
+            <tr><td class="label">Stateful / Stateless</td><td><strong>Stateful</strong> — if inbound is allowed, outbound response is automatically allowed</td><td><strong>Stateless</strong> — must explicitly allow both inbound AND outbound traffic separately</td></tr>
+            <tr><td class="label">Rule types</td><td>Allow rules ONLY — no deny rules</td><td>Allow AND Deny rules</td></tr>
+            <tr><td class="label">Rule evaluation</td><td>All rules evaluated together (union of all allows)</td><td>Rules evaluated in numbered order — first match wins, then stops evaluating</td></tr>
+            <tr><td class="label">Default behavior</td><td>All inbound denied, all outbound allowed</td><td>Default NACL: all traffic allowed in/out. Custom NACL: all traffic denied in/out.</td></tr>
+            <tr><td class="label">Applied to</td><td>Manually assigned to instances. Instance can have multiple SGs.</td><td>Automatically applied to all instances in the subnet. One NACL per subnet.</td></tr>
+            <tr><td class="label">Ephemeral ports</td><td>Not relevant (stateful — return traffic auto-allowed)</td><td>Must allow ephemeral port range (1024–65535) for return traffic in outbound rules</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Ephemeral ports and NACLs</strong>: when a client connects to a server, the server responds on a random high port (1024–65535) called an ephemeral port. Because NACLs are stateless, the outbound NACL must allow ephemeral ports or the response will be blocked. SGs handle this automatically (stateful).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>NACL rule numbering</strong>: lower number = higher priority. Rule 100 is evaluated before Rule 200. The <code>*</code> (asterisk) rule is the implicit deny-all at the end — matches only if no numbered rule matched. Best practice: number rules in increments of 100 (100, 200, 300) to leave room for insertions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Blocking a specific IP</strong>: you CANNOT block a specific IP with a Security Group (no deny rules). Use a <strong>NACL deny rule</strong> to block traffic from a specific IP address or CIDR range.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Block a specific IP address" → NACL (deny rule). Security Groups cannot deny. "Connection timeout" → SG is blocking (no response received). "Connection refused" → app is rejecting (traffic reached the instance). NACLs = stateless (must allow ephemeral ports for return traffic). This comparison appears on EVERY AWS exam.</div>
+          <div class="warn-box"><strong>CLASSIC TRAP</strong>Default NACL allows ALL traffic. Custom NACL denies ALL traffic. If you create a new NACL and associate it with a subnet, all traffic will be blocked until you add allow rules.</div>
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-label">▸ Diagram — Two Firewall Layers: NACL (Subnet) → Security Group (Instance)</div>
+        <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <defs>
+            <marker id="arw3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/></marker>
+            <marker id="arw3r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ff7b72"/></marker>
+          </defs>
+          <!-- Source -->
+          <rect x="20" y="100" width="110" height="50" rx="25" fill="#ff7b7215" stroke="#ff7b72" stroke-width="1"/>
+          <text x="75" y="130" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="11">Client</text>
+          <!-- NACL wall -->
+          <rect x="185" y="30" width="8" height="220" rx="2" fill="#f0a74240"/>
+          <rect x="200" y="30" width="160" height="220" rx="8" fill="#f0a74208" stroke="#f0a742" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="280" y="54" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600">NACL</text>
+          <text x="280" y="70" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">Subnet boundary</text>
+          <text x="280" y="100" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="10">✓ Stateless</text>
+          <text x="280" y="116" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="10">✓ Allow + Deny</text>
+          <text x="280" y="132" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="10">✓ Rules: numbered order</text>
+          <text x="280" y="148" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="10">✓ 1 per subnet</text>
+          <text x="280" y="174" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="9">Must allow ephemeral</text>
+          <text x="280" y="188" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="9">ports (1024-65535)</text>
+          <text x="280" y="204" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="9">for return traffic!</text>
+          <!-- SG wall -->
+          <rect x="420" y="30" width="8" height="220" rx="2" fill="#58a6ff40"/>
+          <rect x="435" y="30" width="160" height="220" rx="8" fill="#58a6ff08" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="515" y="54" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600">Security Group</text>
+          <text x="515" y="70" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">Instance (ENI) boundary</text>
+          <text x="515" y="100" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">✓ Stateful</text>
+          <text x="515" y="116" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">✓ Allow only (no deny)</text>
+          <text x="515" y="132" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">✓ Rules: all evaluated</text>
+          <text x="515" y="148" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">✓ Up to 5 per instance</text>
+          <text x="515" y="174" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">Return traffic auto-</text>
+          <text x="515" y="188" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">allowed (stateful)</text>
+          <!-- EC2 -->
+          <rect x="650" y="100" width="110" height="50" rx="6" fill="#161b22" stroke="#56d364" stroke-width="1"/>
+          <text x="705" y="130" text-anchor="middle" fill="#56d364" font-family="IBM Plex Mono,monospace" font-size="11">EC2</text>
+          <!-- Arrows -->
+          <line x1="130" y1="118" x2="183" y2="118" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arw3)"/>
+          <line x1="362" y1="118" x2="418" y2="118" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arw3)"/>
+          <line x1="597" y1="118" x2="648" y2="118" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arw3)"/>
+          <!-- Labels on arrows -->
+          <text x="157" y="108" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="8">IN</text>
+          <text x="390" y="108" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="8">IN</text>
+          <text x="625" y="108" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="8">IN</text>
+          <!-- Return arrows -->
+          <line x1="648" y1="140" x2="597" y2="140" stroke="#ff7b72" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arw3r)"/>
+          <line x1="418" y1="140" x2="362" y2="140" stroke="#ff7b72" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arw3r)"/>
+          <line x1="183" y1="140" x2="130" y2="140" stroke="#ff7b72" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arw3r)"/>
+          <text x="157" y="155" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="8">OUT</text>
+          <text x="390" y="155" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="8">OUT</text>
+          <text x="625" y="155" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="8">OUT</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ══════════════ PEERING & ENDPOINTS ══════════════ -->
+    <div id="peering-endpoints" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — VPC Connectivity</div>
+        <div class="page-title">VPC Peering & VPC Endpoints</div>
+        <div class="page-desc">Connect VPCs together and access AWS services privately — without going over the internet.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">PER</div>
+          <div class="concept-meta">
+            <div class="concept-title">VPC Peering <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Private network connection between two VPCs — same or different accounts/regions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>VPC Peering creates a private network connection between two VPCs, allowing instances in both to communicate using private IP addresses as if they were in the same network. Traffic stays on the AWS backbone — never traverses the public internet.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Non-transitive</strong>: if VPC A peers with VPC B, and VPC B peers with VPC C, A and C can <strong>NOT</strong> communicate through B. You must create a separate peering connection between A and C.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CIDRs must NOT overlap</strong>: if VPC A uses <code>10.0.0.0/16</code> and VPC B also uses <code>10.0.0.0/16</code>, they cannot peer. Plan CIDRs carefully across your organization.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works <strong>cross-region</strong> and <strong>cross-account</strong>. The owner of the accepter VPC must accept the peering request.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Route table update required</strong>: after creating the peering connection, you must add a route in each VPC's route table pointing the other VPC's CIDR to the peering connection ID. Security Groups in the peer VPC can be referenced cross-account.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>VPC peering scales well for a small number of VPCs. For many VPCs (10+), consider <strong>Transit Gateway</strong> instead.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>VPC Peering is NOT transitive — this is the #1 peering exam question. Overlapping CIDRs = cannot peer. "10 VPCs that all need to communicate" → Transit Gateway (not 45 peering connections). Always update route tables on BOTH sides after creating a peering connection.</div>
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-label">▸ Diagram — VPC Peering (Mesh) vs Transit Gateway (Hub-and-Spoke)</div>
+        <svg viewBox="0 0 780 290" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <!-- LEFT: VPC Peering Mesh -->
+          <text x="180" y="22" text-anchor="middle" fill="#bc8cff" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600">VPC Peering (Mesh)</text>
+          <text x="180" y="38" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">4 VPCs = 6 peering connections</text>
+          <!-- 4 VPC boxes in a square -->
+          <rect x="110" y="55" width="80" height="40" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="150" y="80" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC A</text>
+          <rect x="260" y="55" width="80" height="40" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="300" y="80" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC B</text>
+          <rect x="110" y="175" width="80" height="40" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="150" y="200" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC C</text>
+          <rect x="260" y="175" width="80" height="40" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="300" y="200" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC D</text>
+          <!-- All 6 connections (mesh) -->
+          <line x1="190" y1="75" x2="260" y2="75" stroke="#bc8cff" stroke-width="1"/>
+          <line x1="190" y1="195" x2="260" y2="195" stroke="#bc8cff" stroke-width="1"/>
+          <line x1="150" y1="95" x2="150" y2="175" stroke="#bc8cff" stroke-width="1"/>
+          <line x1="300" y1="95" x2="300" y2="175" stroke="#bc8cff" stroke-width="1"/>
+          <line x1="190" y1="90" x2="260" y2="180" stroke="#bc8cff" stroke-width="1"/>
+          <line x1="190" y1="180" x2="260" y2="90" stroke="#bc8cff" stroke-width="1"/>
+          <!-- Non-transitive warning -->
+          <rect x="80" y="238" width="260" height="36" rx="6" fill="#ff7b7208" stroke="#ff7b72" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="210" y="261" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="10">✕ Non-transitive! N×(N-1)/2 links</text>
+          <!-- Divider -->
+          <line x1="395" y1="20" x2="395" y2="278" stroke="#30363d" stroke-width="1" stroke-dasharray="6,4"/>
+          <!-- RIGHT: Transit Gateway Hub-and-Spoke -->
+          <text x="590" y="22" text-anchor="middle" fill="#56d364" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600">Transit Gateway (Hub)</text>
+          <text x="590" y="38" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">4 VPCs = 4 attachments. Transitive!</text>
+          <!-- TGW center hub -->
+          <rect x="545" y="110" width="90" height="50" rx="25" fill="#56d36420" stroke="#56d364" stroke-width="1.5"/>
+          <text x="590" y="140" text-anchor="middle" fill="#56d364" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600">TGW</text>
+          <!-- 4 VPCs around hub -->
+          <rect x="440" y="55" width="80" height="36" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="480" y="78" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC A</text>
+          <rect x="660" y="55" width="80" height="36" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="700" y="78" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC B</text>
+          <rect x="440" y="180" width="80" height="36" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="480" y="203" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC C</text>
+          <rect x="660" y="180" width="80" height="36" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="700" y="203" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC D</text>
+          <!-- Spokes -->
+          <line x1="510" y1="91" x2="555" y2="115" stroke="#56d364" stroke-width="1.5"/>
+          <line x1="670" y1="91" x2="625" y2="115" stroke="#56d364" stroke-width="1.5"/>
+          <line x1="510" y1="180" x2="555" y2="155" stroke="#56d364" stroke-width="1.5"/>
+          <line x1="670" y1="180" x2="625" y2="155" stroke="#56d364" stroke-width="1.5"/>
+          <!-- Also connects VPN/DX -->
+          <rect x="540" y="238" width="100" height="36" rx="6" fill="#f0a74215" stroke="#f0a742" stroke-width="1"/>
+          <text x="590" y="261" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="10">VPN / DX</text>
+          <line x1="590" y1="160" x2="590" y2="238" stroke="#f0a742" stroke-width="1" stroke-dasharray="4,3"/>
+        </svg>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">EPT</div>
+          <div class="concept-meta">
+            <div class="concept-title">VPC Endpoints <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Access AWS services privately from your VPC — no IGW, NAT, VPN, or internet needed</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>VPC Endpoints allow you to privately connect your VPC to supported AWS services without leaving the AWS network. Traffic between your VPC and the service does not traverse the internet — it stays on the AWS backbone.</p>
+          <table class="compare-table">
+            <tr><th></th><th>Gateway Endpoint</th><th>Interface Endpoint (PrivateLink)</th></tr>
+            <tr><td class="label">Supported services</td><td><strong>S3 and DynamoDB only</strong></td><td>Most other AWS services (CloudWatch, KMS, SQS, SNS, EC2 API, Secrets Manager, etc.) + customer/partner services</td></tr>
+            <tr><td class="label">How it works</td><td>A target in your route table. Add a route <code>S3 prefix list → vpce-xxx</code>.</td><td>Deploys an ENI (Elastic Network Interface) with a private IP in your subnet. DNS resolves the service to this private IP.</td></tr>
+            <tr><td class="label">Cost</td><td><strong>Free</strong></td><td>~$0.01/hr per AZ + $0.01/GB data processed</td></tr>
+            <tr><td class="label">Security</td><td>Controlled by VPC Endpoint Policies (resource-based JSON policy)</td><td>Controlled by Security Groups on the ENI + Endpoint Policies</td></tr>
+            <tr><td class="label">Networking</td><td>Does not use an ENI. Uses route table entries.</td><td>Uses a private ENI in each subnet. Supports DNS (Private DNS resolves the public service endpoint to the private IP).</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Gateway Endpoints are preferred for S3 and DynamoDB — free, simple, and fast. Interface Endpoints are required for everything else.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>PrivateLink</strong>: the underlying technology behind Interface Endpoints. Also allows you to expose your own service from one VPC to another — the consumer VPC creates an Interface Endpoint to your Network Load Balancer (NLB) without VPC peering.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>S3 Interface Endpoint</strong>: you CAN also create an Interface Endpoint for S3 (for use cases requiring a private IP in the subnet, like on-premises access via Direct Connect). But for standard VPC → S3 traffic, Gateway Endpoint is preferred (free).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Lambda in VPC needs to call S3 without internet" → S3 Gateway Endpoint (free) OR NAT Gateway (costs money). Gateway Endpoint is preferred. "Access SQS privately from a VPC" → Interface Endpoint (SQS doesn't support Gateway). "Expose your service to another VPC without peering or internet" → PrivateLink (NLB + Interface Endpoint).</div>
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-label">▸ Diagram — VPC Endpoints: Gateway (S3/DynamoDB) vs Interface (PrivateLink)</div>
+        <svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <defs>
+            <marker id="arw6g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#39d0a0"/></marker>
+            <marker id="arw6b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/></marker>
+          </defs>
+
+          <!-- TOP: Gateway Endpoint -->
+          <text x="30" y="22" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600">Gateway Endpoint (S3 / DynamoDB)</text>
+          <text x="30" y="38" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">FREE — route table entry, no ENI</text>
+
+          <!-- VPC box top -->
+          <rect x="30" y="50" width="500" height="100" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+          <text x="46" y="70" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">VPC — Private Subnet</text>
+          <!-- EC2 -->
+          <rect x="55" y="82" width="110" height="38" rx="5" fill="#0d1117" stroke="#58a6ff" stroke-width="1"/>
+          <text x="110" y="106" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 / Lambda</text>
+          <!-- Route Table -->
+          <rect x="230" y="78" width="140" height="46" rx="5" fill="#0d1117" stroke="#39d0a0" stroke-width="1"/>
+          <text x="300" y="96" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="10">Route Table</text>
+          <text x="300" y="114" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">S3 prefix → vpce-xxx</text>
+          <!-- Gateway Endpoint marker -->
+          <rect x="440" y="78" width="70" height="46" rx="5" fill="#39d0a020" stroke="#39d0a0" stroke-width="1.5"/>
+          <text x="475" y="96" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">Gateway</text>
+          <text x="475" y="110" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">Endpoint</text>
+          <!-- S3 -->
+          <rect x="580" y="72" width="170" height="56" rx="8" fill="#f0a74210" stroke="#f0a742" stroke-width="1"/>
+          <text x="665" y="96" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="500">Amazon S3</text>
+          <text x="665" y="114" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">or DynamoDB</text>
+          <!-- Arrows top -->
+          <line x1="165" y1="101" x2="228" y2="101" stroke="#39d0a0" stroke-width="1.5" marker-end="url(#arw6g)"/>
+          <line x1="370" y1="101" x2="438" y2="101" stroke="#39d0a0" stroke-width="1.5" marker-end="url(#arw6g)"/>
+          <line x1="510" y1="101" x2="578" y2="101" stroke="#39d0a0" stroke-width="1.5" marker-end="url(#arw6g)"/>
+          <!-- Label -->
+          <text x="545" y="68" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">AWS backbone</text>
+          <text x="545" y="80" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="9">(no internet)</text>
+
+          <!-- Divider -->
+          <line x1="30" y1="175" x2="750" y2="175" stroke="#30363d" stroke-width="1" stroke-dasharray="6,4"/>
+
+          <!-- BOTTOM: Interface Endpoint -->
+          <text x="30" y="198" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600">Interface Endpoint (PrivateLink)</text>
+          <text x="30" y="214" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">~$0.01/hr/AZ + $0.01/GB — ENI with private IP in your subnet</text>
+
+          <!-- VPC box bottom -->
+          <rect x="30" y="226" width="500" height="100" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+          <text x="46" y="246" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">VPC — Private Subnet</text>
+          <!-- EC2 -->
+          <rect x="55" y="258" width="110" height="38" rx="5" fill="#0d1117" stroke="#58a6ff" stroke-width="1"/>
+          <text x="110" y="282" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Sans,sans-serif" font-size="11">EC2 / Lambda</text>
+          <!-- ENI -->
+          <rect x="260" y="254" width="100" height="46" rx="5" fill="#58a6ff15" stroke="#58a6ff" stroke-width="1.5"/>
+          <text x="310" y="272" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">ENI</text>
+          <text x="310" y="290" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">10.0.3.50</text>
+          <!-- Interface Endpoint marker -->
+          <rect x="420" y="254" width="90" height="46" rx="5" fill="#58a6ff15" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="465" y="272" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="9">Interface</text>
+          <text x="465" y="286" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="9">Endpoint</text>
+          <!-- AWS Service -->
+          <rect x="580" y="248" width="170" height="56" rx="8" fill="#bc8cff10" stroke="#bc8cff" stroke-width="1"/>
+          <text x="665" y="272" text-anchor="middle" fill="#bc8cff" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="500">SQS / KMS / SNS</text>
+          <text x="665" y="290" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">CloudWatch, Secrets Mgr…</text>
+          <!-- Arrows bottom -->
+          <line x1="165" y1="277" x2="258" y2="277" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arw6b)"/>
+          <line x1="360" y1="277" x2="418" y2="277" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arw6b)"/>
+          <line x1="510" y1="277" x2="578" y2="277" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arw6b)"/>
+          <!-- SG label on ENI -->
+          <text x="310" y="248" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="8">+ Security Group</text>
+          <!-- Label -->
+          <text x="545" y="244" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="9">AWS backbone</text>
+          <text x="545" y="256" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="9">(no internet)</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ══════════════ HYBRID CONNECTIVITY ══════════════ -->
+    <div id="hybrid" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Hybrid Connectivity</div>
+        <div class="page-title">Site-to-Site VPN & Direct Connect</div>
+        <div class="page-desc">Connect your on-premises network to AWS — encrypted VPN over the internet or dedicated private fiber.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">VPN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Site-to-Site VPN <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Encrypted IPsec tunnel over the public internet — quick to set up, variable performance</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Site-to-Site VPN creates an encrypted IPsec tunnel between your on-premises network and your AWS VPC. Traffic travels over the public internet but is encrypted end-to-end. Fast to provision (minutes), low cost, but subject to internet performance variability.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>AWS side: Virtual Private Gateway (VGW)</strong> — a gateway attached to your VPC that terminates the VPN connection. Alternatively, attach to a Transit Gateway instead.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>On-premises side: Customer Gateway (CGW)</strong> — represents your on-premises VPN device (router or software VPN appliance). You provide the public IP of your device to AWS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each VPN connection has <strong>two IPsec tunnels</strong> for redundancy — each terminates at a different AWS endpoint in different AZs. If one tunnel fails, traffic fails over to the other.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Route propagation</strong>: VGW can automatically propagate on-premises routes to VPC route tables via BGP. Or you can use static routes if your on-premises device doesn't support BGP.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Max throughput: ~1.25 Gbps per VPN tunnel. For higher throughput, use multiple VPN connections with ECMP (Equal Cost Multi-Path) on a Transit Gateway — not on a VGW.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Setup time: <strong>minutes to hours</strong>. Cost: ~$0.05/hr per VPN connection + data transfer.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Quick, encrypted connection to AWS from on-premises" → Site-to-Site VPN. "Backup path when Direct Connect fails" → VPN over internet. VGW = AWS side. CGW = on-premises side. Two tunnels per connection for HA. Max 1.25 Gbps per tunnel. ECMP for higher throughput requires Transit Gateway.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">DX</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Direct Connect (DX) <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Dedicated private fiber connection — consistent bandwidth, low latency, no internet</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Direct Connect provides a dedicated, private network connection from your on-premises data centre to AWS. Traffic does NOT traverse the public internet — it uses dedicated fiber through an AWS Direct Connect Partner facility. Higher bandwidth, lower latency, and consistent performance compared to VPN.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Connection speeds</strong>: <strong>Dedicated</strong> connections: 1 Gbps, 10 Gbps, or 100 Gbps. <strong>Hosted</strong> connections (via partners): 50 Mbps to 10 Gbps.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Virtual Interfaces (VIFs)</strong>: <strong>Public VIF</strong> — access AWS public services (S3, DynamoDB) over DX. <strong>Private VIF</strong> — access VPC resources over DX. <strong>Transit VIF</strong> — access VPCs via a Transit Gateway over DX.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Direct Connect Gateway</strong>: a global resource that connects one DX connection to multiple VPCs across <strong>different regions</strong>. Without it, a DX connection reaches only VPCs in the same region. With DX Gateway: one physical connection → access VPCs in any region.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Setup time: 1+ months</strong>. A physical fiber cable must be installed from your data centre to the nearest DX location. This is NOT quick like VPN.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Not encrypted by default</strong>. Traffic is private (dedicated fiber) but not encrypted. For encryption over DX: establish a <strong>Site-to-Site VPN over the DX connection</strong> (IPsec on top of DX). This gives you dedicated + encrypted.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DX is NOT inherently HA</strong>: a single DX connection is a single point of failure. For HA: (1) two DX connections at different DX locations, or (2) one DX + Site-to-Site VPN as backup.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>DX SiteLink</strong>: send data between two DX locations via the AWS backbone without going through a VPC — useful for connecting two on-premises data centres via AWS.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Consistent, high-bandwidth, low-latency private connection to AWS" → Direct Connect. "DX takes 1+ month to provision" — use VPN as interim. "DX is not encrypted" → add VPN over DX for encryption. "Access VPCs in multiple regions from one DX" → DX Gateway. "HA for hybrid connectivity" → two DX or DX + VPN backup. Single DX is a single point of failure — always pair it.</div>
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-label">▸ Diagram — Hybrid Connectivity: On-Premises to AWS</div>
+        <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <defs>
+            <marker id="arw5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7d8590"/></marker>
+          </defs>
+          <!-- On-Premises -->
+          <rect x="20" y="60" width="170" height="200" rx="10" fill="#1c2330" stroke="#ff7b72" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="105" y="85" text-anchor="middle" fill="#ff7b72" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600">ON-PREMISES</text>
+          <rect x="45" y="100" width="120" height="34" rx="5" fill="#161b22" stroke="#7d8590" stroke-width="1"/>
+          <text x="105" y="122" text-anchor="middle" fill="#e6edf3" font-family="IBM Plex Sans,sans-serif" font-size="10">Servers / Apps</text>
+          <rect x="45" y="150" width="120" height="34" rx="5" fill="#161b22" stroke="#f0a742" stroke-width="1"/>
+          <text x="105" y="172" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="10">CGW Device</text>
+          <text x="105" y="200" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">(Customer Gateway)</text>
+          <!-- VPN Path (top) -->
+          <rect x="240" y="60" width="180" height="50" rx="8" fill="#bc8cff10" stroke="#bc8cff" stroke-width="1"/>
+          <text x="330" y="80" text-anchor="middle" fill="#bc8cff" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="500">Site-to-Site VPN</text>
+          <text x="330" y="96" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">IPsec over internet (encrypted)</text>
+          <line x1="165" y1="160" x2="240" y2="85" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arw5)"/>
+          <!-- DX Path (bottom) -->
+          <rect x="240" y="170" width="180" height="50" rx="8" fill="#58a6ff10" stroke="#58a6ff" stroke-width="1"/>
+          <text x="330" y="190" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="500">Direct Connect</text>
+          <text x="330" y="206" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="9">Dedicated fiber (NOT encrypted)</text>
+          <line x1="165" y1="175" x2="240" y2="195" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arw5)"/>
+          <!-- VGW / TGW -->
+          <rect x="480" y="60" width="100" height="40" rx="6" fill="#f0a74215" stroke="#f0a742" stroke-width="1"/>
+          <text x="530" y="85" text-anchor="middle" fill="#f0a742" font-family="IBM Plex Mono,monospace" font-size="10">VGW</text>
+          <rect x="480" y="120" width="100" height="40" rx="6" fill="#56d36415" stroke="#56d364" stroke-width="1"/>
+          <text x="530" y="145" text-anchor="middle" fill="#56d364" font-family="IBM Plex Mono,monospace" font-size="10">Transit GW</text>
+          <line x1="420" y1="85" x2="478" y2="80" stroke="#bc8cff" stroke-width="1" marker-end="url(#arw5)"/>
+          <line x1="420" y1="195" x2="478" y2="140" stroke="#58a6ff" stroke-width="1" marker-end="url(#arw5)"/>
+          <!-- DX Gateway -->
+          <rect x="480" y="190" width="100" height="40" rx="6" fill="#58a6ff15" stroke="#58a6ff" stroke-width="1"/>
+          <text x="530" y="215" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="9">DX Gateway</text>
+          <text x="530" y="245" text-anchor="middle" fill="#7d8590" font-family="IBM Plex Mono,monospace" font-size="8">(multi-region)</text>
+          <line x1="420" y1="200" x2="478" y2="210" stroke="#58a6ff" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arw5)"/>
+          <!-- VPCs -->
+          <rect x="640" y="50" width="110" height="36" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="695" y="73" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC A</text>
+          <rect x="640" y="100" width="110" height="36" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="695" y="123" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC B</text>
+          <rect x="640" y="150" width="110" height="36" rx="6" fill="#161b22" stroke="#58a6ff" stroke-width="1"/>
+          <text x="695" y="173" text-anchor="middle" fill="#58a6ff" font-family="IBM Plex Mono,monospace" font-size="10">VPC C</text>
+          <line x1="580" y1="80" x2="638" y2="68" stroke="#7d8590" stroke-width="1" marker-end="url(#arw5)"/>
+          <line x1="580" y1="140" x2="638" y2="118" stroke="#7d8590" stroke-width="1" marker-end="url(#arw5)"/>
+          <line x1="580" y1="145" x2="638" y2="168" stroke="#7d8590" stroke-width="1" marker-end="url(#arw5)"/>
+          <!-- HA note -->
+          <rect x="210" y="270" width="360" height="34" rx="6" fill="#39d0a008" stroke="#39d0a0" stroke-width="1"/>
+          <text x="390" y="292" text-anchor="middle" fill="#39d0a0" font-family="IBM Plex Mono,monospace" font-size="10">HA: DX (primary) + VPN (backup) — or two DX connections</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ══════════════ TRANSIT GATEWAY ══════════════ -->
+    <div id="transit" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Hub Networking</div>
+        <div class="page-title">AWS Transit Gateway</div>
+        <div class="page-desc">Regional hub for interconnecting VPCs, VPNs, and Direct Connect — replaces complex peering meshes.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">TGW</div>
+          <div class="concept-meta">
+            <div class="concept-title">Transit Gateway <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hub-and-spoke network — connect thousands of VPCs and on-premises through a single gateway</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Transit Gateway acts as a regional network hub. You attach VPCs, VPN connections, and Direct Connect gateways to a single Transit Gateway. All attached networks can communicate through the hub — replacing the need for complex VPC peering meshes.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Transitive routing</strong>: unlike VPC peering, Transit Gateway supports transitive connectivity. VPC A ↔ TGW ↔ VPC B = A and B can communicate via the TGW without a direct connection between them.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Attachments</strong>: VPCs, Site-to-Site VPN connections, Direct Connect Gateways, other Transit Gateways (for inter-region peering), Connect (SD-WAN/third-party appliances).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Route tables</strong>: TGW has its own route tables (separate from VPC route tables). You can create multiple TGW route tables to segment traffic — e.g. isolate production VPCs from dev VPCs even though they share the same TGW.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Inter-region peering</strong>: Transit Gateways in different regions can be peered. Traffic flows over the AWS backbone — not the internet. Useful for global network architectures without complex VPN meshes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ECMP</strong>: Transit Gateway supports Equal Cost Multi-Path routing for VPN connections — aggregate multiple VPN tunnels for higher throughput. Not supported on VGW. This is the standard answer for "increase VPN throughput beyond 1.25 Gbps."</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Multicast</strong>: TGW is the only AWS service that supports IP multicast — useful for media streaming, financial market data distribution.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works with <strong>AWS RAM (Resource Access Manager)</strong>: share a Transit Gateway across multiple AWS accounts in an Organization.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Connect 10+ VPCs that all need to communicate" → Transit Gateway (not 45 peering connections). "Increase VPN throughput beyond 1.25 Gbps" → multiple VPN connections to TGW with ECMP. "Hub-and-spoke network topology" → Transit Gateway. "IP multicast on AWS" → Transit Gateway. TGW is regional — use inter-region peering for cross-region.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ FLOW LOGS & MIRRORING ══════════════ -->
+    <div id="monitoring" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Network Monitoring</div>
+        <div class="page-title">VPC Flow Logs & Traffic Mirroring</div>
+        <div class="page-desc">Capture and analyze network traffic metadata and content for security analysis and troubleshooting.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">FLW</div>
+          <div class="concept-meta">
+            <div class="concept-title">VPC Flow Logs <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Capture IP traffic metadata going to/from ENIs, subnets, or entire VPCs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>VPC Flow Logs capture information about IP traffic going to and from network interfaces in your VPC. They record metadata (source/dest IP, port, protocol, action, bytes) — NOT packet contents.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Three levels</strong>: <strong>VPC</strong> (all ENIs in the VPC), <strong>Subnet</strong> (all ENIs in the subnet), <strong>ENI</strong> (specific network interface). More specific levels inherit from broader ones.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Log destinations</strong>: <strong>CloudWatch Logs</strong> (query with Logs Insights) or <strong>S3</strong> (query with Athena — cheaper for large-scale analysis).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each flow log record includes: ENI ID, source IP, destination IP, source port, dest port, protocol, packets, bytes, start/end time, and <strong>action (ACCEPT or REJECT)</strong>. The action tells you whether the SG/NACL allowed or blocked the traffic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Not captured</strong>: DNS traffic to the Amazon DNS server (<code>.2</code>), DHCP traffic, instance metadata (<code>169.254.169.254</code>), NTP traffic, Windows license activation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Troubleshooting pattern</strong>: if you see REJECT on inbound → SG or NACL is blocking the request. If inbound shows ACCEPT but outbound shows REJECT → NACL is blocking the response (NACLs are stateless, SGs are stateful so SGs wouldn't block the response).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Inbound ACCEPT + Outbound REJECT" → NACL is blocking the response (stateless). If it were a SG issue, you'd see inbound REJECT (stateful — response auto-allowed). "Analyze network traffic patterns at scale" → Flow Logs to S3 → Athena SQL queries. Flow Logs do NOT capture packet content — for deep packet inspection use Traffic Mirroring.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">MIR</div>
+          <div class="concept-meta">
+            <div class="concept-title">VPC Traffic Mirroring <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Copy actual network packets for deep inspection — IDS/IPS, forensics, compliance</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Traffic Mirroring copies actual network packets (not just metadata) from ENIs and sends them to an appliance or NLB target for deep packet inspection, content analysis, or forensics. It is the AWS equivalent of a network TAP or SPAN port.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Source: ENI (network interface of EC2, RDS, etc.). Target: another ENI or an NLB (behind which sits IDS/IPS appliances).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Captures full packet content using VXLAN encapsulation. Can filter which traffic to mirror by protocol, port, or direction.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: network security monitoring (IDS/IPS), regulatory content inspection, troubleshooting application-level issues, compliance with packet capture requirements.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Flow Logs = metadata (IPs, ports, accept/reject). Traffic Mirroring = actual packet content (deep inspection). "Capture packet content for IDS analysis" → Traffic Mirroring. "See which IPs are being blocked by SGs" → Flow Logs.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ IPV6 & EGRESS-ONLY IGW ══════════════ -->
+    <div id="ipv6" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 8 — IPv6</div>
+        <div class="page-title">IPv6 & Egress-Only Internet Gateway</div>
+        <div class="page-desc">Dual-stack VPCs and the IPv6-specific gateway for outbound-only internet access.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">IP6</div>
+          <div class="concept-meta">
+            <div class="concept-title">IPv6 in VPC <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Dual-stack mode — every IPv6 address in AWS is public, no NAT needed</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS VPCs support dual-stack networking — IPv4 and IPv6 running simultaneously. Every resource can have both an IPv4 private address and an IPv6 address. Unlike IPv4, IPv6 addresses in AWS are all globally unique and publicly routable — there are no "private" IPv6 ranges in VPC.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>All IPv6 addresses are <strong>public</strong> (globally routable). There is no concept of "private IPv6" in AWS VPCs. Security is enforced entirely through SGs and NACLs, not by network isolation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>VPC IPv6 CIDR is assigned by AWS (Amazon-provided /56 block) or you bring your own (BYOIP). Subnets get a /64 block from the VPC's /56.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>IPv4 <strong>cannot be disabled</strong> — the VPC always has IPv4. IPv6 is added alongside. This is called dual-stack mode.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For IPv6 internet access: route <code>::/0</code> (all IPv6) to the IGW in the subnet's route table. SGs must also allow IPv6 traffic.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>"EC2 can't connect to IPv4 internet" → check that the subnet's route table has <code>0.0.0.0/0 → IGW</code> (separate from <code>::/0 → IGW</code>). IPv4 and IPv6 routes are independent entries.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"IPv6 addresses in AWS VPC are all public" — this is counterintuitive but true. No NAT for IPv6 (no private addresses to translate). Security relies 100% on SGs + NACLs. IPv4 cannot be disabled — dual-stack is mandatory.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">EGW</div>
+          <div class="concept-meta">
+            <div class="concept-title">Egress-Only Internet Gateway <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">NAT Gateway equivalent for IPv6 — outbound only, blocks all inbound</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>An Egress-Only Internet Gateway allows IPv6 instances to initiate outbound connections to the internet while preventing inbound connections from the internet. It is the IPv6 equivalent of a NAT Gateway (which only works for IPv4).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Used for <strong>IPv6 only</strong>. NAT Gateway is for IPv4 only. They solve the same problem for different protocols.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Route: <code>::/0 → eigw-xxx</code> in the private subnet's route table. Instance can call external APIs over IPv6 but cannot be reached from the internet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Stateful</strong>: like a NAT Gateway, it remembers outbound connections and allows the corresponding inbound responses.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Private subnet with IPv6 instances needs outbound internet access only" → Egress-Only Internet Gateway. "Private subnet with IPv4 instances needs outbound internet" → NAT Gateway. They are distinct — one for each protocol. A NAT Gateway does NOT work for IPv6; an Egress-Only IGW does NOT work for IPv4.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ NETWORK FIREWALL ══════════════ -->
+    <div id="firewall" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 9 — Advanced Security</div>
+        <div class="page-title">AWS Network Firewall</div>
+        <div class="page-desc">Managed, stateful network firewall for VPCs — deep packet inspection, IDS/IPS, domain filtering.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">NFW</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Network Firewall <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Layer 3–7 managed firewall — goes far beyond SGs and NACLs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Network Firewall is a managed, stateful firewall service that provides fine-grained control over network traffic at the VPC level. It supports deep packet inspection, intrusion detection/prevention (IDS/IPS), and domain-based filtering — capabilities that Security Groups and NACLs cannot provide.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Operates at <strong>Layer 3 through Layer 7</strong>. Inspects IP headers, TCP/UDP headers, AND application-layer content (HTTP, TLS SNI, DNS domain names).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Rule types</strong>: (1) <strong>Stateless rules</strong> (like NACLs — fast, no connection tracking). (2) <strong>Stateful rules</strong> (like SGs — understands connection state, supports Suricata-compatible IDS/IPS rules). (3) <strong>Domain list rules</strong> (allow/deny traffic to specific FQDNs — e.g. allow *.amazonaws.com, deny everything else).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Deployment</strong>: Network Firewall deploys firewall endpoints in your VPC subnets. Route traffic through the firewall endpoints using VPC route tables — typically all traffic entering or leaving the VPC passes through the firewall first.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Integration</strong>: managed via AWS Firewall Manager for organization-wide policies. Logs to CloudWatch, S3, or Kinesis Firehose. Works with Gateway Load Balancer for third-party appliance scaling.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: enterprise-grade firewall compliance (PCI, HIPAA), blocking traffic to known malicious domains, IDS/IPS rule enforcement, egress domain filtering (allow only approved external domains).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Block traffic to specific domains from a VPC" → Network Firewall (domain list rules). "IDS/IPS within a VPC" → Network Firewall (Suricata rules). "Inspect VPC traffic at Layer 7" → Network Firewall. SGs/NACLs cannot filter by domain name or inspect application-layer content. Network Firewall fills that gap. For third-party appliances in the traffic path → Gateway Load Balancer.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ NETWORKING COSTS ══════════════ -->
+    <div id="costs" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 10 — Cost Optimization</div>
+        <div class="page-title">Networking Costs in AWS</div>
+        <div class="page-desc">Data transfer pricing rules that appear frequently in cost-optimization exam questions.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CST</div>
+          <div class="concept-meta">
+            <div class="concept-title">Data Transfer Cost Rules <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Free vs charged — the rules that drive networking cost optimization</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Traffic type</th><th>Cost</th></tr>
+            <tr><td class="label">Inbound (internet → AWS)</td><td>Free</td></tr>
+            <tr><td class="label">Same AZ, private IP</td><td>Free</td></tr>
+            <tr><td class="label">Same AZ, public/Elastic IP</td><td>$0.01/GB each direction</td></tr>
+            <tr><td class="label">Cross-AZ, private IP</td><td>$0.01/GB each direction ($0.02 round trip)</td></tr>
+            <tr><td class="label">Cross-AZ, public/Elastic IP</td><td>$0.02/GB each direction ($0.04 round trip)</td></tr>
+            <tr><td class="label">Cross-Region</td><td>$0.02/GB outbound (varies by region pair)</td></tr>
+            <tr><td class="label">Outbound (AWS → internet)</td><td>~$0.09/GB first 10 TB (decreases with volume)</td></tr>
+            <tr><td class="label">S3 Transfer Acceleration</td><td>$0.04–$0.08/GB on top of transfer costs</td></tr>
+            <tr><td class="label">NAT Gateway processing</td><td>$0.045/GB processed</td></tr>
+            <tr><td class="label">VPC Endpoint (Interface)</td><td>$0.01/GB processed + $0.01/hr per AZ</td></tr>
+            <tr><td class="label">VPC Endpoint (Gateway)</td><td>Free</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Use private IPs</strong> for intra-VPC communication — free within the same AZ, half the cost cross-AZ compared to public IPs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Keep traffic in the same AZ</strong> whenever possible for cost savings. Trade-off: single-AZ = no HA. Must balance cost vs resilience.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>S3 Gateway Endpoint is free</strong> — always use it instead of NAT Gateway for S3 traffic (NAT Gateway charges $0.045/GB processed).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For large data egress: use <strong>CloudFront</strong> (lower data transfer rates than direct EC2 egress), <strong>Direct Connect</strong> (lower per-GB rates than internet), or <strong>S3 Transfer Acceleration</strong> for faster uploads.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Reduce networking costs between EC2 and S3 in the same region" → use S3 Gateway Endpoint (free) instead of routing through NAT Gateway ($0.045/GB). "Reduce cross-AZ data transfer costs" → use private IPs (not public). "Inbound data transfer" → always free. These cost rules appear frequently in cost-optimization questions.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CHEAT SHEET ══════════════ -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Networking Cheat Sheet</div>
+        <div class="page-desc">Scenario → answer mapping, confusing pairs, and the numbers to memorize.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Map any exam networking scenario to the right service or feature</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"Private instances need outbound internet (IPv4)"</td><td class="label">NAT Gateway in public subnet</td></tr>
+            <tr><td>"Private instances need outbound internet (IPv6)"</td><td class="label">Egress-Only Internet Gateway</td></tr>
+            <tr><td>"SSH into private instance without bastion"</td><td class="label">SSM Session Manager</td></tr>
+            <tr><td>"Block a specific IP address"</td><td class="label">NACL deny rule (SGs can't deny)</td></tr>
+            <tr><td>"Inbound ACCEPT + outbound REJECT in Flow Logs"</td><td class="label">NACL blocking response (stateless)</td></tr>
+            <tr><td>"Connection timeout"</td><td class="label">SG or NACL blocking (traffic never reached instance)</td></tr>
+            <tr><td>"Connection refused"</td><td class="label">Traffic reached instance, app is rejecting</td></tr>
+            <tr><td>"Access S3 from VPC without internet"</td><td class="label">S3 Gateway Endpoint (free)</td></tr>
+            <tr><td>"Access SQS privately from VPC"</td><td class="label">Interface Endpoint (PrivateLink)</td></tr>
+            <tr><td>"Expose my service to another VPC without peering"</td><td class="label">PrivateLink (NLB + Interface Endpoint)</td></tr>
+            <tr><td>"Connect 2 VPCs privately"</td><td class="label">VPC Peering (non-transitive)</td></tr>
+            <tr><td>"Connect 10+ VPCs that all communicate"</td><td class="label">Transit Gateway (hub-and-spoke)</td></tr>
+            <tr><td>"Quick encrypted on-prem → AWS connection"</td><td class="label">Site-to-Site VPN</td></tr>
+            <tr><td>"Dedicated, consistent, high-bandwidth on-prem → AWS"</td><td class="label">Direct Connect (1+ month setup)</td></tr>
+            <tr><td>"Encrypt traffic over Direct Connect"</td><td class="label">VPN over DX (IPsec on top of DX)</td></tr>
+            <tr><td>"HA hybrid connectivity"</td><td class="label">Two DX or DX + VPN backup</td></tr>
+            <tr><td>"VPN throughput &gt; 1.25 Gbps"</td><td class="label">Multiple VPN + Transit Gateway ECMP</td></tr>
+            <tr><td>"Access VPCs in multiple regions from one DX"</td><td class="label">DX Gateway</td></tr>
+            <tr><td>"Inspect VPC traffic at Layer 7 / IDS/IPS"</td><td class="label">AWS Network Firewall</td></tr>
+            <tr><td>"Block outbound traffic to specific domains"</td><td class="label">Network Firewall (domain list rules)</td></tr>
+            <tr><td>"Analyze network traffic metadata with SQL"</td><td class="label">VPC Flow Logs → S3 → Athena</td></tr>
+            <tr><td>"Capture actual packet content for forensics"</td><td class="label">VPC Traffic Mirroring</td></tr>
+            <tr><td>"Reduce S3 traffic cost from VPC"</td><td class="label">S3 Gateway Endpoint (free vs NAT GW $0.045/GB)</td></tr>
+            <tr><td>"IP multicast on AWS"</td><td class="label">Transit Gateway (only service that supports it)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">NUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Numbers & Facts <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hard limits and facts tested directly in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>VPC CIDR range: min <code>/28</code> (16 IPs), max <code>/16</code> (65,536 IPs). Up to 5 secondary CIDRs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Reserved IPs per subnet: <strong>5</strong> (first 4 + last 1). /24 = 251 usable IPs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Max VPCs per region: <strong>5</strong> (soft limit). Max subnets per VPC: <strong>200</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Max SGs per instance: <strong>5</strong>. Max rules per SG: <strong>60 inbound + 60 outbound</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>NACL rules: evaluated in <strong>numbered order</strong>, first match wins. SG rules: all evaluated together (union).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Default NACL: <strong>allows all</strong>. Custom NACL: <strong>denies all</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>VPC Peering: <strong>non-transitive</strong>. CIDRs must not overlap.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3/DynamoDB Gateway Endpoint: <strong>free</strong>. Interface Endpoint: ~$0.01/hr/AZ + $0.01/GB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>VPN max throughput: <strong>1.25 Gbps per tunnel</strong>. ECMP via TGW for more.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Direct Connect setup time: <strong>1+ months</strong>. Dedicated: 1/10/100 Gbps. Hosted: 50 Mbps–10 Gbps.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Direct Connect: <strong>NOT encrypted by default</strong>. Add VPN over DX for encryption.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>NAT Gateway: <strong>$0.045/hr + $0.045/GB</strong> processed. AZ-specific. Deploy one per AZ for HA.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>IPv6 in VPC: all addresses are <strong>public</strong>. IPv4 cannot be disabled (dual-stack only).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Flow Logs: metadata only (IPs, ports, action). Traffic Mirroring: full packet content.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Ephemeral ports (NACLs): <strong>1024–65535</strong> must be allowed in outbound rules for return traffic.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

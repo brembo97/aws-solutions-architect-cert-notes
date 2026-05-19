@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Containers & Orchestration — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Containers & Orchestration</h1>
+    </div>
+
+    <div class="nav-section-label">Foundations</div>
+    <a class="nav-item active" onclick="show('docker')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Docker on AWS
+    </a>
+
+    <div class="nav-section-label">ECS</div>
+    <a class="nav-item" onclick="show('ecs-core')">
+      <span class="nav-dot" style="background:#39d0a0"></span> ECS Core Concepts
+    </a>
+    <a class="nav-item" onclick="show('ecs-launch')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Launch Types & Networking
+    </a>
+    <a class="nav-item" onclick="show('ecs-scaling')">
+      <span class="nav-dot" style="background:#f0a742"></span> Auto Scaling & Architectures
+    </a>
+
+    <div class="nav-section-label">ECR & EKS</div>
+    <a class="nav-item" onclick="show('ecr')">
+      <span class="nav-dot" style="background:#ff7b72"></span> ECR — Container Registry
+    </a>
+    <a class="nav-item" onclick="show('eks')">
+      <span class="nav-dot" style="background:#56d364"></span> EKS — Kubernetes
+    </a>
+
+    <div class="nav-section-label">Managed Platforms</div>
+    <a class="nav-item" onclick="show('apprunner')">
+      <span class="nav-dot" style="background:#db6eb0"></span> App Runner & App2Container
+    </a>
+
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('compare')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Service Comparison
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ DOCKER ON AWS ══════════════ -->
+    <div id="docker" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Foundations</div>
+        <div class="page-title">Docker on AWS</div>
+        <div class="page-desc">Container fundamentals, the Docker workflow, and why containers are the foundation of modern AWS architectures.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">DOC</div>
+          <div class="concept-meta">
+            <div class="concept-title">Docker Fundamentals <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Images, containers, Dockerfile, and the build-push-run workflow</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Docker packages an application and all its dependencies (libraries, runtime, config) into a standardized unit called a <strong>container</strong>. Containers run identically on any host that has Docker — eliminating "works on my machine" problems.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Docker Image</strong>: a read-only blueprint for a container. Built from a <code>Dockerfile</code>. Stored in a container registry (Docker Hub, ECR). Immutable — any change creates a new image layer.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Docker Container</strong>: a running instance of a Docker image. Isolated process with its own filesystem, networking, and process space. Ephemeral — data is lost when the container stops unless mounted to a volume.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Dockerfile</strong>: a text file of instructions (<code>FROM</code>, <code>RUN</code>, <code>COPY</code>, <code>EXPOSE</code>, <code>CMD</code>) that define how to build an image layer by layer.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Workflow: <code>Dockerfile</code> → <code>docker build</code> → Image → <code>docker push</code> → Registry (ECR) → <code>docker pull</code> on host → <code>docker run</code> → Container.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Containers vs VMs</strong>: containers share the host OS kernel — much lighter than VMs (milliseconds to start vs minutes). Multiple containers run on one EC2 instance. VMs each have their own OS.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>On AWS, Docker containers run on: <strong>ECS</strong> (AWS-managed orchestration), <strong>EKS</strong> (Kubernetes), <strong>Fargate</strong> (serverless containers), <strong>App Runner</strong> (fully managed), or directly on EC2 instances.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Containers = lightweight, fast, portable. The key AWS container question is about choosing the right orchestration layer: ECS (AWS-native, simpler), EKS (Kubernetes, more control), Fargate (serverless, no EC2 management), App Runner (simplest — source code to running app). Know when each is appropriate.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ECS CORE ══════════════ -->
+    <div id="ecs-core" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — ECS</div>
+        <div class="page-title">ECS Core Concepts</div>
+        <div class="page-desc">Clusters, task definitions, services, and tasks — the building blocks of Amazon ECS.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">ECS</div>
+          <div class="concept-meta">
+            <div class="concept-title">ECS Architecture <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Cluster → Service → Task → Container — the four-level hierarchy</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon ECS (Elastic Container Service) is AWS's native container orchestration platform. It manages where and how Docker containers run — scheduling, scaling, health checking, and networking — without you managing a Kubernetes cluster.</p>
+          <table class="compare-table">
+            <tr><th>Concept</th><th>What it is</th><th>Analogy</th></tr>
+            <tr><td class="label">Cluster</td><td>Logical grouping of compute resources (EC2 instances or Fargate capacity) where tasks run.</td><td>The data centre / pool of servers</td></tr>
+            <tr><td class="label">Task Definition</td><td>A JSON blueprint specifying: container images, CPU/memory, ports, IAM roles, logging config, volumes, environment variables. Like a Dockerfile but for the entire task.</td><td>The recipe / spec sheet</td></tr>
+            <tr><td class="label">Task</td><td>A running instance of a Task Definition. One or more containers running together. Ephemeral — stops when done.</td><td>The actual running job</td></tr>
+            <tr><td class="label">Service</td><td>Maintains a desired number of tasks running at all times. Handles restarts on failure, integrates with ELB, and manages rolling deployments.</td><td>The process supervisor / systemd</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>A Task Definition can define multiple containers — a primary application container and sidecar containers (log forwarder, proxy, agent). All containers in a task share network namespace and storage volumes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ECS Service</strong> is for long-running applications (web servers, APIs). <strong>ECS Task</strong> run-once is for batch jobs, migrations, or scheduled work (like a cron job).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ECS integrates natively with ALB for service discovery and load balancing — each task registered as a target with its dynamic port (dynamic port mapping).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Task Definition = the config (what to run). Task = the running instance (one execution). Service = keeps N tasks running (long-lived apps). Cluster = the compute pool. "Configure CPU, memory, ports, and IAM role for a container" → Task Definition. "Keep 3 replicas running with auto-restart" → ECS Service.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">IAM</div>
+          <div class="concept-meta">
+            <div class="concept-title">ECS IAM Roles <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Task Role vs Task Execution Role — two different IAM roles, two different purposes</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ECS uses two separate IAM roles that are frequently confused on the exam. Understanding which role grants what permissions is critical.</p>
+          <table class="compare-table">
+            <tr><th>Role</th><th>Used by</th><th>Grants permissions for</th><th>Example</th></tr>
+            <tr><td class="label">Task Role</td><td>The container/application running inside the task</td><td>AWS API calls the application makes (S3, DynamoDB, SQS, etc.)</td><td>App needs to read from S3 → attach S3 read policy to the Task Role</td></tr>
+            <tr><td class="label">Task Execution Role</td><td>ECS agent on the host (Fargate or EC2)</td><td>ECS infrastructure operations: pulling the container image from ECR, writing logs to CloudWatch, reading Secrets Manager/SSM Parameter Store</td><td>ECS needs to pull image from private ECR → attach ECR pull policy to Task Execution Role</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each task can have its own unique Task Role — enabling least-privilege per microservice. Task A gets S3 access; Task B gets DynamoDB access; neither gets the other's permissions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The Task Execution Role is required for Fargate — without it, Fargate cannot pull images or send logs. It is defined in the Task Definition.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Container can't access S3" → missing or insufficient Task Role. "ECS task fails to start — can't pull image from ECR" → missing or insufficient Task Execution Role (needs ecr:GetAuthorizationToken and ecr:BatchGetImage). Two roles, two different jobs — don't mix them up.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ECS LAUNCH TYPES & NETWORKING ══════════════ -->
+    <div id="ecs-launch" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — ECS</div>
+        <div class="page-title">Launch Types & Networking</div>
+        <div class="page-desc">EC2 launch type vs Fargate — and how containers connect to each other and the outside world.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">LT</div>
+          <div class="concept-meta">
+            <div class="concept-title">EC2 Launch Type vs Fargate <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Self-managed instances vs serverless containers — the fundamental ECS choice</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>EC2 Launch Type</th><th>Fargate Launch Type</th></tr>
+            <tr><td class="label">Infrastructure</td><td>You provision and manage EC2 instances in the cluster. You install and run the ECS agent on each instance.</td><td>AWS manages all underlying infrastructure. No EC2 instances to manage, patch, or scale.</td></tr>
+            <tr><td class="label">Pricing</td><td>Pay for EC2 instances whether tasks are running or not. Can use Reserved Instances for cost savings.</td><td>Pay per task — billed for vCPU and memory consumed while the task runs. No idle cost.</td></tr>
+            <tr><td class="label">Control</td><td>Full control over instance type, GPU access, kernel parameters, host networking.</td><td>Limited — can't access the underlying host. Specify vCPU and memory per task instead of instance type.</td></tr>
+            <tr><td class="label">Scaling</td><td>Must scale both the ECS service (task count) AND the EC2 ASG (cluster capacity). Two-tier scaling.</td><td>ECS scales tasks automatically. AWS manages compute capacity behind the scenes. One-tier scaling.</td></tr>
+            <tr><td class="label">Best for</td><td>Workloads needing specific instance types (GPU, high memory), compliance requiring host control, cost optimization with Reserved Instances at steady-state scale.</td><td>New applications, variable workloads, teams that don't want to manage EC2, serverless microservices, batch jobs.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Fargate Spot</strong>: run Fargate tasks on spare AWS capacity at up to 70% discount — can be interrupted. Similar to EC2 Spot but for serverless containers. Ideal for batch jobs and fault-tolerant workloads.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Both launch types can coexist in the same ECS cluster — you can run some services on EC2 and others on Fargate within the same cluster.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"No servers to manage for containers" or "serverless containers" → Fargate. "Need GPU for ML container workload" → EC2 launch type (Fargate doesn't support GPU). "Reduce cost for predictable container workloads" → EC2 with Reserved Instances. Fargate is almost always the preferred answer for new applications on the exam.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">NET</div>
+          <div class="concept-meta">
+            <div class="concept-title">ECS Networking Modes <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">awsvpc, bridge, host — how containers get IP addresses</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Mode</th><th>How it works</th><th>Required for</th></tr>
+            <tr><td class="label">awsvpc</td><td>Each task gets its own Elastic Network Interface (ENI) and private IP address in the VPC — just like an EC2 instance. Full VPC networking features: Security Groups, VPC Flow Logs per task.</td><td>Fargate (mandatory). Recommended for EC2 launch type too.</td></tr>
+            <tr><td class="label">bridge</td><td>Tasks use Docker's virtual bridge network. Docker assigns a random host port for each container port (dynamic port mapping). Multiple tasks per host share the host's IP.</td><td>EC2 launch type only. Used for high task density on a single host.</td></tr>
+            <tr><td class="label">host</td><td>Container uses the host EC2 instance's network interface directly — no isolation. Container port = host port.</td><td>EC2 launch type. Highest network performance. Only one task per port per host.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>awsvpc is strongly preferred</strong> — gives each task its own Security Group, enabling fine-grained network access control per microservice. Required for Fargate.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>With awsvpc mode, each task ENI consumes an IP from your VPC subnet — ensure sufficient IP addresses in subnets where tasks run.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Fargate always uses awsvpc networking — no choice. EC2 launch type with awsvpc = each task gets its own ENI and Security Group. "Apply a Security Group to a specific ECS task" → requires awsvpc networking mode.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">DAT</div>
+          <div class="concept-meta">
+            <div class="concept-title">ECS Data Volumes — EFS Integration <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Persistent shared storage for ECS tasks across AZs</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ECS tasks are ephemeral — storage inside a container is lost when the task stops. For persistent or shared data, mount an Amazon EFS file system directly into ECS tasks.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>EFS mounts work with both <strong>EC2 and Fargate</strong> launch types — the only persistent shared storage option for Fargate.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Multiple tasks across multiple AZs can all mount the same EFS file system — shared access to the same data.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EFS + Fargate</strong> = fully serverless persistent storage: no EC2 to manage, no storage to provision. Pay only for what you use.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>S3 cannot be mounted as a file system by ECS tasks — use EFS for file-system access, S3 via SDK/API calls for object storage.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Fargate tasks need to share persistent storage across AZs" → EFS. Fargate cannot use EBS (EBS is AZ-locked and attaches to instances, not tasks). EFS + Fargate = the serverless persistent storage pattern for containers.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ECS AUTO SCALING & ARCHITECTURES ══════════════ -->
+    <div id="ecs-scaling" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — ECS</div>
+        <div class="page-title">ECS Auto Scaling & Architectures</div>
+        <div class="page-desc">Scale ECS services automatically and wire ECS into common solution architecture patterns.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">ASG</div>
+          <div class="concept-meta">
+            <div class="concept-title">ECS Auto Scaling <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Scale task count — and for EC2 launch type, scale the underlying cluster too</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ECS Service Auto Scaling automatically adjusts the desired task count up or down based on CloudWatch metrics. For Fargate, this is single-tier. For EC2 launch type, you must also scale the underlying EC2 cluster — two separate scaling mechanisms.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>ECS Service Auto Scaling uses <strong>AWS Application Auto Scaling</strong> (not EC2 Auto Scaling). Three policy types: <strong>Target Tracking</strong> (keep a metric at a target value), <strong>Step Scaling</strong> (alarm-based graduated response), <strong>Scheduled Scaling</strong> (scale at known times).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Useful scaling metrics: <code>ECSServiceAverageCPUUtilization</code>, <code>ECSServiceAverageMemoryUtilization</code>, <code>ALBRequestCountPerTarget</code> (from ALB).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Fargate Auto Scaling</strong>: straightforward — scale tasks up/down. AWS handles the underlying compute capacity automatically.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EC2 launch type — two-tier scaling</strong>: scale ECS service tasks (task count ↑) AND scale the EC2 ASG (add EC2 instances to have capacity for new tasks). Use <strong>ECS Cluster Capacity Providers</strong> to automate EC2 scaling based on task demand.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ECS Cluster Capacity Providers</strong> (EC2 launch type): automatically provision and scale EC2 instances when ECS tasks can't be scheduled due to insufficient cluster capacity. Replaces manual EC2 ASG management for ECS.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Fargate = scale tasks only (single tier, simple). EC2 = scale tasks + scale EC2 cluster (two tiers, more complex). "ECS tasks failing to schedule — not enough cluster capacity" → EC2 cluster needs more instances → use Capacity Providers or manually scale the ASG.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">ARC</div>
+          <div class="concept-meta">
+            <div class="concept-title">ECS Solution Architectures <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Event-driven, scheduled tasks, and CI/CD patterns with ECS</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ECS appears in several recurring exam architecture patterns — knowing the common wiring between ECS and other services lets you answer scenario questions quickly.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Event-driven ECS tasks</strong>: S3 upload → EventBridge rule → trigger ECS task (run-once batch job). Each file upload spins up a task to process it, then the task exits. No persistent service needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>SQS + ECS workers</strong>: messages arrive in SQS → ECS Service polls SQS → tasks process messages → scale ECS service based on queue depth. Classic decoupled worker pattern.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ECS behind ALB</strong>: ALB distributes HTTP traffic across ECS tasks. Each task registers with the ALB target group dynamically. ALB health checks replace individual instance health checks.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CI/CD with ECS</strong>: CodePipeline → CodeBuild (build image, push to ECR) → CodeDeploy (rolling or blue/green deployment to ECS). Blue/green on ECS uses two target groups — ALB switches from blue to green with no downtime.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Scheduled tasks</strong>: EventBridge Scheduler → run ECS task on a cron schedule. Replaces cron jobs on EC2 with serverless container execution.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Process S3 uploads asynchronously using containers" → S3 → EventBridge → ECS Task (Fargate). "Replace EC2 cron jobs with containers" → EventBridge Scheduler → ECS Task. "Zero-downtime container deployments" → ALB blue/green with ECS + CodeDeploy.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ ECR ══════════════ -->
+    <div id="ecr" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — ECR</div>
+        <div class="page-title">Amazon ECR — Elastic Container Registry</div>
+        <div class="page-desc">Managed Docker image registry — store, version, scan, and replicate container images securely on AWS.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">ECR</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon ECR Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Private Docker registry — integrated with ECS, EKS, and IAM</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>ECR (Elastic Container Registry) is AWS's fully managed Docker (and OCI) container image registry. It replaces Docker Hub for private images on AWS, integrating natively with ECS, EKS, CodeBuild, and IAM for access control.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Two repository types: <strong>Private</strong> (IAM-controlled access, your images) and <strong>Public</strong> (ECR Public Gallery — public images anyone can pull, like Docker Hub).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Images are stored in S3 behind the scenes — backed by S3's durability and availability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>IAM access control</strong>: repository policies and IAM policies control who can push/pull. The <strong>Task Execution Role</strong> of ECS tasks must have <code>ecr:GetAuthorizationToken</code>, <code>ecr:BatchGetImage</code>, and <code>ecr:GetDownloadUrlForLayer</code> to pull images.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Image scanning</strong>: ECR scans images for known CVEs (vulnerabilities). Two modes: <strong>Basic scanning</strong> (on push or on-demand, uses Clair) and <strong>Enhanced scanning</strong> (continuous, uses Amazon Inspector, covers OS and application dependencies).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lifecycle policies</strong>: automatically expire and delete old/untagged images to control storage costs (e.g. keep only the last 10 tagged images per repo).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cross-region and cross-account replication</strong>: replicate images to other regions and accounts automatically — useful for multi-region deployments.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ECR images are <strong>immutable by default</strong> (optional) — once a tag is pushed it cannot be overwritten. Ensures production images are never accidentally replaced.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"ECS task fails to start — cannot pull image" → ECS Task Execution Role is missing ECR permissions (or the image doesn't exist in ECR). "Scan container images for vulnerabilities automatically" → ECR Enhanced Scanning with Amazon Inspector. "Store private Docker images on AWS" → ECR.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ EKS ══════════════ -->
+    <div id="eks" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — EKS</div>
+        <div class="page-title">Amazon EKS — Elastic Kubernetes Service</div>
+        <div class="page-desc">Managed Kubernetes on AWS — when you need Kubernetes control, without operating the control plane.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">EKS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Amazon EKS Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Managed Kubernetes control plane — you bring the workers, AWS runs the master</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon EKS (Elastic Kubernetes Service) runs a managed Kubernetes control plane on AWS. AWS manages the Kubernetes API server, etcd, and control plane availability. You manage (or let AWS manage) the worker nodes where your containers actually run.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>EKS supports standard Kubernetes — if you have existing Kubernetes manifests, Helm charts, or tooling, they work on EKS with minimal changes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Three <strong>node group types</strong>: <strong>Managed Node Groups</strong> (AWS provisions and manages EC2 instances as Kubernetes nodes, handles AMI updates), <strong>Self-Managed Nodes</strong> (you provision and manage EC2 instances yourself), <strong>Fargate</strong> (serverless — AWS runs each pod on its own isolated Fargate compute, no node management at all).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Kubernetes terminology: <strong>Pod</strong> = one or more containers (equivalent to ECS Task). <strong>Node</strong> = EC2 instance running pods (equivalent to ECS container instance). <strong>Deployment</strong> = desired state for pods (equivalent to ECS Service). <strong>Namespace</strong> = virtual cluster for isolation.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EKS integrates with: ALB/NLB (via AWS Load Balancer Controller), EBS/EFS (via CSI drivers for persistent volumes), IAM (via IRSA — IAM Roles for Service Accounts, equivalent to ECS Task Role), ECR, CloudWatch Container Insights.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Use EKS when</strong>: your team already uses Kubernetes, you're migrating existing Kubernetes workloads to AWS, you need advanced Kubernetes features (custom schedulers, operators, CRDs), or you require multi-cloud portability.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Use ECS when</strong>: building new AWS-native applications, your team doesn't know Kubernetes, you want simpler operations and tighter AWS integration, or you want lower management overhead.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>EKS vs ECS: EKS = Kubernetes API (portable, complex, powerful). ECS = AWS proprietary API (simpler, tighter AWS integration, less portable). "Company already uses Kubernetes and wants to migrate to AWS" → EKS. "New microservices app, wants simplest container orchestration on AWS" → ECS with Fargate. Both support Fargate for serverless compute.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">IRSA</div>
+          <div class="concept-meta">
+            <div class="concept-title">EKS IAM — IRSA <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">IAM Roles for Service Accounts — grant AWS permissions to specific Kubernetes pods</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>IRSA (IAM Roles for Service Accounts) allows you to associate an IAM role with a Kubernetes Service Account, and pods using that Service Account assume that IAM role. This is the EKS equivalent of ECS Task Roles.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Avoids the need to embed AWS credentials in pods or attach broad EC2 instance profiles to worker nodes. Each pod gets only the permissions it needs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works via OIDC (OpenID Connect) — EKS cluster has an OIDC provider, IAM trusts it, pods receive short-lived credentials injected as environment variables.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EKS IRSA = ECS Task Role concept, applied to Kubernetes pods.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Give a Kubernetes pod on EKS permission to access S3 without storing credentials" → IRSA (IAM Roles for Service Accounts). Same principle as ECS Task Role but the Kubernetes-native implementation.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ APP RUNNER & APP2CONTAINER ══════════════ -->
+    <div id="apprunner" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 7 — Managed Platforms</div>
+        <div class="page-title">App Runner & App2Container</div>
+        <div class="page-desc">The simplest path to running containers on AWS — source code or image to production with zero infrastructure config.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">APR</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS App Runner <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Deploy containerized apps and APIs in minutes — no infrastructure, no orchestration</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS App Runner is a fully managed service for deploying containerized web applications and APIs. You provide a container image or source code — App Runner handles everything else: building, deploying, load balancing, TLS, auto-scaling, and health checks.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Two input sources: <strong>Container image</strong> (from ECR or Docker Hub) or <strong>Source code</strong> (GitHub — App Runner builds the image automatically using a detected runtime or a Dockerfile).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Fully managed</strong>: no ECS clusters, no Fargate task definitions, no ALB to configure, no ACM certificate to attach. App Runner provisions all of this transparently.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Auto-scaling</strong>: scales based on concurrent requests. Scales to zero when idle (optional — pay only when requests are being handled). Scales back up instantly on new requests.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Each App Runner service gets a <strong>unique HTTPS endpoint</strong> (custom domain support available). TLS is handled automatically.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports <strong>VPC connectivity</strong> — App Runner services can reach private resources in your VPC (RDS, ElastiCache) via VPC connectors.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Target audience: developers who want to run web apps and APIs without learning ECS, Fargate, or Kubernetes. Ideal for startups, microservices, APIs, and internal tools.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Deploy a web application with no infrastructure management — simplest possible container deployment" → App Runner. App Runner sits above ECS/Fargate in the abstraction hierarchy: more opinionated, less control, zero ops. Compare: EC2 (most control) → ECS EC2 → ECS Fargate → App Runner (least control, easiest).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">A2C</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS App2Container (A2C) <span class="badge badge-tool">tool</span></div>
+            <div class="concept-subtitle">Automatically containerize existing Java and .NET applications running on EC2</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS App2Container is a command-line tool that analyzes running Java (Spring, Tomcat) and .NET (IIS) applications on EC2 or on-premises and automatically generates Docker images, ECS/EKS deployment artifacts, and CI/CD pipeline configurations.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Discovers running Java/.NET processes → captures runtime dependencies → packages into a Docker image → pushes to ECR → generates ECS Task Definition or EKS deployment YAML.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>No code changes required to the application — A2C handles the containerization automatically.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports: Java apps on Tomcat, JBoss, WebLogic. .NET apps on Windows IIS. Runs on Linux and Windows EC2 instances.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Optional pipeline generation: creates CloudFormation templates and CodePipeline configuration for CI/CD.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Migrate legacy Java or .NET applications from EC2 to containers without rewriting code" → AWS App2Container. It is a migration acceleration tool, not a production service. The output is Docker images + ECS/EKS deployment files that you then manage yourself.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SERVICE COMPARISON ══════════════ -->
+    <div id="compare" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Container Service Comparison</div>
+        <div class="page-desc">Pick the right container service for any exam scenario — from raw control to zero-ops simplicity.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Container Services at a Glance <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Full spectrum from managed EC2 to fully hands-off App Runner</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Service</th><th>Manage infra?</th><th>Orchestration</th><th>Best for</th></tr>
+            <tr><td class="label">ECS + EC2</td><td>Yes — provision EC2 cluster</td><td>AWS ECS (proprietary)</td><td>Cost optimization with RIs, GPU workloads, full host control</td></tr>
+            <tr><td class="label">ECS + Fargate</td><td>No — serverless</td><td>AWS ECS (proprietary)</td><td>New apps, variable workloads, microservices, no-ops containers</td></tr>
+            <tr><td class="label">EKS + EC2 Nodes</td><td>Yes — manage nodes</td><td>Kubernetes</td><td>Existing Kubernetes workloads, custom schedulers, multi-cloud</td></tr>
+            <tr><td class="label">EKS + Fargate</td><td>No — serverless</td><td>Kubernetes</td><td>Kubernetes without node management, fully serverless K8s</td></tr>
+            <tr><td class="label">App Runner</td><td>No — fully managed</td><td>Abstracted (built on Fargate)</td><td>Simplest deployment, web apps and APIs, developer self-service</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Control spectrum</strong> (most → least): ECS EC2 → ECS Fargate → EKS Managed Nodes → EKS Fargate → App Runner.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Ops burden spectrum</strong> (most → least): same order. More control = more you manage.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Exam scenario → correct service mapping</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"Run containers without managing servers"</td><td class="label">ECS Fargate</td></tr>
+            <tr><td>"Existing Kubernetes workloads migrating to AWS"</td><td class="label">Amazon EKS</td></tr>
+            <tr><td>"Simplest way to deploy a web app from source code"</td><td class="label">AWS App Runner</td></tr>
+            <tr><td>"Containerize legacy Java/.NET EC2 app"</td><td class="label">AWS App2Container</td></tr>
+            <tr><td>"Store and version private Docker images on AWS"</td><td class="label">Amazon ECR</td></tr>
+            <tr><td>"Scan container images for CVEs automatically"</td><td class="label">ECR Enhanced Scanning (Amazon Inspector)</td></tr>
+            <tr><td>"Container app needs S3 access — no credentials in code"</td><td class="label">ECS Task Role / EKS IRSA</td></tr>
+            <tr><td>"ECS task can't pull image from ECR"</td><td class="label">Fix the Task Execution Role (add ECR pull permissions)</td></tr>
+            <tr><td>"Fargate tasks need persistent shared storage"</td><td class="label">Amazon EFS (mount into Fargate tasks)</td></tr>
+            <tr><td>"Scale ECS tasks based on SQS queue depth"</td><td class="label">ECS Service Auto Scaling on ApproximateNumberOfMessagesVisible</td></tr>
+            <tr><td>"Run containers on a cron schedule"</td><td class="label">EventBridge Scheduler → ECS Task (run-once)</td></tr>
+            <tr><td>"Zero-downtime container deployment"</td><td class="label">ECS Blue/Green Deployment via CodeDeploy + ALB</td></tr>
+            <tr><td>"ECS EC2 tasks won't schedule — cluster full"</td><td class="label">ECS Cluster Capacity Providers (scale EC2 ASG)</td></tr>
+            <tr><td>"GPU workloads in containers"</td><td class="label">ECS EC2 launch type with GPU instance types</td></tr>
+            <tr><td>"Apply a Security Group to a specific ECS task"</td><td class="label">awsvpc networking mode</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">NUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Facts to Memorize <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Numbers and rules that appear directly in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>ECS Task Role = permissions for the app. Task Execution Role = permissions for ECS infrastructure (ECR pull, CloudWatch logs).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Fargate always uses <strong>awsvpc</strong> networking mode — each task gets its own ENI and private IP.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Fargate persistent storage = <strong>EFS</strong>. EBS cannot be used with Fargate.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ECR Private = IAM-controlled. ECR Public = anyone can pull (like Docker Hub). Images stored in S3.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EKS Pod = ECS Task. EKS Deployment = ECS Service. EKS Node = ECS Container Instance.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EKS IRSA = ECS Task Role — IAM permissions for specific pods without node-level credentials.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>App Runner = above ECS Fargate in abstraction — zero infrastructure, but less control. Supports VPC connectors for private resource access.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>App2Container supports <strong>Java and .NET only</strong> (Tomcat, JBoss, WebLogic, IIS).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>ECS Fargate Spot = interruptible serverless containers. Up to 70% cheaper. Good for batch/fault-tolerant only.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

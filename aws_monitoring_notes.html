@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Monitoring & Audit — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Monitoring & Audit</h1>
+    </div>
+
+    <div class="nav-section-label">CloudWatch</div>
+    <a class="nav-item active" onclick="show('cw-metrics')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Metrics & Alarms
+    </a>
+    <a class="nav-item" onclick="show('cw-logs')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Logs & Agents
+    </a>
+    <a class="nav-item" onclick="show('cw-insights')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Insights & Visibility
+    </a>
+
+    <div class="nav-section-label">EventBridge</div>
+    <a class="nav-item" onclick="show('eventbridge')">
+      <span class="nav-dot" style="background:#f0a742"></span> EventBridge
+    </a>
+
+    <div class="nav-section-label">Audit</div>
+    <a class="nav-item" onclick="show('cloudtrail')">
+      <span class="nav-dot" style="background:#ff7b72"></span> CloudTrail
+    </a>
+    <a class="nav-item" onclick="show('config')">
+      <span class="nav-dot" style="background:#56d364"></span> AWS Config
+    </a>
+
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('compare')">
+      <span class="nav-dot" style="background:#db6eb0"></span> CW vs CT vs Config
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ METRICS & ALARMS ══════════════ -->
+    <div id="cw-metrics" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — CloudWatch</div>
+        <div class="page-title">Metrics & Alarms</div>
+        <div class="page-desc">Collect, visualize, and react to performance data from every AWS service and your own applications.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">MET</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudWatch Metrics <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Time-series data points from AWS services and custom sources</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudWatch Metrics are time-stamped data points that represent measurements of your AWS resources and applications over time. Every AWS service automatically publishes metrics to CloudWatch at no extra charge. You can also publish your own custom metrics from applications or on-premises servers.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Metrics are organized by <strong>Namespace</strong> (logical container, e.g. <code>AWS/EC2</code>, <code>AWS/RDS</code>, <code>MyApp/Payments</code>) and <strong>Dimensions</strong> (key-value attributes that uniquely identify a metric, e.g. <code>InstanceId=i-1234</code>).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Default metric resolution</strong>: standard metrics are published in <strong>1-minute granularity</strong> (some services publish every 5 minutes). <strong>High-Resolution Metrics</strong>: custom metrics can be published at <strong>1-second granularity</strong> (additional cost).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Metric retention</strong>: data points &lt;60s resolution: retained for 3 hours. 1-minute: retained for 15 days. 5-minute: retained for 63 days. 1-hour: retained for 15 months. Older data is automatically aggregated to lower resolution.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Key EC2 metrics (built-in)</strong>: CPUUtilization, NetworkIn/Out, DiskReadOps/WriteOps, StatusCheckFailed. These come automatically — no agent needed.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EC2 metrics NOT available without the CloudWatch Agent</strong>: RAM/memory utilization, disk space used, process-level metrics, swap usage. These are OS-level metrics — AWS doesn't have access to them without an agent.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Custom Metrics</strong>: publish from application code via the CloudWatch API (<code>PutMetricData</code>). Include custom dimensions (e.g. per user, per transaction type). Standard resolution ($0.30/metric/month) or High Resolution ($0.30/metric/month + higher API cost).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Dashboards</strong>: create CloudWatch Dashboards with graphs, numbers, alarms, and text widgets. Dashboards can span multiple regions and accounts. Global dashboards don't auto-update region — you must add each region.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Monitor EC2 memory utilization" → requires CloudWatch Agent (RAM is NOT a default metric). Default EC2 metrics: CPU, network, disk I/O. "High-Resolution Metrics" = 1-second granularity custom metrics. Metric retention varies — 1-second data only kept 3 hours. Long-term metric storage → export to S3 or use metrics math with longer storage settings.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">ALM</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudWatch Alarms <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Trigger actions when metrics cross thresholds — notification, scaling, recovery</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudWatch Alarms watch a single metric (or metric math expression) and trigger actions when the metric crosses a defined threshold. Alarms are the primary way to automate responses to operational events in AWS.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Three alarm states: <strong>OK</strong> (metric is within threshold), <strong>ALARM</strong> (metric has breached the threshold), <strong>INSUFFICIENT_DATA</strong> (not enough data to evaluate — common on new alarms or during gaps).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Alarm actions</strong>: <strong>SNS notification</strong> (email, Lambda, SQS, HTTP webhook), <strong>EC2 actions</strong> (stop, terminate, reboot, or recover an instance), <strong>Auto Scaling actions</strong> (scale out/in an ASG), <strong>Systems Manager actions</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Period</strong>: the length of time (in seconds) over which the metric is evaluated. Must be at least as long as the metric's resolution. For 1-minute metrics, minimum period is 60 seconds.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Evaluation periods + Datapoints to alarm</strong>: configure "M out of N" threshold — e.g. alarm if 3 out of 5 consecutive data points breach the threshold. Reduces false positives from momentary spikes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Composite Alarms</strong>: combine multiple alarms using AND/OR logic. Create a high-level "system health" alarm that triggers only when multiple component alarms are in ALARM state simultaneously — reduces alert noise.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>EC2 Instance Recovery</strong>: when an instance fails system status checks, a CloudWatch Alarm action can automatically recover the instance — moves it to new hardware, preserving the private IP, Elastic IP, and EBS volumes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Alarms can also be triggered on <strong>Anomaly Detection</strong> — CloudWatch uses ML to model the expected range for a metric and fires the alarm when the metric is outside the "normal" band (no fixed threshold needed).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Receive a notification when CPU exceeds 80%" → CloudWatch Alarm → SNS. "Auto-recover an EC2 instance after hardware failure" → CloudWatch Alarm → EC2 Recover action. Composite Alarms reduce alert noise by requiring multiple conditions. INSUFFICIENT_DATA ≠ OK — it means the alarm can't evaluate yet.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SYN</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudWatch Synthetics & Network Monitor <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Proactive monitoring — simulate user traffic and test network paths</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudWatch Synthetics</strong>: configurable scripts (Node.js or Python) that run on a schedule to simulate user interactions — test API endpoints, website flows, UI interactions. Detect broken links, slow responses, or outages <em>before</em> real users encounter them.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Synthetics canaries run every minute (or longer). Results are stored in S3 (screenshots, HAR files). Integrates with CloudWatch Alarms — alert when a canary fails.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudWatch Network Synthetic Monitor</strong>: monitor network performance between your VPC resources and internet destinations. Sends synthetic probe traffic and measures latency, packet loss, and route changes — without deploying your own monitoring infrastructure.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Detect API or website outages before users do" → CloudWatch Synthetics (canaries). Synthetics are scheduled test scripts; regular CloudWatch Alarms react to real traffic. Network Monitor = measure network performance to and from your VPC endpoints.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ LOGS & AGENTS ══════════════ -->
+    <div id="cw-logs" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — CloudWatch</div>
+        <div class="page-title">Logs & Agents</div>
+        <div class="page-desc">Centralize application and system logs from EC2, Lambda, ECS, on-premises, and every AWS service.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">LOG</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudWatch Logs <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Centralized log storage, search, and streaming for all AWS and custom sources</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudWatch Logs is the central log aggregation service in AWS. It ingests logs from EC2 (via agent), Lambda (automatically), ECS containers, EKS, API Gateway, RDS, VPC Flow Logs, CloudTrail, Route 53, and custom applications.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Log Groups</strong>: a container for log streams representing the same application/resource (e.g. <code>/aws/lambda/my-function</code>, <code>/var/log/messages</code>). Retention period is set at the log group level (default: never expire — you pay indefinitely).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Log Streams</strong>: a sequence of log events from a single source within a log group (e.g. one log stream per EC2 instance, one per Lambda function invocation context).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Log retention</strong>: configurable from 1 day to 10 years (or never expire). Set at the log group level. Important for cost control — storing logs indefinitely can become expensive.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudWatch Logs Insights</strong>: interactive query language for log analysis. Ad-hoc queries across multiple log groups simultaneously. Visualize results as time series or bar charts. Common queries for Lambda errors, API Gateway 5xx rates, custom application events.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Metric Filters</strong>: extract metric values from log events using pattern matching. E.g. count occurrences of "ERROR" in application logs → publish as a CloudWatch metric → trigger an alarm. Converts unstructured logs into quantitative metrics.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Subscription Filters</strong>: stream log events in real-time to Kinesis Data Streams, Kinesis Firehose, or Lambda for real-time processing or archiving. One subscription filter per log group to the same destination.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Export to S3</strong>: batch export of log data to S3 for long-term archiving or Athena analysis. Export takes up to <strong>12 hours</strong> — not real-time. For real-time, use Subscription Filters to Firehose → S3.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Live Tail</strong>: real-time streaming view of incoming log events in the console — like <code>tail -f</code> for CloudWatch. Filter by log group and pattern. Useful for debugging live issues without querying.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Encryption: logs are encrypted at rest by default. Can configure KMS customer-managed key at the log group level for additional compliance requirements.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Stream CloudWatch Logs to Elasticsearch/OpenSearch in real-time" → Subscription Filter → Lambda → OpenSearch. "Export logs to S3 for Athena analysis" → Export to S3 (up to 12 hours delay, not real-time). "Count ERROR occurrences and trigger alarm" → Metric Filter → CloudWatch Metric → Alarm. Lambda logs to CloudWatch automatically — no agent needed.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">AGT</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudWatch Agent <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Collect OS-level metrics and logs from EC2 and on-premises servers</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>The CloudWatch Agent is software you install on EC2 instances (Linux or Windows) and on-premises servers. It enables collection of metrics and logs that are not available through the default AWS hypervisor-level monitoring.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Unified CloudWatch Agent</strong> (current, recommended): single agent that collects both metrics and logs. Replaces the older separate "CloudWatch Logs Agent" (logs only) and "CloudWatch Monitoring Scripts" (metrics). Install the unified agent for all new deployments.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Metrics it enables</strong>: RAM/memory utilization, disk space used/free per partition, disk I/O at the file system level, swap usage, process-level metrics, network connections. These <strong>cannot be obtained without the agent</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Logs it can collect</strong>: any log file on the system — application logs (<code>/var/log/app.log</code>), system logs (<code>/var/log/syslog</code>), Windows Event Logs. Each file maps to a CloudWatch log stream.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Configuration is stored in <strong>SSM Parameter Store</strong> — centrally manage agent configuration across all instances. Push config changes without SSH-ing into each instance.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The agent needs an IAM role attached to the EC2 instance with permissions: <code>CloudWatchAgentServerPolicy</code> (publish metrics + send logs) and optionally <code>AmazonSSMReadOnlyAccess</code> (read config from SSM Parameter Store).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Works on: Amazon Linux 2/2023, Ubuntu, CentOS, RHEL, Windows Server. Also works on <strong>on-premises servers</strong> — configure with IAM credentials.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Monitor EC2 memory/RAM" → must install CloudWatch Agent. This is the #1 CloudWatch exam trap — memory is NOT a default metric. "Collect custom application log files from EC2" → CloudWatch Agent. "Centrally configure agents across a fleet" → store agent config in SSM Parameter Store.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ INSIGHTS & VISIBILITY ══════════════ -->
+    <div id="cw-insights" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — CloudWatch</div>
+        <div class="page-title">Insights & Operational Visibility</div>
+        <div class="page-desc">Container Insights, Lambda Insights, Contributor Insights, and Application Insights — operational observability at scale.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">INS</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudWatch Insights Services <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Four specialized observability tools for containers, Lambda, contributors, and applications</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudWatch offers four "Insights" features that provide deeper operational visibility beyond raw metrics and logs. Each is purpose-built for a specific observability use case.</p>
+          <table class="compare-table">
+            <tr><th>Feature</th><th>What it monitors</th><th>Key capability</th></tr>
+            <tr><td class="label">Container Insights</td><td>ECS, EKS, Kubernetes on EC2, Fargate</td><td>Collects metrics and logs from containers — CPU, memory, disk, network per task/pod/service. Aggregates performance data at the cluster, node, pod, and container level. Requires CloudWatch Agent (as a DaemonSet on EKS/K8s or built into Fargate). Visualized in pre-built dashboards.</td></tr>
+            <tr><td class="label">Lambda Insights</td><td>Lambda functions</td><td>Detailed performance metrics for Lambda — cold starts, duration, memory usage, concurrent executions, errors, and throttles. Provided as a Lambda Layer. Goes beyond the basic Lambda metrics in CloudWatch.</td></tr>
+            <tr><td class="label">Contributor Insights</td><td>CloudWatch Logs</td><td>Analyze log data to identify the top N contributors to a metric — e.g. top 10 source IPs generating the most traffic, top URLs returning 404s, top users causing errors. Runs continuously (not ad-hoc). Useful for identifying noisy neighbors or bad actors.</td></tr>
+            <tr><td class="label">Application Insights</td><td>Application stacks (.NET, SQL Server, IIS, Java, Linux)</td><td>Automatically discover application dependencies, configure monitoring, surface operational insights and anomalies. Sets up recommended metrics and alarms for your application stack automatically. Reduces time to diagnose application issues.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudWatch Logs Insights</strong> (separate from the four above): interactive SQL-like query language for ad-hoc log analysis. Query multiple log groups in a single request. Results can be exported or visualized.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Container Insights = containers (ECS/EKS). Lambda Insights = Lambda function performance. Contributor Insights = top-N log analysis (who's causing the most errors/traffic). Application Insights = automated monitoring for .NET/Java apps. Each has a very specific use case — the exam describes the scenario and you pick the right Insights tool.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ EVENTBRIDGE ══════════════ -->
+    <div id="eventbridge" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — EventBridge</div>
+        <div class="page-title">Amazon EventBridge</div>
+        <div class="page-desc">Serverless event bus — route events from AWS services, SaaS apps, and custom sources to any target.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">EVB</div>
+          <div class="concept-meta">
+            <div class="concept-title">EventBridge Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Formerly CloudWatch Events — event-driven routing at scale with filtering and transformation</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Amazon EventBridge (formerly CloudWatch Events) is a serverless event bus that makes it easy to connect applications using events from AWS services, integrated SaaS applications, and your own custom applications. Events are matched against rules and routed to targets.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Event buses</strong>: three types — <strong>Default bus</strong> (receives events from all AWS services automatically), <strong>Partner bus</strong> (receives events from SaaS partners — Zendesk, Datadog, Salesforce, GitHub, etc.), <strong>Custom bus</strong> (events from your own applications).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Rules</strong>: match incoming events against a pattern (JSON filter) and route matching events to one or more targets. A rule can have up to <strong>5 targets</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Event pattern matching</strong>: filter on any field in the event JSON — source, detail-type, account, region, specific field values. Supports prefix, suffix, wildcard, numeric range, and IP address matching. Only matching events invoke the rule.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Targets</strong>: Lambda, SQS, SNS, Kinesis Data Streams, Step Functions, ECS tasks, CodeBuild, CodePipeline, API Gateway, Batch, another EventBridge bus (cross-account/region), and more.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Input transformation</strong>: transform and reshape event data before sending to a target — extract specific fields, add constants, rename keys. No Lambda needed for simple transformations.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Scheduled rules</strong>: trigger targets on a schedule using cron (<code>cron(0 12 * * ? *)</code>) or rate expression (<code>rate(5 minutes)</code>). Replaces Lambda scheduled events and CloudWatch Events scheduled rules. EventBridge Scheduler is the dedicated scheduling service.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cross-account event routing</strong>: send events from one AWS account to an EventBridge bus in another account. Configure resource-based policies on the target bus to allow inbound events.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Schema Registry</strong>: EventBridge can infer and store the schema of events. Schemas can be used to generate code bindings (TypeScript, Python, Java, Go) for strongly-typed event handling.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Event archiving and replay</strong>: archive all or filtered events to an archive indefinitely. Replay archived events to a bus (useful for re-processing events after a bug fix or to test new rules).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Trigger a Lambda when an EC2 instance is stopped" → EventBridge rule on EC2 state change event. "Run a Lambda every hour" → EventBridge scheduled rule (rate expression). "React to SaaS app events (Zendesk ticket created)" → EventBridge Partner Event Bus. "Fan out one event to multiple targets" → EventBridge rule with multiple targets. EventBridge replaced CloudWatch Events — they are the same service, new name.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">SCH</div>
+          <div class="concept-meta">
+            <div class="concept-title">EventBridge Scheduler <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Dedicated scheduling service — one-time or recurring invocations at scale</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>EventBridge Scheduler is a standalone scheduling service (separate from EventBridge rules) for creating, running, and managing scheduled invocations of Lambda, SQS, Step Functions, and other AWS targets.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supports three schedule types: <strong>Rate-based</strong> (every N minutes/hours/days), <strong>Cron-based</strong> (specific times, timezone-aware), and <strong>One-time</strong> (run exactly once at a specific datetime).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Scales to millions of schedules. Each schedule has its own IAM role for invoking the target. Supports retry policies and dead-letter queues for failed invocations.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use over EventBridge rules when: you need one-time schedules, timezone-aware cron, or massive scale of individual schedules (e.g. per-user scheduled tasks).</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CLOUDTRAIL ══════════════ -->
+    <div id="cloudtrail" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Audit</div>
+        <div class="page-title">AWS CloudTrail</div>
+        <div class="page-desc">API call history for your AWS account — who did what, from where, and when. Enabled by default.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">CT</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudTrail Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Full API audit trail — every AWS API call recorded with user identity, time, source IP, and parameters</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS CloudTrail records every API call made in your AWS account — through the Console, CLI, SDKs, or other services. It answers the question "Who did what in my AWS account?" and is the foundation of AWS compliance, forensics, and security auditing.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Enabled by default</strong> for all AWS accounts. The last <strong>90 days</strong> of management events are available free in the CloudTrail Event History — no trail setup required. Beyond 90 days or for data events → create a Trail.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Event types</strong>: <strong>Management Events</strong> (control plane operations — CreateBucket, RunInstances, AttachRolePolicy — on by default in trails), <strong>Data Events</strong> (data plane operations — S3 GetObject/PutObject, Lambda invocations — NOT logged by default, high volume, additional cost), <strong>Insight Events</strong> (unusual API call patterns detected by CloudTrail Insights).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Trails</strong>: configuration to persistently log events. Can be single-region or <strong>multi-region</strong>. Multi-region trail applies to all regions in the account from one configuration — recommended for comprehensive auditing. Logs delivered to <strong>S3</strong> (JSON format, up to <strong>15 minutes</strong> delivery lag).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Log integrity validation</strong>: CloudTrail uses SHA-256 hashing and digital signatures to verify that log files have not been tampered with. Enable on the trail configuration — produces a digest file for each hour.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CloudTrail Lake</strong>: managed, immutable data lake for CloudTrail events. Query with SQL using Athena-like syntax directly in CloudTrail. Retention up to <strong>7 years</strong>. No need to manage S3 + Athena separately.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Organization Trail</strong>: a trail that applies across all accounts in an AWS Organization — created from the management account. Centralize all account audit logs into one S3 bucket.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Encryption</strong>: CloudTrail logs in S3 can be encrypted with SSE-S3 (default) or SSE-KMS (for additional key management control and CloudTrail access auditing).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Who deleted this S3 bucket?" → CloudTrail (check Management Events). "Who terminated this EC2 instance?" → CloudTrail. "Detect unusual API patterns" → CloudTrail Insights. "Who invoked this Lambda function?" → CloudTrail Data Events (must be enabled — not on by default). Default 90-day history = free, in console only. For S3 persistence → create a Trail. Delivery lag = up to 15 minutes.</div>
+          <div class="warn-box"><strong>SECURITY WARNING</strong>CloudTrail logs themselves must be protected — restrict S3 bucket access, enable MFA Delete, enable log file validation, and consider KMS encryption. Attackers who compromise an account often try to delete CloudTrail logs to cover their tracks.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">INT</div>
+          <div class="concept-meta">
+            <div class="concept-title">CloudTrail + EventBridge Integration <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">React in near-real-time to any API call in your account</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>CloudTrail sends management events to EventBridge's default event bus within seconds. This enables near-real-time automated responses to API calls — much faster than waiting for logs to arrive in S3 (up to 15 minutes).</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>EventBridge rule pattern: match on <code>source: aws.cloudtrail</code> and specific API calls in the event detail. Example: match on <code>eventName: DeleteBucket</code> to trigger a Lambda that re-creates or alerts on deletion.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: alert when root account is used, notify on IAM policy changes, trigger remediation when security groups are opened to 0.0.0.0/0, alert on high-cost API calls (RunInstances with large instance types).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Latency: CloudTrail → EventBridge is near-real-time (seconds). CloudTrail → S3 is eventually consistent (up to 15 minutes). Use EventBridge for real-time response; S3 for long-term archiving and forensics.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Alert immediately when someone uses the root account" → CloudTrail sends event to EventBridge → SNS notification. "Automatically remediate when a security group is opened to 0.0.0.0/0" → CloudTrail → EventBridge → Lambda (remove the rule). This pattern = CloudTrail (detect) + EventBridge (route) + Lambda (remediate).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ AWS CONFIG ══════════════ -->
+    <div id="config" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Compliance</div>
+        <div class="page-title">AWS Config</div>
+        <div class="page-desc">Continuous resource configuration assessment — track changes, evaluate compliance, and remediate automatically.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">CFG</div>
+          <div class="concept-meta">
+            <div class="concept-title">AWS Config Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Configuration history and compliance evaluation for AWS resources</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Config continuously records the configuration of your AWS resources and evaluates them against desired-state rules. It answers "What did my infrastructure look like at a specific point in time?" and "Is my infrastructure compliant with my policies?"</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Configuration recording</strong>: whenever a resource is created, modified, or deleted, Config records the configuration state as a <strong>configuration item</strong>. The full history of configuration changes is stored in S3. Delivered within minutes of a change.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Config Rules</strong>: evaluate resources against desired configurations. Two types: <strong>AWS Managed Rules</strong> (150+ pre-built rules — e.g. <code>s3-bucket-public-read-prohibited</code>, <code>ec2-instance-no-public-ip</code>, <code>iam-password-policy</code>) and <strong>Custom Rules</strong> (Lambda function you write, evaluated on configuration change or schedule).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Compliance evaluation</strong>: each rule marks resources as <strong>COMPLIANT</strong> or <strong>NON_COMPLIANT</strong>. View compliance on a dashboard, query with Athena (Config data in S3), or integrate with Security Hub.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Config does NOT prevent changes</strong> — it records and evaluates. It is a compliance monitor, not a firewall. To block non-compliant actions, use IAM policies or Service Control Policies (SCPs).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Remediation</strong>: Config can trigger <strong>automatic remediation</strong> via SSM Automation documents when a rule is violated. E.g. automatically revoke public access on S3 buckets that become non-compliant. Remediation actions can be triggered immediately or with a scheduled retry.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Configuration snapshots</strong>: point-in-time snapshots of all recorded resources. Delivered to S3 on demand or on a schedule. Useful for periodic compliance reports.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Config Aggregator</strong>: aggregate Config data from multiple accounts and regions into a single account — view organization-wide compliance posture in one dashboard. Works with AWS Organizations.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cost</strong>: $0.003 per configuration item recorded. $0.001 per rule evaluation. <strong>Config is NOT free</strong> — costs accumulate with many resources and rules.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Was this S3 bucket publicly accessible 3 weeks ago?" → AWS Config (configuration history). "Alert when a security group allows unrestricted SSH" → Config Rule (securitygroup-restricted-ssh). "Automatically remediate non-compliant resources" → Config Rule + SSM Automation remediation. Config records configuration state; CloudTrail records API calls. Both together give full auditability.</div>
+          <div class="warn-box"><strong>IMPORTANT GOTCHA</strong>Config records configuration changes, not API calls. It answers "what was the configuration?" CloudTrail answers "who changed it and when via API?" For complete forensics: use BOTH. Config = what changed. CloudTrail = who changed it.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ COMPARISON ══════════════ -->
+    <div id="compare" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">CloudWatch vs CloudTrail vs Config</div>
+        <div class="page-desc">The most-tested comparison in this module — three services, three distinct purposes.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">CMP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Three-Service Comparison <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">What each service answers — the questions they are built to solve</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th></th><th>CloudWatch</th><th>CloudTrail</th><th>AWS Config</th></tr>
+            <tr><td class="label">Core question</td><td>"How is my application performing?"</td><td>"Who did what in my account?"</td><td>"What does my infrastructure look like? Is it compliant?"</td></tr>
+            <tr><td class="label">What it monitors</td><td>Metrics, logs, events — performance and operational health</td><td>API calls — user and service actions on AWS resources</td><td>Resource configurations — the state of AWS resources over time</td></tr>
+            <tr><td class="label">Data type</td><td>Time-series metrics, log events</td><td>API call records (who, what, when, from where, with what parameters)</td><td>Configuration snapshots and change history of resource attributes</td></tr>
+            <tr><td class="label">Use case</td><td>Alerting on CPU spikes, log analysis, dashboards, auto-scaling triggers</td><td>Security forensics, compliance auditing, "who deleted this resource?", detecting unauthorized access</td><td>Compliance checking, configuration drift detection, "what was the SG rule 2 weeks ago?"</td></tr>
+            <tr><td class="label">Can it prevent actions?</td><td>No — reacts after the fact</td><td>No — records after the fact (+ EventBridge for near-real-time response)</td><td>No — evaluates and optionally remediates, but does not block</td></tr>
+            <tr><td class="label">Default storage</td><td>CloudWatch (metrics 15 months, logs per retention setting)</td><td>90 days in Event History free; Trail → S3 indefinitely</td><td>S3 (configuration items, history)</td></tr>
+            <tr><td class="label">Typical trigger</td><td>"CPU is at 95%", "ERROR rate spiked"</td><td>"An IAM policy was modified", "S3 bucket was made public"</td><td>"Security group rule changed", "S3 bucket encryption disabled"</td></tr>
+          </table>
+
+          <div class="key-points" style="margin-top:16px">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Analogy to remember</strong>: CloudWatch = the operations room (real-time dashboards, alerts). CloudTrail = the security camera footage (what happened and who did it). AWS Config = the building inspector (is everything up to code?)</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>The exam gives a scenario and asks which service answers it. Map the question: "Performance/metrics/logs" → CloudWatch. "Who made this change / API audit" → CloudTrail. "Configuration history / compliance state" → Config. All three often work together: CloudTrail records the API call, Config records the resulting configuration change, CloudWatch metrics reflect the operational impact.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Map any exam scenario to the right service or feature instantly</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"Monitor EC2 memory/RAM utilization"</td><td class="label">CloudWatch Agent (RAM not available by default)</td></tr>
+            <tr><td>"Alert when CPU exceeds 80% for 5 minutes"</td><td class="label">CloudWatch Alarm on CPUUtilization</td></tr>
+            <tr><td>"Auto-recover EC2 after hardware failure"</td><td class="label">CloudWatch Alarm → EC2 Recover action</td></tr>
+            <tr><td>"Count ERROR occurrences in logs and alarm on them"</td><td class="label">CloudWatch Logs Metric Filter → Alarm</td></tr>
+            <tr><td>"Query logs with SQL-like syntax"</td><td class="label">CloudWatch Logs Insights</td></tr>
+            <tr><td>"Stream logs to OpenSearch in real-time"</td><td class="label">CloudWatch Logs Subscription Filter → Lambda → OpenSearch</td></tr>
+            <tr><td>"Export logs to S3 for Athena analysis"</td><td class="label">CloudWatch Logs Export to S3 (up to 12h lag)</td></tr>
+            <tr><td>"Monitor container performance on ECS/EKS"</td><td class="label">CloudWatch Container Insights</td></tr>
+            <tr><td>"Detect top IPs generating 404 errors in logs"</td><td class="label">CloudWatch Contributor Insights</td></tr>
+            <tr><td>"Test API availability before users hit it"</td><td class="label">CloudWatch Synthetics (canaries)</td></tr>
+            <tr><td>"Trigger Lambda when EC2 instance state changes"</td><td class="label">EventBridge rule on EC2 state-change event</td></tr>
+            <tr><td>"Run a Lambda every hour on a schedule"</td><td class="label">EventBridge scheduled rule (rate expression)</td></tr>
+            <tr><td>"React to Zendesk ticket creation in AWS"</td><td class="label">EventBridge Partner Event Bus</td></tr>
+            <tr><td>"Who deleted the S3 bucket?"</td><td class="label">CloudTrail (Management Events)</td></tr>
+            <tr><td>"Who invoked this Lambda function?"</td><td class="label">CloudTrail Data Events (must be enabled)</td></tr>
+            <tr><td>"Alert immediately when root account is used"</td><td class="label">CloudTrail → EventBridge → SNS</td></tr>
+            <tr><td>"Detect unusual API call volume or patterns"</td><td class="label">CloudTrail Insights</td></tr>
+            <tr><td>"Was this security group rule changed? When?"</td><td class="label">AWS Config (configuration history)</td></tr>
+            <tr><td>"Alert when S3 bucket becomes publicly readable"</td><td class="label">AWS Config Rule (s3-bucket-public-read-prohibited)</td></tr>
+            <tr><td>"Automatically re-encrypt EBS volumes when encryption is disabled"</td><td class="label">AWS Config Rule + SSM Automation remediation</td></tr>
+            <tr><td>"Organization-wide compliance dashboard"</td><td class="label">AWS Config Aggregator</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">NUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Numbers to Memorize <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hard limits and defaults tested directly in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudWatch default metric resolution: <strong>1 minute</strong>. High-Resolution: <strong>1 second</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudWatch metric retention: 1s data = <strong>3 hours</strong>. 1-min = <strong>15 days</strong>. 5-min = <strong>63 days</strong>. 1-hour = <strong>15 months</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudWatch Logs export to S3: up to <strong>12 hours</strong> delay (not real-time).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EventBridge rule targets: up to <strong>5 targets per rule</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudTrail default Event History: <strong>90 days</strong>, free, management events only.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudTrail Trail log delivery to S3: up to <strong>15 minutes</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudTrail Lake retention: up to <strong>7 years</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudTrail Data Events: <strong>NOT logged by default</strong> — must be explicitly enabled (additional cost).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>EC2 metrics NOT available by default (need CloudWatch Agent): <strong>Memory/RAM, disk space, swap</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS Config cost: <strong>$0.003 per configuration item recorded</strong> (not free).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CloudWatch Alarms: <strong>INSUFFICIENT_DATA</strong> ≠ OK — it means not enough data points to evaluate.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>

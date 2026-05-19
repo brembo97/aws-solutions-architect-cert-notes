@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Serverless — Exam Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: #30363d; --border-accent: #3d4a5a;
+    --text: #e6edf3; --muted: #7d8590;
+    --accent-blue: #58a6ff; --accent-teal: #39d0a0; --accent-amber: #f0a742;
+    --accent-red: #ff7b72; --accent-purple: #bc8cff; --accent-green: #56d364;
+    --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; padding: 2rem 0; }
+  .sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  .sidebar-logo .tag { font-family: var(--font-mono); font-size: 10px; color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-logo h1 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .nav-section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 0.75rem 1.5rem 0.25rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 1.5rem; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent-blue); border-left-color: var(--accent-blue); background: rgba(88,166,255,0.08); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .main { margin-left: 240px; flex: 1; max-width: 900px; padding: 3rem 3.5rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .page-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent-teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.6; }
+  .concept { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.25rem; overflow: hidden; transition: border-color 0.15s; }
+  .concept:hover { border-color: var(--border-accent); }
+  .concept-header { display: flex; align-items: flex-start; gap: 12px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+  .concept-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .concept-meta { flex: 1; }
+  .concept-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .concept-subtitle { font-size: 12px; color: var(--muted); }
+  .concept-toggle { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-top: 4px; }
+  .concept.open .concept-toggle { transform: rotate(90deg); }
+  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .concept.open .concept-body { display: block; }
+  .concept-body p { font-size: 14px; color: #b1bac4; margin-bottom: 12px; line-height: 1.75; }
+  .concept-body p:last-child { margin-bottom: 0; }
+  .key-points { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .kp { display: flex; gap: 10px; font-size: 13px; color: #b1bac4; line-height: 1.6; }
+  .kp-bullet { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+  .exam-box { margin-top: 14px; padding: 10px 14px; background: rgba(240,167,66,0.07); border: 1px solid rgba(240,167,66,0.25); border-radius: 6px; font-size: 13px; color: #c9a96e; line-height: 1.6; }
+  .exam-box strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .warn-box { margin-top: 14px; padding: 10px 14px; background: rgba(255,123,114,0.07); border: 1px solid rgba(255,123,114,0.2); border-radius: 6px; font-size: 13px; color: #ff9f97; line-height: 1.6; }
+  .warn-box strong { color: var(--accent-red); font-weight: 500; font-family: var(--font-mono); font-size: 11px; display: block; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.06em; }
+  .badge-core { background: rgba(88,166,255,0.12); color: var(--accent-blue); }
+  .badge-adv  { background: rgba(188,140,255,0.12); color: var(--accent-purple); }
+  .badge-tool { background: rgba(57,208,160,0.12); color: var(--accent-teal); }
+  .badge-ent  { background: rgba(240,167,66,0.12); color: var(--accent-amber); }
+  code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--accent-teal); }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #b1bac4; vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  td.label { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; color: var(--text); }
+  .flow-arrow { color: var(--muted); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="tag">AWS Cert Notes</div>
+      <h1>Serverless & Event-Driven</h1>
+    </div>
+
+    <div class="nav-section-label">Lambda</div>
+    <a class="nav-item active" onclick="show('lambda-core')">
+      <span class="nav-dot" style="background:#58a6ff"></span> Lambda Core
+    </a>
+    <a class="nav-item" onclick="show('lambda-limits')">
+      <span class="nav-dot" style="background:#39d0a0"></span> Limits & Concurrency
+    </a>
+    <a class="nav-item" onclick="show('lambda-advanced')">
+      <span class="nav-dot" style="background:#bc8cff"></span> Advanced Lambda
+    </a>
+
+    <div class="nav-section-label">API Gateway</div>
+    <a class="nav-item" onclick="show('apigw')">
+      <span class="nav-dot" style="background:#f0a742"></span> API Gateway
+    </a>
+
+    <div class="nav-section-label">Other Services</div>
+    <a class="nav-item" onclick="show('stepfunctions')">
+      <span class="nav-dot" style="background:#ff7b72"></span> Step Functions
+    </a>
+    <a class="nav-item" onclick="show('cognito')">
+      <span class="nav-dot" style="background:#56d364"></span> Amazon Cognito
+    </a>
+
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-item" onclick="show('cheatsheet')">
+      <span class="nav-dot" style="background:#db6eb0"></span> Cheat Sheet
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- ══════════════ LAMBDA CORE ══════════════ -->
+    <div id="lambda-core" class="page active">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 1 — Lambda</div>
+        <div class="page-title">AWS Lambda — Core</div>
+        <div class="page-desc">Function-as-a-Service: run code without servers, pay per invocation, scale automatically from zero to thousands.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">λ</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Event-driven FaaS — zero server management, pay per 1ms of execution</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Lambda runs your code in response to events — HTTP requests, file uploads, queue messages, database changes, scheduled triggers, and more. You provide the code; AWS handles every aspect of the runtime environment, OS, scaling, and availability.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>No servers to manage</strong> — no EC2, no patching, no capacity planning. Lambda scales automatically from 0 to thousands of concurrent executions in seconds.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Pricing</strong>: pay per number of invocations + duration (billed in 1ms increments). <strong>Free tier: 1 million invocations and 400,000 GB-seconds of compute per month</strong> — never expires.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Supported runtimes: Node.js, Python, Java, .NET (C#/PowerShell), Ruby, Go. Also supports <strong>custom runtimes</strong> (any language via the Lambda runtime API) and <strong>container images</strong> (up to 10 GB).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Execution environment</strong>: Lambda runs in an isolated, single-use container. The <code>/tmp</code> directory provides up to <strong>10 GB</strong> of ephemeral storage per execution. Memory: <strong>128 MB to 10,240 MB (10 GB)</strong>, adjustable in 1 MB increments.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CPU is <strong>proportional to memory</strong> — you cannot configure CPU directly. At 1,769 MB, Lambda gets 1 full vCPU. At 10,240 MB, Lambda gets ~6 vCPUs.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>IAM Execution Role</strong>: every Lambda function must have an IAM execution role granting it permissions to call other AWS services (write to S3, read from DynamoDB, publish to SNS, etc.).</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Need more CPU in Lambda" → increase memory (CPU scales with memory, not independently). Free tier is 1M invocations + 400K GB-seconds/month, permanent. Lambda container images up to 10 GB are useful for large ML models or dependencies. Always attach an execution role for cross-service calls.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">TRG</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda Triggers & Event Sources <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">What can invoke Lambda — synchronous vs asynchronous vs poll-based</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Lambda can be invoked by dozens of AWS services. Knowing the invocation model (sync, async, or poll-based) is important because it determines error handling and retry behavior.</p>
+          <table class="compare-table">
+            <tr><th>Model</th><th>Sources</th><th>Error handling</th></tr>
+            <tr><td class="label">Synchronous</td><td>API Gateway, ALB, Lambda URLs, Cognito, CloudFront, Lex, Alexa, Kinesis Data Analytics</td><td>Caller receives the error response directly. No automatic retry by Lambda — the caller is responsible.</td></tr>
+            <tr><td class="label">Asynchronous</td><td>S3, SNS, EventBridge, SES, CloudFormation, CodeCommit, CodePipeline, CloudWatch Logs, IoT</td><td>Lambda retries automatically: up to 2 retries (3 total attempts). Failed events go to a DLQ (SQS or SNS) if configured. Use idempotent functions.</td></tr>
+            <tr><td class="label">Poll-based (Event Source Mapping)</td><td>SQS, Kinesis Data Streams, DynamoDB Streams, MSK, self-managed Kafka</td><td>Lambda polls the source. Failed batches go back to the stream/queue. DLQ on SQS, or bisect-on-error for streams.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Event Source Mapping (ESM)</strong>: Lambda internally polls SQS/Kinesis/DynamoDB Streams on your behalf. You configure batch size (number of records per invocation) and starting position. Lambda scales the number of pollers based on queue/stream depth.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For SQS: Lambda deletes processed messages automatically. For Kinesis/DynamoDB Streams: Lambda checkpoints position — streams are ordered and replayable.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Asynchronous invocations retry 2 times automatically (3 total). Always use idempotent functions for async sources. S3 → Lambda is always async. API Gateway → Lambda is sync. SQS → Lambda uses ESM (poll-based). Kinesis → Lambda uses ESM (poll-based, ordered).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ LAMBDA LIMITS & CONCURRENCY ══════════════ -->
+    <div id="lambda-limits" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 2 — Lambda</div>
+        <div class="page-title">Limits, Concurrency & Cold Starts</div>
+        <div class="page-desc">Hard limits, concurrency models, throttling behavior, cold starts, and SnapStart.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">LIM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda Limits <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hard and soft limits — the numbers that appear in exam questions</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Resource</th><th>Limit</th><th>Notes</th></tr>
+            <tr><td class="label">Memory</td><td>128 MB – 10,240 MB (10 GB)</td><td>Set in 1 MB increments. CPU scales proportionally.</td></tr>
+            <tr><td class="label">Execution timeout</td><td>Max 15 minutes (900 seconds)</td><td>Default is 3 seconds. Not suitable for long-running jobs beyond 15 min — use ECS/Fargate or Step Functions instead.</td></tr>
+            <tr><td class="label">Ephemeral storage (/tmp)</td><td>512 MB default, up to 10,240 MB (10 GB)</td><td>Shared within an execution environment between warm invocations.</td></tr>
+            <tr><td class="label">Deployment package (zip)</td><td>50 MB compressed / 250 MB uncompressed</td><td>For larger packages, use Lambda layers or container images (up to 10 GB).</td></tr>
+            <tr><td class="label">Container image size</td><td>Up to 10 GB</td><td>Ideal for ML models, large runtimes.</td></tr>
+            <tr><td class="label">Concurrency (account default)</td><td>1,000 concurrent executions per region</td><td>Soft limit — can be increased via support request.</td></tr>
+            <tr><td class="label">Environment variables</td><td>4 KB total</td><td>Per function. For larger config, use SSM Parameter Store or Secrets Manager.</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>Max timeout = 15 minutes. If a task takes longer → Step Functions, ECS/Fargate, or Batch. Deployment zip = 250 MB uncompressed. Container images = 10 GB (for large ML models). These limits appear frequently in "which service fits" questions.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">CON</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda Concurrency <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Reserved concurrency, provisioned concurrency, throttling, and the 1,000 limit</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Concurrency is the number of Lambda function instances running simultaneously. Each invocation runs in its own isolated execution environment — one invocation per environment at a time.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Account concurrency limit</strong>: default <strong>1,000 concurrent executions per region</strong> across ALL functions. This is a shared pool.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Throttling</strong>: when concurrency limit is reached, new invocations are throttled. Synchronous invocations return a <strong>429 Too Many Requests</strong> error. Async invocations are retried automatically for up to 6 hours.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Reserved Concurrency</strong>: guarantee a maximum concurrency for a specific function (e.g. reserve 200 for function A). This <em>caps</em> function A at 200 AND reserves those 200 from the account pool — other functions can use the remaining 800. Ensures one function can't consume all shared concurrency. Also ensures the function will never scale beyond the reserved limit.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Provisioned Concurrency</strong>: pre-warm a number of execution environments before invocations arrive. Eliminates cold starts for those environments. Costs money — you pay for provisioned environments even when not invoked. Use for latency-sensitive production functions.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Cold start</strong>: when a new execution environment is initialized (no warm environment available) — Lambda must download code, start the runtime, and run initialization code. Takes 100ms–1s+ depending on runtime and package size. Java and .NET have longer cold starts than Node.js/Python.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Warm start</strong>: when an existing execution environment is reused. Initialization code doesn't run again. Code outside the handler function (global scope, DB connections) persists between warm invocations.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Reserved concurrency = cap + reserve (protects other functions). Provisioned concurrency = pre-warmed environments (eliminates cold starts, costs money). "One Lambda is consuming all concurrency, starving other functions" → set Reserved Concurrency on the greedy function. "Eliminate cold starts for a latency-sensitive API" → Provisioned Concurrency.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">SNP</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda SnapStart <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">10x faster cold starts for Java — snapshot the initialized environment</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Lambda SnapStart is a feature that dramatically reduces cold start latency for Java functions. Instead of initializing the runtime from scratch on every cold start, Lambda takes a snapshot of the fully initialized execution environment and restores it instantly on new invocations.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Currently supports <strong>Java 11 and Java 17</strong> runtimes only. Not available for Node.js, Python, or other runtimes.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda runs the initialization phase (<code>Init</code>) once, takes a snapshot of memory and disk state, then caches and restores that snapshot for subsequent cold starts. Startup time can improve by up to <strong>10x</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>The snapshot is created when you publish a new function version. Each version gets its own snapshot.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>No additional cost for SnapStart — you pay the same Lambda execution pricing.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Caveat</strong>: if your initialization code generates unique state (random seeds, unique IDs, network connections), that state will be the same in every restored environment. Use <code>RuntimeHook</code> callbacks to re-generate unique state after restore.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Reduce Java Lambda cold starts" → SnapStart (Java 11/17 only). "Eliminate cold starts entirely for all invocations" → Provisioned Concurrency (works for all runtimes). SnapStart reduces cold start duration; Provisioned Concurrency eliminates cold starts by pre-warming. Know the difference.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ LAMBDA ADVANCED ══════════════ -->
+    <div id="lambda-advanced" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 3 — Lambda</div>
+        <div class="page-title">Advanced Lambda</div>
+        <div class="page-desc">VPC deployment, edge execution, RDS integration, layers, and Lambda URLs.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(188,140,255,0.12);color:#bc8cff;">VPC</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda in a VPC <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Access private resources — RDS, ElastiCache, private APIs — from Lambda</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>By default, Lambda runs in an AWS-managed VPC with internet access but no access to your private VPC resources (RDS in a private subnet, ElastiCache, etc.). Deploying Lambda inside your own VPC gives it private network access — at the cost of losing direct internet access.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda in a VPC attaches an <strong>ENI (Elastic Network Interface)</strong> in each specified subnet. The function gets a private IP in your VPC and can reach private resources using Security Group rules.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Internet access in a VPC Lambda</strong>: once inside a VPC, Lambda loses direct internet access. To restore it: deploy Lambda in a <strong>private subnet</strong> and route outbound traffic through a <strong>NAT Gateway</strong> in a public subnet.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda in a <strong>public subnet</strong> does NOT get internet access — Lambda doesn't use public IPs even in a public subnet. Always use private subnet + NAT Gateway.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For AWS service calls (S3, DynamoDB, SQS) from a VPC Lambda: either use a <strong>NAT Gateway</strong> (internet path, costs money) or a <strong>VPC Endpoint</strong> (private path, stays within AWS network, cheaper and faster).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda requires <strong><code>ec2:CreateNetworkInterface</code></strong>, <strong><code>ec2:DescribeNetworkInterfaces</code></strong>, and <strong><code>ec2:DeleteNetworkInterface</code></strong> permissions in its execution role to create/manage ENIs.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Lambda needs to access RDS in a private subnet" → deploy Lambda in same VPC, configure Security Groups to allow Lambda ENI to reach RDS port. "Lambda in VPC needs internet access" → private subnet + NAT Gateway (NOT public subnet — Lambda doesn't use public IPs). "Lambda in VPC calling S3 without internet" → S3 VPC Gateway Endpoint.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">EDGE</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda@Edge & CloudFront Functions <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Run code at CloudFront edge locations — no origin round-trip for request/response manipulation</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Both Lambda@Edge and CloudFront Functions execute at CloudFront edge locations, allowing you to customize HTTP requests and responses without routing traffic back to origin. They differ significantly in capability and cost.</p>
+          <table class="compare-table">
+            <tr><th></th><th>CloudFront Functions</th><th>Lambda@Edge</th></tr>
+            <tr><td class="label">Runtime</td><td>JavaScript (ES5.1)</td><td>Node.js, Python</td></tr>
+            <tr><td class="label">Trigger points</td><td>Viewer Request, Viewer Response only</td><td>All 4: Viewer Req, Viewer Res, Origin Req, Origin Res</td></tr>
+            <tr><td class="label">Max execution time</td><td>&lt;1 ms</td><td>5s (viewer triggers) / 30s (origin triggers)</td></tr>
+            <tr><td class="label">Memory</td><td>2 MB</td><td>Up to 10 GB</td></tr>
+            <tr><td class="label">Network / file system</td><td>No</td><td>Yes</td></tr>
+            <tr><td class="label">Scale</td><td>Millions req/sec</td><td>Thousands req/sec</td></tr>
+            <tr><td class="label">Cost</td><td>~$0.10/million</td><td>~$0.60/million + duration</td></tr>
+            <tr><td class="label">Best for</td><td>URL rewrites/redirects, header manipulation, cache key normalization, JWT validation (simple)</td><td>A/B testing with external calls, image resizing, auth with DB lookup, complex request routing</td></tr>
+          </table>
+          <div class="exam-box"><strong>EXAM TIP</strong>CloudFront Functions = lightweight viewer-only triggers, sub-millisecond, very cheap. Lambda@Edge = full Lambda capabilities, all 4 triggers, can make network calls. "Add security headers to every response at the edge" → CloudFront Functions. "Authenticate users by calling an auth service at the edge" → Lambda@Edge.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">RDS</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda & RDS — Invoking Lambda + Event Notifications <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">RDS-initiated Lambda calls and database event notifications</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Lambda and RDS can interact in two directions: Lambda can call RDS (standard pattern), and RDS can invoke Lambda or send event notifications outbound.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Invoking Lambda from RDS/Aurora</strong>: RDS for PostgreSQL and Aurora MySQL/PostgreSQL can invoke a Lambda function directly from within a stored procedure or trigger — e.g. send an email when a record is inserted. RDS must have network access to Lambda (VPC or internet) and must be granted IAM permission to invoke Lambda.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RDS Event Notifications</strong>: subscribe to RDS operational events (DB instance started/stopped, failover, snapshot created, parameter group change) via SNS. These are infrastructure-level events, NOT data-level changes (row inserts, updates).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>For data-level change events (row-level CDC): use <strong>RDS → Lambda via stored procedure/trigger</strong> (directly), or Aurora with <strong>DynamoDB Streams-style change capture</strong> patterns (Aurora → Lambda via native integration).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>RDS Proxy + Lambda</strong>: for Lambda functions connecting to RDS, always use RDS Proxy to pool connections. Lambda at scale can open thousands of connections simultaneously — RDS Proxy prevents connection exhaustion.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>RDS Event Notifications → operational events (failover, maintenance) via SNS. NOT for data changes. "Trigger Lambda when a row is inserted in RDS" → Lambda invoked from a stored procedure/trigger (or DMS CDC to Kinesis). "Lambda connecting to RDS at scale" → always use RDS Proxy to prevent connection pool exhaustion.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">LYR</div>
+          <div class="concept-meta">
+            <div class="concept-title">Lambda Layers & Lambda URLs <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Shared dependencies + direct HTTPS endpoints without API Gateway</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lambda Layers</strong>: ZIP archives containing shared libraries, custom runtimes, or data. Attached to functions at deploy time — the layer is mounted at <code>/opt</code> in the execution environment. A function can use up to <strong>5 layers</strong>. Total unzipped size (function + all layers) must not exceed 250 MB.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Layers can be shared across functions and accounts — publish a layer publicly for community use or share privately with specific AWS accounts.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>AWS provides public layers (e.g. AWS Lambda Powertools, AWS Data Wrangler).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lambda Function URLs</strong>: a dedicated HTTPS endpoint for a Lambda function — no API Gateway required. URL format: <code>https://&lt;url-id&gt;.lambda-url.&lt;region&gt;.on.aws</code>. Supports auth (IAM SigV4) or no auth (public).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Function URLs are simpler and cheaper than API Gateway for basic HTTP invocations — no request routing, no API management features. Use when you just need a public endpoint for one function.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>Lambda Layers = share code/libraries between functions, max 5 layers, 250 MB total unzipped. Lambda Function URLs = direct HTTPS endpoint without API Gateway — simpler but no routing, throttling policies, or usage plans. "Invoke Lambda over HTTPS without API Gateway" → Lambda Function URL.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ API GATEWAY ══════════════ -->
+    <div id="apigw" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 4 — API Gateway</div>
+        <div class="page-title">Amazon API Gateway</div>
+        <div class="page-desc">Managed API front door — create, publish, secure, and scale REST, HTTP, and WebSocket APIs.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(240,167,66,0.12);color:#f0a742;">APIG</div>
+          <div class="concept-meta">
+            <div class="concept-title">API Gateway Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Serverless API management — routing, auth, throttling, and caching in one service</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>API Gateway is a fully managed service for creating and managing APIs at any scale. It handles the undifferentiated work of API management — request routing, authentication, authorization, SSL termination, throttling, caching, monitoring, and versioning — so you can focus on business logic.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Three API types: <strong>REST API</strong> (feature-rich, supports all capabilities), <strong>HTTP API</strong> (lower latency, lower cost, subset of features — recommended for Lambda and HTTP backends), <strong>WebSocket API</strong> (bidirectional, stateful connections — chat, gaming, real-time dashboards).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Integrations</strong>: Lambda Function (most common), HTTP endpoints (any publicly accessible HTTP backend), AWS Services (direct integration with SQS, Step Functions, Kinesis, DynamoDB, etc. without Lambda), Mock (return static responses for testing).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Endpoint types</strong>: <code>Edge-Optimized</code> (default — CloudFront edge, best for global clients), <code>Regional</code> (single region, use with your own CloudFront for more control), <code>Private</code> (VPC-only access via VPC Interface Endpoint).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Throttling</strong>: default 10,000 req/s with a burst of 5,000. Configure usage plans and API keys to throttle per client. Returns <strong>429 Too Many Requests</strong> when throttled.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Caching</strong>: REST API supports response caching (TTL 0–3,600 seconds). Reduces backend calls for repeated identical requests. Caching is per stage and costs extra (cache size 0.5 GB to 237 GB).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>CORS</strong>: must be enabled explicitly on API Gateway when frontend JS (e.g. S3 static site) calls the API from a different domain. Configure <code>Access-Control-Allow-Origin</code> headers in the API response.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>HTTP API = cheaper and lower latency but fewer features (no usage plans, no API key-based throttling, no request/response transformation). REST API = full-featured. WebSocket API = real-time bidirectional. "Client getting 429 from API Gateway" → throttling limit hit — increase limit or add a SQS buffer. "Serverless REST API" → API Gateway + Lambda + DynamoDB (the canonical serverless CRUD stack).</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">AUTH</div>
+          <div class="concept-meta">
+            <div class="concept-title">API Gateway Authentication & Authorization <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">IAM, Lambda Authorizer, Cognito — three ways to secure an API</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Method</th><th>How it works</th><th>Best for</th></tr>
+            <tr><td class="label">IAM Authorization</td><td>Caller must sign the request with AWS SigV4 credentials. API Gateway validates the signature and checks IAM policies. Pass credentials in request headers.</td><td>Machine-to-machine (service-to-service) calls within AWS. Internal APIs where callers have IAM roles.</td></tr>
+            <tr><td class="label">Lambda Authorizer (Custom)</td><td>API Gateway calls a Lambda function with the request token/headers. Lambda returns an IAM policy (allow/deny). Policy is cached by API Gateway.</td><td>Custom auth schemes: JWT validation, OAuth token introspection, LDAP/legacy auth systems.</td></tr>
+            <tr><td class="label">Cognito User Pool</td><td>User authenticates with Cognito → gets a JWT. JWT is passed as a header to API Gateway. API Gateway validates the JWT against Cognito directly (no Lambda needed).</td><td>End-user authentication. Web/mobile apps with user sign-up/sign-in.</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Resource policies</strong>: JSON policy attached to the API Gateway resource — control which AWS accounts, IP ranges, or VPCs can invoke the API. Useful for restricting API access to specific VPCs (Private API).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda Authorizer result is cached for a configurable TTL — avoids calling the Lambda on every request for the same token.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>IAM = AWS services/users calling the API (SigV4). Lambda Authorizer = custom/legacy auth (JWT, OAuth, LDAP). Cognito User Pool = end-user sign-in (mobile/web apps). "Third-party JWT auth" → Lambda Authorizer. "Mobile app users" → Cognito. "Internal AWS service calling the API" → IAM auth.</div>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(88,166,255,0.12);color:#58a6ff;">STG</div>
+          <div class="concept-meta">
+            <div class="concept-title">Stages, Deployments & Canary Releases <span class="badge badge-adv">advanced</span></div>
+            <div class="concept-subtitle">Manage API versions and gradually roll out changes</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>API changes must be <strong>deployed</strong> to a stage to take effect. Stages are named deployments (e.g. <code>dev</code>, <code>staging</code>, <code>prod</code>). Each stage has its own URL, settings, and can have its own variables.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Stage variables</strong>: key-value pairs available to your API — use them to point different stages to different Lambda functions or backends (e.g. <code>dev</code> stage → Lambda dev alias, <code>prod</code> stage → Lambda prod alias).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Canary deployments</strong>: route a percentage of traffic (e.g. 5%) to a new deployment before promoting it fully. Test new versions in production with minimal risk. If issues arise, roll back instantly.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Lambda aliases</strong> work naturally with API Gateway canary: point a stage to a Lambda alias (e.g. <code>$LATEST</code>) and use Lambda alias weights to split traffic between function versions.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Test a new API version in production with 5% of traffic" → API Gateway Canary deployment. "Use the same API across multiple environments without duplicating it" → stages + stage variables pointing to different backends. Stage URL format: <code>https://api-id.execute-api.region.amazonaws.com/stage-name</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ STEP FUNCTIONS ══════════════ -->
+    <div id="stepfunctions" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 5 — Orchestration</div>
+        <div class="page-title">AWS Step Functions</div>
+        <div class="page-desc">Visual serverless orchestration — coordinate Lambda, ECS, SQS, and other services into complex multi-step workflows.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(255,123,114,0.12);color:#ff7b72;">SFN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Step Functions Overview <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Serverless state machine — orchestrate workflows beyond Lambda's 15-minute limit</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>AWS Step Functions lets you model complex workflows as visual state machines using Amazon States Language (ASL — JSON/YAML). Each step in the workflow is a state. Steps can invoke Lambda, run ECS tasks, call other AWS services, wait, retry, catch errors, and branch on conditions.</p>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Maximum execution duration</strong>: <strong>1 year</strong> — far beyond Lambda's 15-minute limit. Workflows can include human approval steps that wait indefinitely.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Two workflow types: <strong>Standard</strong> (exactly-once execution, full history, up to 1 year, ~$0.025/1,000 state transitions) and <strong>Express</strong> (at-least-once, up to 5 minutes, much cheaper — for high-volume IoT/event processing).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>State types: <code>Task</code> (invoke a service), <code>Choice</code> (conditional branching), <code>Wait</code> (pause for time or callback), <code>Parallel</code> (concurrent branches), <code>Map</code> (iterate over a list), <code>Pass</code> (transform data), <code>Succeed</code>, <code>Fail</code>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Built-in error handling: <strong>Retry</strong> (retry a failing task with configurable backoff) and <strong>Catch</strong> (catch errors and route to a fallback state).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Use cases: order processing pipelines, data processing workflows, ML training pipelines, human approval workflows, multi-step ETL jobs, microservice orchestration.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>"Workflow that takes more than 15 minutes" → Step Functions (Standard, up to 1 year). "Complex multi-step process with retries and branching" → Step Functions. "High-volume low-latency event processing workflow" → Step Functions Express. Step Functions = orchestration (manages state externally). Lambda = compute inside each step.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ COGNITO ══════════════ -->
+    <div id="cognito" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Module 6 — Identity</div>
+        <div class="page-title">Amazon Cognito</div>
+        <div class="page-desc">Managed user identity — sign-up, sign-in, social login, and AWS credential vending for mobile and web apps.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(86,211,100,0.12);color:#56d364;">COG</div>
+          <div class="concept-meta">
+            <div class="concept-title">Cognito User Pools vs Identity Pools <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Authentication (who you are) vs Authorization (what AWS resources you can access)</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <p>Cognito has two distinct components that solve different problems — they are frequently confused on the exam. Understanding which component does what is critical.</p>
+          <table class="compare-table">
+            <tr><th></th><th>User Pools</th><th>Identity Pools (Federated Identities)</th></tr>
+            <tr><td class="label">Purpose</td><td><strong>Authentication</strong> — who is this user? User sign-up, sign-in, MFA, password reset, social login (Google, Facebook, Apple, SAML/OIDC IdP).</td><td><strong>Authorization</strong> — what can this user access? Vends temporary AWS credentials (via STS AssumeRoleWithWebIdentity) so users can access AWS services directly.</td></tr>
+            <tr><td class="label">Output</td><td>JWT tokens: ID Token, Access Token, Refresh Token</td><td>Temporary AWS credentials: Access Key, Secret Key, Session Token</td></tr>
+            <tr><td class="label">Integration</td><td>API Gateway (validate JWT directly). ALB (authenticate before routing).</td><td>Direct AWS SDK calls from mobile/web apps (S3, DynamoDB, etc.) using temporary credentials.</td></tr>
+            <tr><td class="label">Guest access</td><td>No — users must sign in</td><td>Yes — can grant limited AWS credentials to unauthenticated (guest) users</td></tr>
+          </table>
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>Combined flow</strong>: User signs in via User Pool → gets JWT → exchanges JWT with Identity Pool → gets temporary AWS credentials → calls S3/DynamoDB directly from the app. This is the canonical mobile backend pattern.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>User Pool features</strong>: customizable hosted UI for sign-in, MFA (TOTP, SMS), email/phone verification, custom Lambda triggers (pre-sign-up validation, post-authentication enrichment), user groups, app clients.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span><strong>ALB + Cognito User Pool</strong>: ALB can authenticate users via Cognito before routing requests to targets — offloads auth from the application entirely.</span></div>
+          </div>
+          <div class="exam-box"><strong>EXAM TIP</strong>User Pool = login/auth → JWTs. Identity Pool = exchange token for AWS credentials → direct AWS service calls. "Mobile app users uploading to S3" → User Pool (sign in) → Identity Pool (get S3 credentials) → S3 PutObject. "API Gateway auth for web/mobile users" → User Pool JWT authorizer. These two are among the most confused concepts on the exam.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ CHEAT SHEET ══════════════ -->
+    <div id="cheatsheet" class="page">
+      <div class="page-header">
+        <div class="page-eyebrow">Reference</div>
+        <div class="page-title">Serverless Cheat Sheet</div>
+        <div class="page-desc">All key numbers, scenario mappings, and the most common exam traps in one place.</div>
+      </div>
+
+      <div class="concept open">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(219,110,176,0.12);color:#db6eb0;">SCN</div>
+          <div class="concept-meta">
+            <div class="concept-title">Scenario Cheat Sheet <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Map any exam scenario to the right service or feature</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <table class="compare-table">
+            <tr><th>Scenario</th><th>Answer</th></tr>
+            <tr><td>"Need more CPU for Lambda"</td><td class="label">Increase memory allocation (CPU scales with memory)</td></tr>
+            <tr><td>"Reduce Java Lambda cold starts"</td><td class="label">Lambda SnapStart (Java 11/17 only)</td></tr>
+            <tr><td>"Eliminate cold starts entirely"</td><td class="label">Provisioned Concurrency</td></tr>
+            <tr><td>"One Lambda starving all others of concurrency"</td><td class="label">Set Reserved Concurrency on the greedy function</td></tr>
+            <tr><td>"Lambda needs to access private RDS"</td><td class="label">Lambda in VPC (same VPC as RDS)</td></tr>
+            <tr><td>"Lambda in VPC needs internet access"</td><td class="label">Private subnet + NAT Gateway</td></tr>
+            <tr><td>"Lambda connecting to RDS at scale"</td><td class="label">RDS Proxy (connection pooling)</td></tr>
+            <tr><td>"Share libraries across many Lambda functions"</td><td class="label">Lambda Layers (max 5, 250 MB total)</td></tr>
+            <tr><td>"HTTPS endpoint for Lambda without API Gateway"</td><td class="label">Lambda Function URL</td></tr>
+            <tr><td>"Add security headers to CloudFront responses"</td><td class="label">CloudFront Functions (viewer response trigger)</td></tr>
+            <tr><td>"Authenticate users at CloudFront edge with external auth"</td><td class="label">Lambda@Edge (viewer request trigger)</td></tr>
+            <tr><td>"Serverless REST API"</td><td class="label">API Gateway + Lambda + DynamoDB</td></tr>
+            <tr><td>"API Gateway 429 errors"</td><td class="label">Throttling limit hit — increase limit or add SQS buffer</td></tr>
+            <tr><td>"Custom/legacy JWT auth for API Gateway"</td><td class="label">Lambda Authorizer</td></tr>
+            <tr><td>"Mobile/web user auth for API Gateway"</td><td class="label">Cognito User Pool JWT authorizer</td></tr>
+            <tr><td>"Internal AWS service calling API Gateway"</td><td class="label">IAM authorization (SigV4)</td></tr>
+            <tr><td>"Real-time bidirectional API (chat, gaming)"</td><td class="label">API Gateway WebSocket API</td></tr>
+            <tr><td>"Workflow longer than 15 minutes"</td><td class="label">Step Functions (Standard, up to 1 year)</td></tr>
+            <tr><td>"High-volume event processing workflow"</td><td class="label">Step Functions Express (up to 5 minutes)</td></tr>
+            <tr><td>"Mobile app upload directly to S3"</td><td class="label">Cognito User Pool → Identity Pool → temp S3 credentials</td></tr>
+            <tr><td>"User sign-up / sign-in for mobile app"</td><td class="label">Cognito User Pool</td></tr>
+            <tr><td>"RDS operational event notifications"</td><td class="label">RDS Event Notifications → SNS</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept">
+        <div class="concept-header" onclick="toggle(this)">
+          <div class="concept-icon" style="background:rgba(57,208,160,0.12);color:#39d0a0;">NUM</div>
+          <div class="concept-meta">
+            <div class="concept-title">Key Numbers to Memorize <span class="badge badge-core">core</span></div>
+            <div class="concept-subtitle">Hard limits and defaults tested directly</div>
+          </div>
+          <div class="concept-toggle">▶</div>
+        </div>
+        <div class="concept-body">
+          <div class="key-points">
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda max timeout: <strong>15 minutes</strong> (900 seconds).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda memory: <strong>128 MB – 10,240 MB (10 GB)</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda /tmp storage: <strong>512 MB default, up to 10,240 MB (10 GB)</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda deployment package (zip): <strong>50 MB compressed / 250 MB uncompressed</strong>. Container image: <strong>10 GB</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda account concurrency default: <strong>1,000 per region</strong> (soft limit).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda environment variables: <strong>4 KB total</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda layers: max <strong>5 layers</strong> per function. Total unzipped function + layers: <strong>250 MB</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Lambda free tier: <strong>1 million invocations + 400,000 GB-seconds per month</strong> (permanent, never expires).</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Async Lambda retries: <strong>2 retries (3 total attempts)</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>API Gateway throttle defaults: <strong>10,000 req/s with 5,000 burst</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>API Gateway caching TTL: <strong>0–3,600 seconds</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>Step Functions Standard max duration: <strong>1 year</strong>. Express max: <strong>5 minutes</strong>.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>SnapStart: <strong>Java 11 and Java 17</strong> only. Up to 10x cold start improvement.</span></div>
+            <div class="kp"><span class="kp-bullet">→</span> <span>CPU at 1,769 MB Lambda memory: <strong>1 vCPU</strong>.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+</body>
+</html>
