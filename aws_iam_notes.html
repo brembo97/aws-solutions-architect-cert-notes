@@ -96,6 +96,8 @@
   }
 
   .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .back-home { color: var(--accent-teal); border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; padding-bottom: 0.75rem; }
+  .back-home:hover { color: var(--text) !important; background: rgba(57,208,160,0.07) !important; }
 
   .nav-item.active {
     color: var(--accent-blue);
@@ -381,6 +383,9 @@
 
 <div class="layout">
   <nav class="sidebar">
+    <a href="index.html" class="nav-item back-home">
+      <span style="font-size:12px;margin-right:4px">←</span> All Modules
+    </a>
     <div class="sidebar-logo">
       <div class="tag">AWS Cert Notes</div>
       <h1>IAM & Identity</h1>
